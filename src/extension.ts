@@ -64,12 +64,16 @@ function insertSemicolonEndOfLine(document: vscode.TextDocument, edits: vscode.T
 		const isDeclaration = text.match(/^\s*(var|const|class|local).*?\s[a-z_]+\s+[a-z_]+/i) !== null;
 
 		if (isAssignment || isFunctionCall || isDeclaration) {
+			let column = line.range.end.character - 1;
 			const commentIndex = text.indexOf("//");
-			if (commentIndex === -1) {
-				edits.push(vscode.TextEdit.insert(line.range.end, ";"));
-			} else {
-				edits.push(vscode.TextEdit.insert(new vscode.Position(i, commentIndex), ";"));
+			if (commentIndex > 0) {
+				column = commentIndex - 1;
 			}
+			while (column > 0 && text.charAt(column) === ' '){
+				column--;
+			}
+			const position = new vscode.Position(i, column + 1);
+			edits.push(vscode.TextEdit.insert(position, ";"));
 		}
 	}
 }
