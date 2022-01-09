@@ -16,7 +16,7 @@ export function ucTokenizeLine(input: string, line = 0): UcToken[] {
     let match: RegExpExecArray | null;
 
     while (match = regex.exec(input)){
-        const text = match[0]
+        const text = match[0];
         result.push({
             position: regex.lastIndex - text.length,
             text

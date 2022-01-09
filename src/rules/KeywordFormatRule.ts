@@ -2,7 +2,7 @@ import { LintResult } from "../LintResult";
 import { TokenBasedLinter } from "../TokenBasedLinter";
 
 
-export class LowercaseKeywordRule implements TokenBasedLinter 
+export class KeywordFormatRule implements TokenBasedLinter 
 {
     nextToken(line: number, position: number, tokenText: string): LintResult[] | null {
         const lowercase = tokenText.toLowerCase();
@@ -23,7 +23,8 @@ export class LowercaseKeywordRule implements TokenBasedLinter
     
 }
 
-// from https://wiki.beyondunreal.com/Legacy:UnrealScript_Keywords
+// mostly from https://wiki.beyondunreal.com/Legacy:UnrealScript_Keywords
+// but edited a bit
 const UC_KEYWORDS = new Set([
     'abstract',
     'always',
@@ -66,7 +67,6 @@ const UC_KEYWORDS = new Set([
     'export', // (variables / structs)
     'exportstructs',
     'extends',
-    'false',
     'final',
     'float',
     'for',
@@ -97,7 +97,6 @@ const UC_KEYWORDS = new Set([
     'nativereplication',
     'new',
     'noexport',
-    'none',
     'noteditinlinenew', // (classes)
     'notplaceable',
     'nousercreate',
@@ -132,7 +131,6 @@ const UC_KEYWORDS = new Set([
     'switch',
     'transient',
     'travel',
-    'true',
     'unreliable',
     'until',
     'var',

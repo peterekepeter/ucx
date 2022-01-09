@@ -1,7 +1,8 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { LowercaseKeywordRule } from './rules/LowercaseKeywordRule';
+import { ALL_RULES } from './rules';
+import { KeywordFormatRule } from './rules/KeywordFormatRule';
 import { ucTokenizeLine } from './test/ucTokenize';
 import { TokenBasedLinter } from './TokenBasedLinter';
 
@@ -11,11 +12,9 @@ export function activate(context: vscode.ExtensionContext) {
 	
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "uclint" is now active!');
+	console.log('Extension "uclint" is now active!');
 
-	
-	const tokenRules = new Array<TokenBasedLinter>();
-	tokenRules.push(new LowercaseKeywordRule());
+	const tokenRules = ALL_RULES;
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
