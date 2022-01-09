@@ -10,7 +10,7 @@
 		"Other"
 	],
 	"activationEvents": [
-        "onLanguage:unrealscript"
+		"onLanguage:unrealscript"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -20,19 +20,19 @@
 				"title": "Hello World"
 			}
 		],
-        "languages": [
-            {
-                "id": "unrealscript",
-                "aliases": [
-                    "UnrealScript",
-                    "unrealscript"
-                ],
-                "extensions": [
-                    ".uc",
-                    ".uci"
-                ]
-            }
-        ]
+		"languages": [
+			{
+				"id": "unrealscript",
+				"aliases": [
+					"UnrealScript",
+					"unrealscript"
+				],
+				"extensions": [
+					".uc",
+					".uci"
+				]
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
