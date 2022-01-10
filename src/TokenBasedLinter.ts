@@ -9,5 +9,5 @@ export interface TokenBasedLinter
      * @param tokenText the actual text content of the token
      * @returns the linter may produce some results
      */
-    nextToken(line: number, position: number, tokenText: string): LintResult[] | null;
+    nextToken(line: number, position: number, tokenText: string, lineText:string): LintResult[] | null;
 }
