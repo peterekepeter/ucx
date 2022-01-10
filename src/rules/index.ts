@@ -4,6 +4,7 @@ import { KeywordFormatRule } from "./KeywordFormatRule";
 import { NoneFormatRule } from "./NoneFormatRule";
 import { TrueFalseFormatRule } from "./TrueFalseFormatRule";
 import { ValidateNamesRule } from "./ValidateNamesRule";
+import { ValidateStringRule } from "./ValidateStringRule";
 
 export const ALL_RULES = [
     new KeywordFormatRule(),
@@ -11,5 +12,6 @@ export const ALL_RULES = [
     new TrueFalseFormatRule(),
     new IndentRule(),
     new BracketSpacingRule(),
-    new ValidateNamesRule()
+    new ValidateNamesRule(),
+    new ValidateStringRule()
 ];
