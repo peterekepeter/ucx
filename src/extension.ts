@@ -1,6 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { LintResult } from './LintResult';
 import { ALL_RULES } from './rules';
 import { KeywordFormatRule } from './rules/KeywordFormatRule';
 import { ucTokenizeLine } from './test/ucTokenize';
@@ -24,24 +25,53 @@ export function activate(context: vscode.ExtensionContext) {
         // Display a message box to the user
         vscode.window.showInformationMessage('Hello World from uclint!');
     });
+    context.subscriptions.push(disposable);
 
     // formatter implemented using API
     vscode.languages.registerDocumentFormattingEditProvider('unrealscript', {
         provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.TextEdit[] {
             const edits = new Array<vscode.TextEdit>();
-            processTokenRules(document, edits, tokenRules);
+            processFormattingRules(document, edits, tokenRules);
             insertSemicolonEndOfLine(document, edits);
             return edits;
         }
     });
 
-    context.subscriptions.push(disposable);
+
+    const diagnosticCollection = vscode.languages.createDiagnosticCollection('uclint');
+    context.subscriptions.push(diagnosticCollection);
+
+    vscode.workspace.onDidChangeTextDocument(event => { 
+        console.log('change!');
+        const diagnositcs = [...getDiagnostics(event.document, tokenRules)];
+        diagnosticCollection.set(event.document.uri, diagnositcs);
+    });
+
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
 
-function processTokenRules(document: vscode.TextDocument, edits: vscode.TextEdit[], tokenRules: TokenBasedLinter[]){
+function* getDiagnostics(document: vscode.TextDocument, tokenRules: TokenBasedLinter[]): Iterable<vscode.Diagnostic> {
+    for (const lintResult of processLinterRules(document, tokenRules)){
+        if (lintResult.message != null && 
+            lintResult.line != null &&
+            lintResult.position != null &&
+            lintResult.length != null)
+        {
+            const begin  = new vscode.Position(lintResult.line, lintResult.position);
+            const end = new vscode.Position(lintResult.line, lintResult.position + lintResult.length);
+            yield {
+                message: lintResult.message,
+                range: new vscode.Range(begin, end),
+                severity: vscode.DiagnosticSeverity.Warning,
+                source: 'uclint'
+            };
+        }
+    }
+}
+
+function* processLinterRules(document: vscode.TextDocument, tokenRules: TokenBasedLinter[]): Iterable<LintResult> {
     for (let lineIndex=0; lineIndex < document.lineCount; lineIndex++){
         const line = document.lineAt(lineIndex);
         const lineTokens = ucTokenizeLine(line.text);
@@ -52,24 +82,30 @@ function processTokenRules(document: vscode.TextDocument, edits: vscode.TextEdit
                     continue;
                 }
                 for (const result of lintResults){
-                    if (result.fixedText == null || result.position == null || result.line == null || result.length == null){
-                        continue;
-                    }
-                    if (result.length === 0) {
-                        const position = new vscode.Position(result.line, result.position);
-                        edits.push(vscode.TextEdit.insert(position, result.fixedText));
-                    } else if (result.fixedText === '') {
-                        const start = new vscode.Position(result.line, result.position);
-                        const end = new vscode.Position(result.line, result.position + result.length);
-                        edits.push(vscode.TextEdit.delete(new vscode.Range(start, end)));
-                    } else {
-                        const start = new vscode.Position(result.line, result.position);
-                        const end = new vscode.Position(result.line, result.position + result.length);
-                        edits.push(vscode.TextEdit.replace(new vscode.Range(start, end), result.fixedText));
-                    } 
+                    yield result;
                 }
             }
         }
+    }
+}
+
+function processFormattingRules(document: vscode.TextDocument, edits: vscode.TextEdit[], tokenRules: TokenBasedLinter[]){
+    for (const result of processLinterRules(document,  tokenRules)){
+        if (result.fixedText == null || result.position == null || result.line == null || result.length == null){
+            continue;
+        }
+        if (result.length === 0) {
+            const position = new vscode.Position(result.line, result.position);
+            edits.push(vscode.TextEdit.insert(position, result.fixedText));
+        } else if (result.fixedText === '') {
+            const start = new vscode.Position(result.line, result.position);
+            const end = new vscode.Position(result.line, result.position + result.length);
+            edits.push(vscode.TextEdit.delete(new vscode.Range(start, end)));
+        } else {
+            const start = new vscode.Position(result.line, result.position);
+            const end = new vscode.Position(result.line, result.position + result.length);
+            edits.push(vscode.TextEdit.replace(new vscode.Range(start, end), result.fixedText));
+        } 
     }
 }
 
