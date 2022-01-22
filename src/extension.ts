@@ -43,8 +43,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     vscode.workspace.onDidChangeTextDocument(event => { 
         console.log('change!');
-        const diagnositcs = [...getDiagnostics(event.document, tokenRules)];
-        diagnosticCollection.set(event.document.uri, diagnositcs);
+        if (event.document.languageId === 'unrealscript'){
+            const diagnositcs = [...getDiagnostics(event.document, tokenRules)];
+            diagnosticCollection.set(event.document.uri, diagnositcs);
+        }
     });
 
 }
@@ -111,7 +113,9 @@ function processFormattingRules(document: vscode.TextDocument, edits: vscode.Tex
 
 function insertSemicolonEndOfLine(document: vscode.TextDocument, edits: vscode.TextEdit[]) {
     const lineStartExclude = [
-        "if", "else", "for", "{", "}", "while", "function", "event", "#", "//"
+        "if", "else", "for",  "while", "function", "event", "#", "//", "{", "}",
+        "switch", "Switch",
+        "If", "Else", "For",  "While", "Function", "Event" // sources have these keywords starting with uppercase letter
     ];
     for (let i=0; i < document.lineCount; i++){
         const line = document.lineAt(i);

@@ -48,6 +48,9 @@ export class BracketSpacingRule implements TokenBasedLinter
         
         if (insertNewline)
         {
+            if (insertIndent == null || insertIndent < 0){
+                insertIndent = 0;
+            }
             return [{
                 position,
                 line,

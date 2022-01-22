@@ -1,7 +1,7 @@
 import { LintResult } from "../LintResult";
 import { TokenBasedLinter } from "../TokenBasedLinter";
 
-const validateRegex = /^'[a-z0-9]*'$/i;
+const validateRegex = /^'[a-z0-9_]*'$/i;
 
 
 export class ValidateNamesRule implements TokenBasedLinter 
@@ -17,9 +17,6 @@ export class ValidateNamesRule implements TokenBasedLinter
         }
         else if (tokenText.indexOf(' ') !== -1){
             error = 'Names cannot contain spaces!';
-        }
-        else if (tokenText.length - 2 > 64){
-            error = 'Names must be shorter than 64 characters!';
         }
         else if (!validateRegex.test(tokenText))
         {
