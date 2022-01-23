@@ -22,6 +22,12 @@ export interface UnrealClassVariable
     group: Token | null
 }
 
+export interface UnrealClassEnum
+{
+    name: Token | null;
+    enumeration: Token[];
+}
+
 export interface UnrealClass
 {
     name: Token | null
@@ -31,8 +37,8 @@ export interface UnrealClass
     isNativeReplication: boolean,
     errors: ParserError[],
     variables: UnrealClassVariable[]
+    enums: UnrealClassEnum[]
 }
-
 
 export class UcParser{
 
@@ -45,6 +51,11 @@ export class UcParser{
         | 'varNext'
         | 'varGroupName'
         | 'varGroupNext'
+        | 'enumDeclaration'
+        | 'enumNameParsed'
+        | 'enumBody'
+        | 'enumBodyParsedName'
+        | 'enumBodyClosed'
         = null;
 
     result: UnrealClass = {
@@ -54,7 +65,8 @@ export class UcParser{
         isNative: false,
         isNativeReplication: false,
         errors: [],
-        variables: []
+        variables: [],
+        enums: []
     };
 
     getAst() {
@@ -70,45 +82,64 @@ export class UcParser{
     parse(token: Token) {
         switch(this.rootState)
         {
-        case null:
-            this.parseNullState(token);
-            break;
-
-        case "className":
-            this.parseClassName(token);
-            break;    
-        
-        case "classDecorators":
-            this.parseClassDecorators(token);
-            break;
-
-        case "classParent":
-            this.parseClassParent(token);
-            break;
-
-        case "varDeclaration":
-            this.parseVarDelcaration(token);
-            break;
-
-        case "varGroupName":
-            this.parseVarGroup(token);
-            break;
-
+        case null: this.parseNullState(token); break;
+        case "className": this.parseClassName(token); break;   
+        case "classDecorators": this.parseClassDecorators(token); break;
+        case "classParent": this.parseClassParent(token); break;
+        case "varDeclaration": this.parseVarDelcaration(token); break;
+        case "varGroupName": this.parseVarGroup(token); break;
         case "varGroupNext": this.parseVarGroupNext(token); break;
-        
-        case "varNext":
-            this.parseVarNext(token);
-            break;
-        
-        case "varName":
-            this.parseVarName(token);
-            break;
+        case "varNext": this.parseVarNext(token); break;
+        case "varName": this.parseVarName(token); break;
+        case "enumDeclaration": this.parseEnumDeclaration(token); break;
+        case "enumNameParsed": this.parseEnumNameParsed(token); break;
+        case "enumBody": this.parseEnumBody(token); break;
+        case "enumBodyParsedName": this.parseEnumBodyParedName(token); break;
+        case "enumBodyClosed": this.parseEnumBodyClosed(token); break;
 
         default:
             this.result.errors.push({ token, message: "Invalid parser state reached.", });
             this.rootState = null;
             break;
         }
+    }
+
+    parseEnumBodyClosed(token: ParserToken) {
+        switch(token.text){
+        case ';':
+            this.rootState = null;
+            break;
+        }
+    }
+
+    parseEnumBodyParedName(token: ParserToken) {
+        switch (token.text){
+        case ',':
+            this.rootState = 'enumBody';
+            break;
+        case '}':
+            this.rootState = 'enumBodyClosed';
+            break;
+        }
+    }
+
+    parseEnumBody(token: ParserToken) {
+        const enumResult = this.getLastEnum();
+        enumResult.enumeration.push(token);
+        this.rootState = 'enumBodyParsedName';
+    }
+    
+    parseEnumNameParsed(token: ParserToken) {
+        if (token.text === "{"){
+            this.rootState = "enumBody";
+            return;
+        }
+    }
+
+    parseEnumDeclaration(token: ParserToken) {
+        const result = this.getLastEnum();
+        result.name = token;
+        this.rootState = 'enumNameParsed';
     }
 
     parseVarGroupNext(token: ParserToken) {
@@ -133,6 +164,10 @@ export class UcParser{
 
     getLastVar() : UnrealClassVariable {
         return this.result.variables[this.result.variables.length - 1];
+    }
+
+    getLastEnum() : UnrealClassEnum {
+        return this.result.enums[this.result.enums.length - 1];
     }
 
     parseVarNext(token: ParserToken) {
@@ -177,7 +212,6 @@ export class UcParser{
         case 'class':
             this.rootState = "className";
             break;
-            
         case 'var': 
             this.rootState= 'varDeclaration';
             this.result.variables.push({ 
@@ -185,10 +219,16 @@ export class UcParser{
                 type: null,
                 isConst: false,
                 isTransient: false,
-                group: null
+                group: null,
             });
             break;
-
+        case 'enum':
+            this.rootState = 'enumDeclaration';
+            this.result.enums.push({
+                name: null,
+                enumeration: [],
+            })
+            break;
         default:
             this.result.errors.push({ token, message: "Reached unexpected token." });
             break;

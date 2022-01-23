@@ -3,7 +3,7 @@ import { UcParser, UnrealClass } from "./UcParser";
 import { ucTokenizeLine } from "./ucTokenize";
 
 
-test("parse basic class declration", 
+test("parse basic class declration",
     () => parse(`class Util expands Info;`)
         .hasClassName('Util')
         .hasParentClassName('Info')
@@ -30,7 +30,7 @@ test("parse class declaration with extra decorators", () => parse(`
 test("parse variable declaration", () => parse(`
     var bool bDynamicLight;
     `)
-    .hasVariable(0, 'bool', 'bDynamicLight', { const:false, transient: false})
+    .hasVariable(0, 'bool', 'bDynamicLight', { const: false, transient: false })
     .hasNoErrors()
 );
 
@@ -48,13 +48,25 @@ test("parse variable declaration with group", () => parse(`
     .hasNoErrors()
 );
 
-function parse(input: string){
+test("parse enum delcaration", () => parse(`
+    enum ENetRole
+    {
+        ROLE_None,              // No role at all.
+        ROLE_DumbProxy,			// Dumb proxy of this actor.
+        ROLE_SimulatedProxy,	// Locally simulated proxy of this actor.
+        ROLE_AutonomousProxy,	// Locally autonomous proxy of this actor.
+        ROLE_Authority,			// Authoritative control over the actor.
+    };`)
+    .hasNoErrors()
+);
+
+function parse(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r\n/);
-    for (let i=0; i< lines.length; i++){
+    for (let i = 0; i < lines.length; i++) {
 
-        for (const token of ucTokenizeLine(lines[i])){
-            parser.parse({ ...token, line:i });
+        for (const token of ucTokenizeLine(lines[i])) {
+            parser.parse({ ...token, line: i });
         }
     }
     parser.endOfFile({ text: '', position: 0, line: lines.length });
@@ -67,7 +79,7 @@ function parse(input: string){
         isAbstract: (flag: boolean) => checkEquals(flag, ast.isAbstract, "isAbstract should be " + flag),
         isNative: (flag: boolean) => checkEquals(flag, ast.isNative, "isNative should be " + flag),
         hasNativeReplication: (flag: boolean) => checkEquals(flag, ast.isNativeReplication, "hasNativeReplication should be " + flag),
-        hasVariable: (index: number, type: string, name: string, props?:{transient?:boolean,const?:boolean,group?:string}) => {
+        hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string }) => {
             checkEquals(ast.variables[index]?.type?.text, type);
             checkEquals(ast.variables[index]?.name?.text, name);
             if (props?.transient != null) {
@@ -84,12 +96,12 @@ function parse(input: string){
     };
     return checks;
 
-    function checkEquals(a: any, b: any, message?:string){
-        assert.strictEqual(a,b,message);
+    function checkEquals(a: any, b: any, message?: string) {
+        assert.strictEqual(a, b, message);
         return checks;
     }
 
-    function checkEmpty(container: any){
+    function checkEmpty(container: any) {
         assert.deepStrictEqual(container, []);
         return checks;
     }
