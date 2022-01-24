@@ -1,8 +1,22 @@
+
+export enum SemanticClass {
+    None,
+    Keyword,
+    Comment,
+    ClassDeclaration,
+    EnumDeclaration,
+    ClassReference,
+    ClassVariable,
+    LocalVariable,
+    EnumMember,
+}
+
 export interface ParserToken
 {
     text: string;
     line: number; 
     position: number;
+    classification: SemanticClass
 }
 
 type Token = ParserToken;
@@ -43,6 +57,7 @@ export interface UnrealClass
     errors: ParserError[],
     variables: UnrealClassVariable[]
     enums: UnrealClassEnum[]
+    tokens: ParserToken[]
 }
 
 type ParserRootStates = null 
@@ -72,14 +87,18 @@ export class UcParser{
         isNativeReplication: false,
         errors: [],
         variables: [],
-        enums: []
+        enums: [],
+        tokens: []
     };
 
     getAst() {
         return this.result;
     }
 
-    endOfFile(token: Token) {
+    endOfFile(line: number, position: number) {
+        const token :ParserToken = {
+            line, position, text:'', classification: SemanticClass.None
+        };
         if (this.rootState != null){
             this.result.errors.push({ 
                 token, 
@@ -90,6 +109,7 @@ export class UcParser{
         if (this.result.classFirstToken){
             this.result.classLastToken = token;
         }
+        this.result.tokens.push(token);
     }
 
     eofErrorMessageFrom(rootState: ParserRootStates): string {
@@ -112,8 +132,20 @@ export class UcParser{
         return message;
     }
 
-    parse(token: Token) {
+    parse(line: number, position: number, text: string) {
+        const token: Token = {
+            classification: SemanticClass.None,
+            line,
+            position,
+            text
+        };
+        this.parseToken(token);
+        this.result.tokens.push(token);
+    }
+
+    private parseToken(token: ParserToken){
         if (isLineComment(token)){
+            token.classification = SemanticClass.Comment;
             return;
         }
         switch(this.rootState)
@@ -144,7 +176,7 @@ export class UcParser{
         }
     }
 
-    parseEnumBodyClosed(token: ParserToken) {
+    private parseEnumBodyClosed(token: ParserToken) {
         switch(token.text){
         case ';':
             this.rootState = null;
@@ -152,7 +184,7 @@ export class UcParser{
         }
     }
 
-    parseEnumBodyParedName(token: ParserToken) {
+    private parseEnumBodyParedName(token: ParserToken) {
         this.getLastEnum().lastToken = token;
         switch (token.text){
         case ',':
@@ -164,30 +196,32 @@ export class UcParser{
         }
     }
 
-    parseEnumBody(token: ParserToken) {
+    private parseEnumBody(token: ParserToken) {
         if (token.text === "}") {
             this.rootState = "enumBodyClosed";
             return;
         }
         const enumResult = this.getLastEnum();
         enumResult.enumeration.push(token);
+        token.classification = SemanticClass.EnumMember,
         this.rootState = 'enumBodyParsedName';
     }
     
-    parseEnumNameParsed(token: ParserToken) {
+    private parseEnumNameParsed(token: ParserToken) {
         if (token.text === "{"){
             this.rootState = "enumBody";
             return;
         }
     }
 
-    parseEnumDeclaration(token: ParserToken) {
+    private parseEnumDeclaration(token: ParserToken) {
         const result = this.getLastEnum();
         result.name = token;
         this.rootState = 'enumNameParsed';
+        token.classification = SemanticClass.EnumDeclaration;
     }
 
-    parseVarGroupNext(token: ParserToken) {
+    private parseVarGroupNext(token: ParserToken) {
         switch (token.text){
         case ")": 
             this.rootState = 'varDeclaration';
@@ -196,26 +230,26 @@ export class UcParser{
             this.result.errors.push({ token, message: 'Expected ")"'});
             // try to recover
             this.rootState = 'varDeclaration';
-            this.parse(token);
+            this.parseToken(token);
             break;
         }
     }
 
-    parseVarGroup(token: ParserToken) {
+    private parseVarGroup(token: ParserToken) {
         const variable = this.getLastVar();
         variable.group = token;
         this.rootState = 'varGroupNext';
     }
 
-    getLastVar() : UnrealClassVariable {
+    private getLastVar() : UnrealClassVariable {
         return this.result.variables[this.result.variables.length - 1];
     }
 
-    getLastEnum() : UnrealClassEnum {
+    private getLastEnum() : UnrealClassEnum {
         return this.result.enums[this.result.enums.length - 1];
     }
 
-    parseVarNext(token: ParserToken) {
+    private parseVarNext(token: ParserToken) {
         switch(token.text){
         case ';':
             this.rootState = null;
@@ -226,14 +260,16 @@ export class UcParser{
         }
     }
 
-    parseVarDelcaration(token: ParserToken) {
+    private parseVarDelcaration(token: ParserToken) {
         const variable = this.result.variables[this.result.variables.length - 1];
         switch (token.text){
         case 'transient': 
             variable.isTransient = true;
+            token.classification = SemanticClass.Keyword;
             break;
         case 'const':
             variable.isConst = true;
+            token.classification = SemanticClass.Keyword;
             break;
         case '(':
             this.rootState = "varGroupName";
@@ -245,18 +281,20 @@ export class UcParser{
         }
     }
     
-    parseVarName(token: ParserToken) {
+    private parseVarName(token: ParserToken) {
         const variable = this.result.variables[this.result.variables.length - 1];
+        token.classification = SemanticClass.ClassVariable;
         variable.name = token;
         this.rootState = "varNext";
     }
 
-    parseNullState(token: Token) 
+    private parseNullState(token: Token) 
     {
         switch (token.text){
         case 'class':
             this.rootState = "className";
             this.result.classFirstToken = token;
+            token.classification = SemanticClass.Keyword;
             break;
         case 'var': 
             this.rootState= 'varDeclaration';
@@ -267,6 +305,7 @@ export class UcParser{
                 isTransient: false,
                 group: null,
             });
+            token.classification = SemanticClass.Keyword;
             break;
         case 'enum':
             this.rootState = 'enumDeclaration';
@@ -276,6 +315,7 @@ export class UcParser{
                 lastToken: token,
                 enumeration: [],
             });
+            token.classification = SemanticClass.Keyword;
             break;
         default:
             this.result.errors.push({ token, message: "Reached unexpected token." });
@@ -283,17 +323,19 @@ export class UcParser{
         }
     }
 
-    parseClassName(token: Token) {
+    private parseClassName(token: Token) {
         this.result.name = token;
         this.rootState = 'classDecorators';
+        token.classification = SemanticClass.ClassDeclaration;
     }
     
-    parseClassDecorators(token: Token) { 
+    private parseClassDecorators(token: Token) { 
         switch (token.text)
         {
         case 'expands':
         case 'extends':
             this.rootState = 'classParent';
+            token.classification = SemanticClass.Keyword;
             break;
             
         case 'abstract':
@@ -317,7 +359,7 @@ export class UcParser{
             this.result.errors.push({ token, message: `Unexpected "${token.text}", forgot a ";" after class declaration.`});
             // error recovery
             this.rootState = null;
-            this.parse(token);
+            this.parseToken(token);
             break;
 
         default:
@@ -326,9 +368,10 @@ export class UcParser{
         }
     }
 
-    parseClassParent(token: ParserToken) {
+    private parseClassParent(token: ParserToken) {
         this.result.parentName = token;
         this.rootState = 'classDecorators';
+        token.classification = SemanticClass.ClassReference;
     }
 
 

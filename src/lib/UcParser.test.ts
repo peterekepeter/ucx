@@ -69,10 +69,10 @@ function parsing(input: string) {
     const lines = input.split(/\r?\n/);
     for (let i = 0; i < lines.length; i++) {
         for (const token of ucTokenizeLine(lines[i])) {
-            parser.parse({ ...token, line: i });
+            parser.parse(i, token.position, token.text);
         }
     }
-    parser.endOfFile({ text: '', position: 0, line: lines.length });
+    parser.endOfFile(lines.length, 0);
     const ast = parser.getAst();
 
     const checks = {

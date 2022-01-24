@@ -6,7 +6,7 @@ import { ALL_RULES } from './lib/rules';
 import { KeywordFormatRule } from './lib/rules/KeywordFormatRule';
 import { ucTokenizeLine } from './lib/ucTokenize';
 import { TokenBasedLinter } from './lib/TokenBasedLinter';
-import { ParserToken, UcParser } from './lib/UcParser';
+import { ParserToken, SemanticClass, UcParser } from './lib/UcParser';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -38,21 +38,104 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    vscode.languages.registerDocumentSymbolProvider('unrealscript', {
-        provideDocumentSymbols(document, cancellation){
-            const parser = new UcParser();
-            for (let lineIndex=0; lineIndex < document.lineCount; lineIndex++){
-                const line = document.lineAt(lineIndex);
-                const lineTokens = ucTokenizeLine(line.text);
-                for (const token of lineTokens) {
-                    parser.parse({ ...token, line: lineIndex });
+    // https://code.visualstudio.com/api/language-extensions/semantic-highlight-guide
+    const standardTokenTypes = [
+        'namespace', // 	For identifiers that declare or reference a namespace, module, or package.
+        'class', // 	For identifiers that declare or reference a class type.
+        'enum', // 	For identifiers that declare or reference an enumeration type.
+        'interface', // 	For identifiers that declare or reference an interface type.
+        'struct', // 	For identifiers that declare or reference a struct type.
+        'typeParameter', // 	For identifiers that declare or reference a type parameter.
+        'type', // 	For identifiers that declare or reference a type that is not covered above.
+        'parameter', // 	For identifiers that declare or reference a function or method parameters.
+        'variable', // 	For identifiers that declare or reference a local or global variable.
+        'property', // 	For identifiers that declare or reference a member property, member field, or member variable.
+        'enumMember', // 	For identifiers that declare or reference an enumeration property, constant, or member.
+        'decorator', // 	For identifiers that declare or reference decorators and annotations.
+        'event', // 	For identifiers that declare an event property.
+        'function', // 	For identifiers that declare a function.
+        'method', // 	For identifiers that declare a member function or method.
+        'macro', // 	For identifiers that declare a macro.
+        'label', // 	For identifiers that declare a label.
+        'comment', // 	For tokens that represent a comment.
+        'string', // 	For tokens that represent a string literal.
+        'keyword', // 	For tokens that represent a language keyword.
+        'number', // 	For tokens that represent a number literal.
+        'regexp', // 	For tokens that represent a regular expression literal.
+        'operator', // 	For tokens that represent an operator.
+    ];
+
+    const standardModifiers = [
+        'declaration', //   For declarations of symbols.
+        'definition', //    For definitions of symbols, for example, in header files.
+        'readonly', //  For readonly variables and member fields (constants).
+        'static', //    For class members (static members).
+        'deprecated', //    For symbols that should no longer be used.
+        'abstract', //  For types and member functions that are abstract.
+        'async', // For functions that are marked async.
+        'modification', //  For variable references where the variable is assigned to.
+        'documentation', // For occurrences of symbols in documentation.
+        'defaultLibrary', //    For symbols that are part of the standard library.
+    ];
+
+    const TOKEN_TYPE_KEYWORD = standardTokenTypes.indexOf('keyword');
+    const TOKEN_TYPE_COMMENT = standardTokenTypes.indexOf('comment');
+    const TOKEN_TYPE_VARIABLE = standardTokenTypes.indexOf('variable');
+    const TOKEN_TYPE_PROPERTY = standardTokenTypes.indexOf('property');
+    const TOKEN_TYPE_ENUM_MEMBER = standardTokenTypes.indexOf('enumMember');
+    const TOKEN_TYPE_ENUM = standardTokenTypes.indexOf('enum');
+    const TOKEN_TYPE_CLASS = standardTokenTypes.indexOf('class');
+
+    const TOKEN_MODIFIER_DECLARATION = standardModifiers.indexOf('declaration');
+    
+    const legend = new vscode.SemanticTokensLegend(standardTokenTypes, standardModifiers);
+
+    vscode.languages.registerDocumentSemanticTokensProvider('unrealscript', {
+        provideDocumentSemanticTokens(document, cancellation) {     
+            const ast = getAst(document, cancellation);
+            const tokensBuilder = new vscode.SemanticTokensBuilder(legend);
+            // on line 1, characters 1-5 are a class declaration
+            for (const token of ast.tokens){
+                let type: number | undefined;
+                let modifier: number | undefined = undefined;
+                switch(token.classification){
+                case SemanticClass.Comment: 
+                    type = TOKEN_TYPE_COMMENT; 
+                    break;
+                case SemanticClass.Keyword: 
+                    type = TOKEN_TYPE_KEYWORD; 
+                    break;
+                case SemanticClass.ClassVariable: 
+                    type = TOKEN_TYPE_PROPERTY; 
+                    break;
+                case SemanticClass.EnumMember: 
+                    type = TOKEN_TYPE_ENUM_MEMBER; 
+                    break;
+                case SemanticClass.EnumDeclaration: 
+                    type = TOKEN_TYPE_ENUM; 
+                    modifier = TOKEN_MODIFIER_DECLARATION;
+                    break;
+                case SemanticClass.ClassDeclaration: 
+                    type = TOKEN_TYPE_CLASS; 
+                    modifier = TOKEN_MODIFIER_DECLARATION;
+                    break;
+                case SemanticClass.ClassReference: 
+                    type = TOKEN_TYPE_CLASS; 
+                    break;
                 }
-                if (cancellation.isCancellationRequested){
-                    return [];
+                if (type !== undefined){
+                    tokensBuilder.push(
+                        token.line, token.position, token.text.length, type, modifier
+                    );
                 }
             }
-            parser.endOfFile({ text: '', line: document.lineCount, position: 0 });
-            const ast = parser.getAst();
+            return tokensBuilder.build();
+        }
+    }, legend);
+
+    vscode.languages.registerDocumentSymbolProvider('unrealscript', {
+        provideDocumentSymbols(document, cancellation){
+            const ast = getAst(document, cancellation);
             const result: vscode.SymbolInformation[] = []; 
             let classContainer = '';
             if (ast.name && ast.classFirstToken && ast.classLastToken){
@@ -184,10 +267,10 @@ function* processLinterRules(document: vscode.TextDocument, tokenRules: TokenBas
                     yield result;
                 }
             }
-            parser.parse({ ...token, line: lineIndex });
+            parser.parse(lineIndex, token.position, token.text);
         }
     }
-    parser.endOfFile({ text: '', line: document.lineCount, position: 0 });
+    parser.endOfFile(document.lineCount, 0);
     const ast = parser.getAst();
     for (const parseError of ast.errors){
         yield {
@@ -265,5 +348,21 @@ function insertSemicolonEndOfLine(document: vscode.TextDocument, edits: vscode.T
             edits.push(vscode.TextEdit.insert(position, ";"));
         }
     }
+}
+
+function getAst(document: vscode.TextDocument, cancellation: vscode.CancellationToken) {
+    const parser = new UcParser();
+    for (let lineIndex=0; lineIndex < document.lineCount; lineIndex++){
+        const line = document.lineAt(lineIndex);
+        const lineTokens = ucTokenizeLine(line.text);
+        for (const token of lineTokens) {
+            parser.parse(lineIndex, token.position, token.text);
+        }
+        if (cancellation.isCancellationRequested){
+            return parser.getAst();
+        }
+    }
+    parser.endOfFile(document.lineCount, 0);
+    return parser.getAst();
 }
 
