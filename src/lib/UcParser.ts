@@ -11,6 +11,7 @@ export interface ParserError
 {
     message: string;
     token: Token;
+    debug?: string;
 }
 
 export interface UnrealClassVariable
@@ -75,11 +76,33 @@ export class UcParser{
 
     endOfFile(token: Token) {
         if (this.rootState != null){
-            this.result.errors.push({ token, message: "Unexpected end of file." });
+            this.result.errors.push({ 
+                token, 
+                message: this.eofErrorMessageFrom(this.rootState),
+                debug: `this.rootState was ${this.rootState} expected null`
+            });
         }
     }
 
+    eofErrorMessageFrom(rootState: string): string {
+        let detail = '';
+        switch (rootState){
+        case 'enumBody':
+        case 'enumBodyParsedName':
+            detail = "Forgot to close the enum?";
+            break;
+        }
+        let message = "File ended too soon.";
+        if (detail) {
+            message = `${message} ${detail}`;
+        }
+        return message;
+    }
+
     parse(token: Token) {
+        if (isLineComment(token)){
+            return;
+        }
         switch(this.rootState)
         {
         case null: this.parseNullState(token); break;
@@ -98,7 +121,11 @@ export class UcParser{
         case "enumBodyClosed": this.parseEnumBodyClosed(token); break;
 
         default:
-            this.result.errors.push({ token, message: "Invalid parser state reached.", });
+            this.result.errors.push({ 
+                token, 
+                message: "Invalid parser state reached.", 
+                debug: `${this.rootState} not handled`
+            });
             this.rootState = null;
             break;
         }
@@ -124,6 +151,10 @@ export class UcParser{
     }
 
     parseEnumBody(token: ParserToken) {
+        if (token.text === "}") {
+            this.rootState = "enumBodyClosed";
+            return;
+        }
         const enumResult = this.getLastEnum();
         enumResult.enumeration.push(token);
         this.rootState = 'enumBodyParsedName';
@@ -227,7 +258,7 @@ export class UcParser{
             this.result.enums.push({
                 name: null,
                 enumeration: [],
-            })
+            });
             break;
         default:
             this.result.errors.push({ token, message: "Reached unexpected token." });
@@ -284,4 +315,8 @@ export class UcParser{
     }
 
 
+}
+
+function isLineComment(token: Token) {
+    return token.text.startsWith("//");
 }

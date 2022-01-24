@@ -56,14 +56,18 @@ test("parse enum delcaration", () => { parsing(`
         ROLE_AutonomousProxy,	// Locally autonomous proxy of this actor.
         ROLE_Authority,			// Authoritative control over the actor.
     };`)
+    .hasEnum(0, 'ENetRole', 0, 'ROLE_None')
+    .hasEnum(0, 'ENetRole', 1, 'ROLE_DumbProxy')
+    .hasEnum(0, 'ENetRole', 2, 'ROLE_SimulatedProxy')
+    .hasEnum(0, 'ENetRole', 3, 'ROLE_AutonomousProxy')
+    .hasEnum(0, 'ENetRole', 4, 'ROLE_Authority')
     .hasNoErrors();
 });
 
 function parsing(input: string) {
     const parser = new UcParser();
-    const lines = input.split(/\r\n/);
+    const lines = input.split(/\r?\n/);
     for (let i = 0; i < lines.length; i++) {
-
         for (const token of ucTokenizeLine(lines[i])) {
             parser.parse({ ...token, line: i });
         }
@@ -90,6 +94,11 @@ function parsing(input: string) {
             if (props?.group != null) {
                 checkEquals(ast.variables[index]?.group?.text, props.group);
             }
+            return checks;
+        },
+        hasEnum: (index: number, name: string, enumIndex: number, enumName: string) => {
+            checkEquals(ast.enums[index].name?.text, name);
+            checkEquals(ast.enums[index].enumeration[enumIndex].text, enumName);
             return checks;
         }
     };
