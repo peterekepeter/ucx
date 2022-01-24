@@ -5,4 +5,5 @@ export interface LintResult {
     message?: string;
     originalText?: string;
     fixedText?: string;
+    severity?: 'warning' | 'error';
 }

@@ -27,10 +27,14 @@ export interface UnrealClassEnum
 {
     name: Token | null;
     enumeration: Token[];
+    firstToken: Token;
+    lastToken: Token;
 }
 
 export interface UnrealClass
 {
+    classFirstToken?: Token | null;
+    classLastToken?: Token | null;
     name: Token | null
     parentName: Token | null
     isAbstract: boolean,
@@ -41,23 +45,24 @@ export interface UnrealClass
     enums: UnrealClassEnum[]
 }
 
+type ParserRootStates = null 
+    | 'className' 
+    | 'classDecorators' 
+    | 'classParent'
+    | 'varDeclaration'
+    | 'varName'
+    | 'varNext'
+    | 'varGroupName'
+    | 'varGroupNext'
+    | 'enumDeclaration'
+    | 'enumNameParsed'
+    | 'enumBody'
+    | 'enumBodyParsedName'
+    | 'enumBodyClosed';
+
 export class UcParser{
 
-    rootState: null 
-        | 'className' 
-        | 'classDecorators' 
-        | 'classParent'
-        | 'varDeclaration'
-        | 'varName'
-        | 'varNext'
-        | 'varGroupName'
-        | 'varGroupNext'
-        | 'enumDeclaration'
-        | 'enumNameParsed'
-        | 'enumBody'
-        | 'enumBodyParsedName'
-        | 'enumBodyClosed'
-        = null;
+    rootState: ParserRootStates = null;
 
     result: UnrealClass = {
         name: null,
@@ -82,11 +87,19 @@ export class UcParser{
                 debug: `this.rootState was ${this.rootState} expected null`
             });
         }
+        if (this.result.classFirstToken){
+            this.result.classLastToken = token;
+        }
     }
 
-    eofErrorMessageFrom(rootState: string): string {
+    eofErrorMessageFrom(rootState: ParserRootStates): string {
         let detail = '';
         switch (rootState){
+        case 'className':
+        case 'classParent':
+        case 'classDecorators':
+            detail = "Forgot to finish class declaration.";
+            break;
         case 'enumBody':
         case 'enumBodyParsedName':
             detail = "Forgot to close the enum?";
@@ -140,6 +153,7 @@ export class UcParser{
     }
 
     parseEnumBodyParedName(token: ParserToken) {
+        this.getLastEnum().lastToken = token;
         switch (token.text){
         case ',':
             this.rootState = 'enumBody';
@@ -242,6 +256,7 @@ export class UcParser{
         switch (token.text){
         case 'class':
             this.rootState = "className";
+            this.result.classFirstToken = token;
             break;
         case 'var': 
             this.rootState= 'varDeclaration';
@@ -257,6 +272,8 @@ export class UcParser{
             this.rootState = 'enumDeclaration';
             this.result.enums.push({
                 name: null,
+                firstToken: token,
+                lastToken: token,
                 enumeration: [],
             });
             break;

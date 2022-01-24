@@ -6,6 +6,7 @@ import { ALL_RULES } from './lib/rules';
 import { KeywordFormatRule } from './lib/rules/KeywordFormatRule';
 import { ucTokenizeLine } from './lib/ucTokenize';
 import { TokenBasedLinter } from './lib/TokenBasedLinter';
+import { ParserToken, UcParser } from './lib/UcParser';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -37,6 +38,99 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
+    vscode.languages.registerDocumentSymbolProvider('unrealscript', {
+        provideDocumentSymbols(document, cancellation){
+            const parser = new UcParser();
+            for (let lineIndex=0; lineIndex < document.lineCount; lineIndex++){
+                const line = document.lineAt(lineIndex);
+                const lineTokens = ucTokenizeLine(line.text);
+                for (const token of lineTokens) {
+                    parser.parse({ ...token, line: lineIndex });
+                }
+                if (cancellation.isCancellationRequested){
+                    return [];
+                }
+            }
+            parser.endOfFile({ text: '', line: document.lineCount, position: 0 });
+            const ast = parser.getAst();
+            const result: vscode.SymbolInformation[] = []; 
+            let classContainer = '';
+            if (ast.name && ast.classFirstToken && ast.classLastToken){
+                result.push(new vscode.SymbolInformation(
+                    ast.name.text,
+                    vscode.SymbolKind.Class,
+                    "",
+                    new vscode.Location(
+                        document.uri, 
+                        rangeFromTokens(ast.classFirstToken, ast.classLastToken)
+                    )
+                ));
+                classContainer = ast.name.text;
+            }
+            for (const enumDeclaration of ast.enums){
+                if (!enumDeclaration.name){
+                    return;
+                }
+                const enumName = enumDeclaration.name;
+                result.push(new vscode.SymbolInformation(
+                    enumDeclaration.name.text,
+                    vscode.SymbolKind.Enum,
+                    classContainer,
+                    new vscode.Location(
+                        document.uri,
+                        rangeFromTokens(
+                            enumDeclaration.firstToken, 
+                            enumDeclaration.lastToken)
+                    )
+                ));
+                for (const enumItem of enumDeclaration.enumeration){
+                    result.push(new vscode.SymbolInformation(
+                        enumItem.text,
+                        vscode.SymbolKind.EnumMember,
+                        enumName.text, 
+                        new vscode.Location(
+                            document.uri,
+                            rangeFromTokens(enumItem, enumItem)
+                        )
+                    ));
+                }
+            }
+            for (const varDeclaration of ast.variables){
+                if (!varDeclaration.name){
+                    continue;
+                }
+                result.push(new vscode.SymbolInformation(
+                    varDeclaration.name.text,
+                    vscode.SymbolKind.Variable,
+                    classContainer,
+                    new vscode.Location(
+                        document.uri,
+                        rangeFromTokens(varDeclaration.name, varDeclaration.name)
+                    )
+                ));
+            }
+            return result;
+        }
+    });
+
+    function rangeFromToken(a: ParserToken): vscode.Range {
+        return rangeFromTokens(a,a);
+    }
+
+    function rangeFromTokens(a: ParserToken,b: ParserToken): vscode.Range{
+        return new vscode.Range(
+            firstPositionFromToken(a),
+            lastPositionFromToken(b)
+        );
+    }
+
+    function firstPositionFromToken(a: ParserToken): vscode.Position {
+        return new vscode.Position(a.line, a.position);
+    }
+    
+    function lastPositionFromToken(a: ParserToken): vscode.Position {
+        return new vscode.Position(a.line, a.position + a.text.length);
+    }
 
     const diagnosticCollection = vscode.languages.createDiagnosticCollection('uclint');
     context.subscriptions.push(diagnosticCollection);
@@ -66,7 +160,9 @@ function* getDiagnostics(document: vscode.TextDocument, tokenRules: TokenBasedLi
             yield {
                 message: lintResult.message,
                 range: new vscode.Range(begin, end),
-                severity: vscode.DiagnosticSeverity.Warning,
+                severity: lintResult.severity === 'error' 
+                    ? vscode.DiagnosticSeverity.Error
+                    : vscode.DiagnosticSeverity.Warning,
                 source: 'uclint'
             };
         }
@@ -74,6 +170,7 @@ function* getDiagnostics(document: vscode.TextDocument, tokenRules: TokenBasedLi
 }
 
 function* processLinterRules(document: vscode.TextDocument, tokenRules: TokenBasedLinter[]): Iterable<LintResult> {
+    const parser = new UcParser();
     for (let lineIndex=0; lineIndex < document.lineCount; lineIndex++){
         const line = document.lineAt(lineIndex);
         const lineTokens = ucTokenizeLine(line.text);
@@ -87,7 +184,20 @@ function* processLinterRules(document: vscode.TextDocument, tokenRules: TokenBas
                     yield result;
                 }
             }
+            parser.parse({ ...token, line: lineIndex });
         }
+    }
+    parser.endOfFile({ text: '', line: document.lineCount, position: 0 });
+    const ast = parser.getAst();
+    for (const parseError of ast.errors){
+        yield {
+            message: parseError.message,
+            line: parseError.token.line,
+            position: parseError.token.position,
+            length: parseError.token.text.length,
+            originalText: parseError.token.text,
+            severity: 'error'
+        };
     }
 }
 
