@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import { ucTokenizeLine } from './ucTokenize';
 
 
@@ -67,7 +66,7 @@ test("tokenize for loop", () => verifyTokens(`
 ]));
 
 test("tokenzie positions", () => {
-    assert.deepStrictEqual(ucTokenizeLine("local int i;"), [
+    expect(ucTokenizeLine("local int i;")).toEqual([
         { 
             position: 0,
             text: 'local'
@@ -88,7 +87,7 @@ test("tokenzie positions", () => {
 });
 
 function verifyTokens(input: string, output: string[]){
-    assert.deepStrictEqual(tokenize(input), output);
+    expect(tokenize(input)).toEqual(output);
 }
 
 function tokenize(input: string): string[] {

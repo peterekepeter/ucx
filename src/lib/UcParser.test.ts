@@ -1,19 +1,18 @@
-import assert = require("assert");
 import { UcParser, UnrealClass } from "./UcParser";
 import { ucTokenizeLine } from "./ucTokenize";
 
 
-test("parse basic class declration",
-    () => parse(`class Util expands Info;`)
+test("parse basic class declration", () => { 
+    parsing(`class Util expands Info;`)
         .hasClassName('Util')
         .hasParentClassName('Info')
         .isAbstract(false)
         .isNative(false)
         .hasNativeReplication(false)
-        .hasNoErrors()
-);
+        .hasNoErrors();
+});
 
-test("parse class declaration with extra decorators", () => parse(`
+test("parse class declaration with extra decorators", () => { parsing(`
     class Actor extends Object
         abstract
         native
@@ -24,31 +23,31 @@ test("parse class declaration with extra decorators", () => parse(`
     .isAbstract(true)
     .isNative(true)
     .hasNativeReplication(true)
-    .hasNoErrors()
-);
+    .hasNoErrors();
+});
 
-test("parse variable declaration", () => parse(`
+test("parse variable declaration", () => { parsing(`
     var bool bDynamicLight;
     `)
     .hasVariable(0, 'bool', 'bDynamicLight', { const: false, transient: false })
-    .hasNoErrors()
-);
+    .hasNoErrors();
+});
 
-test("parse variable declaration with decorators", () => parse(`
+test("parse variable declaration with decorators", () => { parsing(`
     var transient const bool bTicked;
     `)
     .hasVariable(0, 'bool', 'bTicked', { const: true, transient: true })
-    .hasNoErrors()
-);
+    .hasNoErrors();
+});
 
-test("parse variable declaration with group", () => parse(`
+test("parse variable declaration with group", () => { parsing(`
     var(Advanced) bool		bAlwaysRelevant;
     `)
     .hasVariable(0, 'bool', 'bAlwaysRelevant', { group: 'Advanced' })
-    .hasNoErrors()
-);
+    .hasNoErrors();
+});
 
-test("parse enum delcaration", () => parse(`
+test("parse enum delcaration", () => { parsing(`
     enum ENetRole
     {
         ROLE_None,              // No role at all.
@@ -57,10 +56,10 @@ test("parse enum delcaration", () => parse(`
         ROLE_AutonomousProxy,	// Locally autonomous proxy of this actor.
         ROLE_Authority,			// Authoritative control over the actor.
     };`)
-    .hasNoErrors()
-);
+    .hasNoErrors();
+});
 
-function parse(input: string) {
+function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r\n/);
     for (let i = 0; i < lines.length; i++) {
@@ -97,12 +96,12 @@ function parse(input: string) {
     return checks;
 
     function checkEquals(a: any, b: any, message?: string) {
-        assert.strictEqual(a, b, message);
+        expect(a).toBe(b);
         return checks;
     }
 
     function checkEmpty(container: any) {
-        assert.deepStrictEqual(container, []);
+        expect(container).toEqual([]);
         return checks;
     }
 }
