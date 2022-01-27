@@ -40,6 +40,12 @@ test("parse variable declaration with decorators", () => { parsing(`
     .hasNoErrors();
 });
 
+test("parse config var", () => { parsing(`
+    var config string Description;
+    `)
+    .hasVariable(0, "string", "Description", { config: true });
+});
+
 test("parse variable declaration with group", () => { parsing(`
     var(Advanced) bool		bAlwaysRelevant;
     `)
@@ -64,6 +70,30 @@ test("parse enum delcaration", () => { parsing(`
     .hasNoErrors();
 });
 
+test("parse variable declaration with group", () => { parsing(`
+    var(Advanced) bool		bAlwaysRelevant;
+    `)
+    .hasVariable(0, 'bool', 'bAlwaysRelevant', { group: 'Advanced' })
+    .hasNoErrors();
+});
+
+test("keyword still works even if wrongly cased", () => { parsing(`
+    CONST MAX_ITEMS = 32;
+    VAR int thing;
+    `)
+    .hasNoErrors();
+});
+
+test("parse variable declaration with group", () => { parsing(`
+    const MAX_ITEMS = 32;
+    `)
+    .hasConstant(0, {
+        name: 'MAX_ITEMS',
+        value: '32'
+    })
+    .hasNoErrors();
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
@@ -82,7 +112,7 @@ function parsing(input: string) {
         isAbstract: (flag: boolean) => checkEquals(flag, ast.isAbstract, "isAbstract should be " + flag),
         isNative: (flag: boolean) => checkEquals(flag, ast.isNative, "isNative should be " + flag),
         hasNativeReplication: (flag: boolean) => checkEquals(flag, ast.isNativeReplication, "hasNativeReplication should be " + flag),
-        hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string }) => {
+        hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean }) => {
             checkEquals(ast.variables[index]?.type?.text, type);
             checkEquals(ast.variables[index]?.name?.text, name);
             if (props?.transient != null) {
@@ -94,11 +124,22 @@ function parsing(input: string) {
             if (props?.group != null) {
                 checkEquals(ast.variables[index]?.group?.text, props.group);
             }
+            if (props?.config != null) {
+                checkEquals(ast.variables[index]?.isConfig, props.config);
+            } 
             return checks;
         },
         hasEnum: (index: number, name: string, enumIndex: number, enumName: string) => {
             checkEquals(ast.enums[index].name?.text, name);
             checkEquals(ast.enums[index].enumeration[enumIndex].text, enumName);
+            return checks;
+        },
+        hasConstant(index: number, props: { name?:string, value?:string }){
+            const obj = ast.constants[index];
+            checkMatches({ 
+                name: obj?.name?.text, 
+                value: obj?.value?.text 
+            }, props);
             return checks;
         }
     };
@@ -111,6 +152,11 @@ function parsing(input: string) {
 
     function checkEmpty(container: any) {
         expect(container).toEqual([]);
+        return checks;
+    }
+
+    function checkMatches(actual: object, expected: object){
+        expect(actual).toMatchObject(expected);
         return checks;
     }
 }

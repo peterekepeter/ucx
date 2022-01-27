@@ -85,8 +85,13 @@ export function activate(context: vscode.ExtensionContext) {
     const TOKEN_TYPE_ENUM_MEMBER = standardTokenTypes.indexOf('enumMember');
     const TOKEN_TYPE_ENUM = standardTokenTypes.indexOf('enum');
     const TOKEN_TYPE_CLASS = standardTokenTypes.indexOf('class');
+    const TOKEN_TYPE_TYPE = standardTokenTypes.indexOf('type');
+    const TOKEN_TYPE_OPERATOR = standardTokenTypes.indexOf('operator');
+    const TOKEN_TYPE_STRING = standardTokenTypes.indexOf('string');
+    const TOKEN_TYPE_NUMBER = standardTokenTypes.indexOf('number');
 
     const TOKEN_MODIFIER_DECLARATION = standardModifiers.indexOf('declaration');
+    const TOKEN_MODIFIER_READONLY = standardModifiers.indexOf('readonly');
     
     const legend = new vscode.SemanticTokensLegend(standardTokenTypes, standardModifiers);
 
@@ -121,6 +126,23 @@ export function activate(context: vscode.ExtensionContext) {
                     break;
                 case SemanticClass.ClassReference: 
                     type = TOKEN_TYPE_CLASS; 
+                    break;
+                case SemanticClass.TypeReference:
+                    type = TOKEN_TYPE_TYPE;
+                    break;
+                case SemanticClass.AssignmentOperator:
+                    type = TOKEN_TYPE_OPERATOR;
+                    break;
+                case SemanticClass.ClassConstant:
+                    type = TOKEN_TYPE_PROPERTY;
+                    modifier = TOKEN_MODIFIER_READONLY;
+                    break;
+                case SemanticClass.LiteralName:
+                case SemanticClass.LiteralString:
+                    type = TOKEN_TYPE_STRING;
+                    break;
+                case SemanticClass.LiteralNumber:
+                    type = TOKEN_TYPE_NUMBER;
                     break;
                 }
                 if (type !== undefined){
