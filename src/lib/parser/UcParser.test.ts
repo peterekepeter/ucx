@@ -94,6 +94,32 @@ test("parse variable declaration with group", () => { parsing(`
     .hasNoErrors();
 });
 
+test("parse empty function", () => { parsing(`
+    function PostBeginPlay(){
+        
+    }
+    `)
+    .hasFunction(0, {
+        name: 'PostBeginPlay'
+    })
+    .hasNoErrors();
+});
+
+test("parse empty function", () => { parsing(`
+    function PostBeginPlay(){
+        local int i;
+    }
+    `)
+    .hasFunction(0, {
+        name: 'PostBeginPlay',
+        locals: [{
+            type: 'int',
+            name: 'i',
+        }]
+    })
+    .hasNoErrors();
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
@@ -139,6 +165,23 @@ function parsing(input: string) {
             checkMatches({ 
                 name: obj?.name?.text, 
                 value: obj?.value?.text 
+            }, props);
+            return checks;
+        },
+        hasFunction(index: number, props: { 
+                name?:string,
+                locals?:{
+                   name?:string,
+                   type?:string 
+                }[]
+            }){
+            const obj = ast.functions[index];
+            checkMatches({
+                name: obj?.name?.text,
+                locals: obj?.locals?.map(l => ({
+                    name: l.name?.text,
+                    type: l.type?.text
+                }))
             }, props);
             return checks;
         }

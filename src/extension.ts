@@ -89,6 +89,7 @@ export function activate(context: vscode.ExtensionContext) {
     const TOKEN_TYPE_OPERATOR = standardTokenTypes.indexOf('operator');
     const TOKEN_TYPE_STRING = standardTokenTypes.indexOf('string');
     const TOKEN_TYPE_NUMBER = standardTokenTypes.indexOf('number');
+    const TOKEN_TYPE_FUNCTION = standardTokenTypes.indexOf('method');
 
     const TOKEN_MODIFIER_DECLARATION = standardModifiers.indexOf('declaration');
     const TOKEN_MODIFIER_READONLY = standardModifiers.indexOf('readonly');
@@ -143,6 +144,14 @@ export function activate(context: vscode.ExtensionContext) {
                     break;
                 case SemanticClass.LiteralNumber:
                     type = TOKEN_TYPE_NUMBER;
+                    break;
+                case SemanticClass.FunctionDeclaration:
+                    modifier = TOKEN_MODIFIER_DECLARATION;
+                case SemanticClass.FunctionReference:
+                    type = TOKEN_TYPE_FUNCTION;
+                    break;
+                case SemanticClass.LocalVariable:
+                    type = TOKEN_TYPE_VARIABLE;
                     break;
                 }
                 if (type !== undefined){

@@ -17,4 +17,17 @@ export interface UnrealClass {
     variables: UnrealClassVariable[];
     enums: UnrealClassEnum[];
     tokens: ParserToken[];
+    functions: UnrealClassFunction[];
+}
+
+export interface UnrealClassFunction
+{
+    name: ParserToken | null;
+    locals: UnrealClassFunctionLocal[];
+}
+
+export interface UnrealClassFunctionLocal
+{
+    type: ParserToken | null;
+    name: ParserToken | null;
 }
