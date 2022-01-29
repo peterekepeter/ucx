@@ -1,126 +1,14 @@
+import { getExpressionTokenType } from "./getExpressionTokenType";
+import { ParserState } from "./ParserState";
+import { ParserToken } from "./ParserToken";
+import { SemanticClass } from "./SemanticClass";
+import { UnrealClass } from "./ast/UnrealClass";
+import { UnrealClassConstant } from "./ast/UnrealClassConstant";
+import { UnrealClassEnum } from "./ast/UnrealClassEnum";
+import { UnrealClassVariable } from "./ast/UnrealClassVariable";
 
-export enum SemanticClass {
-    None,
-    Keyword,
-    Comment,
-    ClassDeclaration,
-    EnumDeclaration,
-    ClassReference,
-    ClassVariable,
-    LocalVariable,
-    EnumMember,
-    TypeReference,
-    AssignmentOperator,
-    ClassConstant,
-    LiteralString,
-    LiteralName,
-    LiteralNumber,
-    Identifier,
-}
+export type Token = ParserToken;
 
-export interface ParserToken
-{
-    text: string;
-    line: number; 
-    position: number;
-    classification: SemanticClass
-}
-
-type Token = ParserToken;
-
-export interface ParserError
-{
-    message: string;
-    token: Token;
-    debug?: string;
-}
-
-export interface UnrealClassVariable
-{
-    type: Token | null,
-    name: Token | null,
-    isTransient: boolean,
-    isConst: boolean,
-    group: Token | null,
-    isConfig: boolean
-}
-
-export interface UnrealClassEnum
-{
-    name: Token | null;
-    enumeration: Token[];
-    firstToken: Token;
-    lastToken: Token;
-}
-
-export interface UnrealClassConstant
-{
-    name: Token | null;
-    value: Token | null;
-}
-
-export interface UnrealClass
-{
-    classFirstToken?: Token | null;
-    classLastToken?: Token | null;
-    name: Token | null
-    parentName: Token | null
-    isAbstract: boolean,
-    isNative: boolean,
-    isNativeReplication: boolean,
-    errors: ParserError[],
-    constants: UnrealClassConstant[]
-    variables: UnrealClassVariable[]
-    enums: UnrealClassEnum[]
-    tokens: ParserToken[]
-}
-
-function getExpressionTokenType(token: Token) : SemanticClass
-{
-    const text = token.text;
-    if (text.startsWith('"'))
-    {
-        return SemanticClass.LiteralString;
-    }
-    else if (text.startsWith("'"))
-    {
-        return SemanticClass.LiteralName;
-    }
-    else if (/^[0-9]/.test(text)) 
-    {
-        return SemanticClass.LiteralNumber;   
-    }
-    else if (/^[a-z_]/i) 
-    {
-        return SemanticClass.Identifier;
-    }
-    else 
-    {
-        return SemanticClass.None;
-    }
-}
-
-enum ParserState
-{
-    None,
-    ClassName,
-    ClassDecorators,
-    ClassParent,
-    VarDeclaration,
-    VarName,
-    VarNext,
-    VarGroupName,
-    VarGroupNext,
-    EnumDeclaration,
-    EnumNameParsed,
-    EnumBody,
-    EnumBodyParsedName,
-    EnumBodyClosed,
-    ConstDeclaration,
-    ConstParsedName,
-    ConstExpectValue,
-    ConstParsedValue,
-}
 
 export class UcParser{
 
@@ -400,10 +288,19 @@ export class UcParser{
     }
     
     private parseVarName(token: ParserToken) {
-        const variable = this.result.variables[this.result.variables.length - 1];
-        token.classification = SemanticClass.ClassVariable;
-        variable.name = token;
-        this.rootState = ParserState.VarNext;
+        switch (token.text){
+        case ';':
+            const message = 'Expected variable name isntead of ";"';
+            this.result.errors.push({ token, message });
+            this.rootState = ParserState.None;
+            break;
+        default:
+            const variable = this.result.variables[this.result.variables.length - 1];
+            token.classification = SemanticClass.ClassVariable;
+            variable.name = token;
+            this.rootState = ParserState.VarNext;
+            break;
+        }
     }
 
     private parseNoneState(token: Token) 

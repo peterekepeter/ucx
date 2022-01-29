@@ -1,0 +1,20 @@
+export enum ParserState {
+    None,
+    ClassName,
+    ClassDecorators,
+    ClassParent,
+    VarDeclaration,
+    VarName,
+    VarNext,
+    VarGroupName,
+    VarGroupNext,
+    EnumDeclaration,
+    EnumNameParsed,
+    EnumBody,
+    EnumBodyParsedName,
+    EnumBodyClosed,
+    ConstDeclaration,
+    ConstParsedName,
+    ConstExpectValue,
+    ConstParsedValue
+}

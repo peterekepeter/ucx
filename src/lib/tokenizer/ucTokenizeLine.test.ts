@@ -1,4 +1,4 @@
-import { ucTokenizeLine } from './ucTokenize';
+import { ucTokenizeLine } from './ucTokenizeLine';
 
 
 test("tokenize class declaration", () => verifyTokens(`

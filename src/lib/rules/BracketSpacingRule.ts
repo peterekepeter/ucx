@@ -1,7 +1,7 @@
 import { LinkedEditingRanges } from "vscode";
 import { LintResult } from "../LintResult";
 import { TokenBasedLinter } from "../TokenBasedLinter";
-import { getIndentLevel } from "../getIndentLevel";
+import { getIndentLevel } from "../indentation/getIndentLevel";
 import { toIndentString } from "../toIndentString";
 
 export class BracketSpacingRule implements TokenBasedLinter 

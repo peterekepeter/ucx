@@ -1,5 +1,6 @@
-import { UcParser, UnrealClass } from "./UcParser";
-import { ucTokenizeLine } from "./ucTokenize";
+import { UcParser } from "./UcParser";
+import { UnrealClass } from "./ast/UnrealClass";
+import { ucTokenizeLine } from "../tokenizer/ucTokenizeLine";
 
 
 test("parse basic class declration", () => { 

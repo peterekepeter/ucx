@@ -1,9 +1,4 @@
-
-
-export interface UcToken {
-    position: number;
-    text: string;
-}
+import { UcToken } from "./UcToken";
 
 //             identifiers     | linecomm | mlinecomm      | numeric         | strings       | names |  operators                                                                                        | syntax   
 const regex = /[_a-z][_a-z0-9]*|\/\/[^\n]*|\/\*[\s\S]*?\*\/|[0-9][0-9a-fx\.]*|"(?:[^"]|\\")*"|'[^']*'|!=|==|!|&&|\^\^|\|\||\*=|\/=|\+=|\-=|\=|\+\+|--|~|-|\*|\/|\+|<<|>>|<=|>=|<|>|&|\^|\||\*\*|%|~=|\$|@|\.|;|\(|\)|,|\{|\}/gi;
@@ -25,11 +20,3 @@ export function ucTokenizeLine(input: string, line = 0): UcToken[] {
 
     return result;
 }
-
-/**
- * tokenize any source text
- */
-// export function ucTokenize(input: string): UcToken {
-//     const lines = input.split('\n');
-
-// }
