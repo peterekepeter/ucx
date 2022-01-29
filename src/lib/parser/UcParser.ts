@@ -1,18 +1,17 @@
-import { getExpressionTokenType } from "./getExpressionTokenType";
-import { ParserState } from "./ParserState";
-import { ParserToken } from "./ParserToken";
-import { SemanticClass } from "./SemanticClass";
 import { UnrealClass } from "./ast/UnrealClass";
 import { UnrealClassConstant } from "./ast/UnrealClassConstant";
 import { UnrealClassEnum } from "./ast/UnrealClassEnum";
 import { UnrealClassVariable } from "./ast/UnrealClassVariable";
-
-export type Token = ParserToken;
+import { parseVarDeclaration } from "./parse/parseVar";
+import { parseEnumBody, parseEnumBodyClosed, parseEnumDeclaration } from "./parse/parseEnum";
+import { parseConstDeclaration } from "./parse/parseConst";
+import { isParsingClassFn, parseClassName } from "./parse/parseClass";
+import { ParserToken, SemanticClass, ParserFn, Token } from "./types";
 
 
 export class UcParser{
 
-    rootState = ParserState.None;
+    rootFn: ParserFn = parseNoneState;
 
     result: UnrealClass = {
         name: null,
@@ -35,11 +34,10 @@ export class UcParser{
         const token :ParserToken = {
             line, position, text:'', classification: SemanticClass.None
         };
-        if (this.rootState !== ParserState.None){
+        if (this.rootFn !== parseNoneState){
             this.result.errors.push({ 
                 token, 
-                message: this.eofErrorMessageFrom(this.rootState),
-                debug: `this.rootState was ${this.rootState} expected null`
+                message: this.eofErrorMessageFrom(this.rootFn)
             });
         }
         if (this.result.classFirstToken){
@@ -48,16 +46,14 @@ export class UcParser{
         this.result.tokens.push(token);
     }
 
-    eofErrorMessageFrom(rootState: ParserState): string {
+    eofErrorMessageFrom(fn: ParserFn): string {
         let detail = '';
-        switch (rootState){
-        case ParserState.ClassName:
-        case ParserState.ClassParent:
-        case ParserState.ClassDecorators:
+        if (isParsingClassFn(fn)){
             detail = "Forgot to finish class declaration.";
-            break;
-        case ParserState.EnumBody:
-        case ParserState.EnumBodyParsedName:
+        }
+        switch (fn){
+        case parseEnumBody:
+        case parseEnumBodyClosed:
             detail = "Forgot to close the enum?";
             break;
         }
@@ -79,328 +75,75 @@ export class UcParser{
         this.result.tokens.push(token);
     }
 
-    private parseToken(token: ParserToken){
+    parseToken(token: ParserToken){
         if (isLineComment(token)){
             token.classification = SemanticClass.Comment;
             return;
         }
-        switch(this.rootState)
-        {
-        case ParserState.None: this.parseNoneState(token); break;
-        case ParserState.ClassName: this.parseClassName(token); break;   
-        case ParserState.ClassDecorators: this.parseClassDecorators(token); break;
-        case ParserState.ClassParent: this.parseClassParent(token); break;
-        case ParserState.VarDeclaration: this.parseVarDeclaration(token); break;
-        case ParserState.VarGroupName: this.parseVarGroup(token); break;
-        case ParserState.VarGroupNext: this.parseVarGroupNext(token); break;
-        case ParserState.VarNext: this.parseVarNext(token); break;
-        case ParserState.VarName: this.parseVarName(token); break;
-        case ParserState.EnumDeclaration: this.parseEnumDeclaration(token); break;
-        case ParserState.EnumNameParsed: this.parseEnumNameParsed(token); break;
-        case ParserState.EnumBody: this.parseEnumBody(token); break;
-        case ParserState.EnumBodyParsedName: this.parseEnumBodyParedName(token); break;
-        case ParserState.EnumBodyClosed: this.parseEnumBodyClosed(token); break;
-        case ParserState.ConstDeclaration: this.parseConstDeclaration(token); break;
-        case ParserState.ConstParsedName: this.parseConstParsedName(token); break;
-        case ParserState.ConstExpectValue: this.parseConstExpectValue(token); break;
-        case ParserState.ConstParsedValue: this.parseConstParsedValue(token); break;
-        default:
-            this.result.errors.push({ 
-                token, 
-                message: "Invalid parser state reached.", 
-                debug: `${this.rootState} not handled`
-            });
-            this.rootState = ParserState.None;
-            this.parseToken(token);
-            break;
+        else {
+            this.rootFn(this, token);
         }
     }
 
-    parseConstParsedValue(token: ParserToken) {
-        if (token.text === ';'){
-            this.rootState = ParserState.None;
-        } else {
-            this.result.errors.push({ token, message: 'Expected ";" after constant declaration.' })
-            this.rootState = ParserState.None;
-            this.parseToken(token);
-        }
-    }
-
-    parseConstExpectValue(token: ParserToken) {
-        switch(token.text){
-        case ';':
-            this.result.errors.push({ token, message: 'Expecting constant value.' });
-            this.rootState = ParserState.None;
-            break;
-        default:
-            const constant = this.getLastConst();
-            constant.value = token;
-            const expressionType = getExpressionTokenType(token);
-            token.classification = expressionType;
-            this.rootState = ParserState.ConstParsedValue;
-            break;
-        }
-    }
-
-    parseConstParsedName(token: ParserToken) {
-        switch (token.text)
-        {
-        case '=':
-            this.rootState = ParserState.ConstExpectValue;
-            token.classification = SemanticClass.AssignmentOperator;
-            break;
-        default:
-            this.result.errors.push({ token, message: `Expecting "=" operator.` });
-            this.rootState = ParserState.None;
-            break;
-        }
-    }
-    parseConstDeclaration(token: ParserToken) {
-        switch (token.text) {
-        case ';':
-            this.result.errors.push({ 
-                token, 
-                message: "Expected constant name."
-            });
-            this.rootState = ParserState.None;
-            break;
-        default:
-            const constant = this.getLastConst();
-            token.classification = SemanticClass.ClassConstant;
-            constant.name = token;
-            this.rootState = ParserState.ConstParsedName;
-            break;
-        }
-    }
-
-    private parseEnumBodyClosed(token: ParserToken) {
-        switch(token.text){
-        case ';':
-            this.rootState = ParserState.None;
-            break;
-        }
-    }
-
-    private parseEnumBodyParedName(token: ParserToken) {
-        this.getLastEnum().lastToken = token;
-        switch (token.text){
-        case ',':
-            this.rootState = ParserState.EnumBody;
-            break;
-        case '}':
-            this.rootState = ParserState.EnumBodyClosed;
-            break;
-        }
-    }
-
-    private parseEnumBody(token: ParserToken) {
-        if (token.text === "}") {
-            this.rootState = ParserState.EnumBodyClosed;
-            return;
-        }
-        const enumResult = this.getLastEnum();
-        enumResult.enumeration.push(token);
-        token.classification = SemanticClass.EnumMember,
-        this.rootState = ParserState.EnumBodyParsedName;
-    }
-    
-    private parseEnumNameParsed(token: ParserToken) {
-        if (token.text === "{"){
-            this.rootState = ParserState.EnumBody;
-            return;
-        }
-    }
-
-    private parseEnumDeclaration(token: ParserToken) {
-        const result = this.getLastEnum();
-        result.name = token;
-        this.rootState = ParserState.EnumNameParsed;
-        token.classification = SemanticClass.EnumDeclaration;
-    }
-
-    private parseVarGroupNext(token: ParserToken) {
-        switch (token.text){
-        case ")": 
-            this.rootState = ParserState.VarDeclaration;
-            break;
-        default:
-            this.result.errors.push({ token, message: 'Expected ")"'});
-            // try to recover
-            this.rootState = ParserState.VarDeclaration;
-            this.parseToken(token);
-            break;
-        }
-    }
-
-    private parseVarGroup(token: ParserToken) {
-        const variable = this.getLastVar();
-        variable.group = token;
-        this.rootState = ParserState.VarGroupNext;
-    }
-
-    private getLastVar() : UnrealClassVariable {
+    get lastVar() : UnrealClassVariable {
         return this.result.variables[this.result.variables.length - 1];
     }
 
-    private getLastEnum() : UnrealClassEnum {
+    get lastEnum() : UnrealClassEnum {
         return this.result.enums[this.result.enums.length - 1];
     }
 
-    private getLastConst() : UnrealClassConstant {
+    get lastConst() : UnrealClassConstant {
         return this.result.constants[this.result.constants.length - 1];
     }
-
-    private parseVarNext(token: ParserToken) {
-        switch(token.text){
-        case ';':
-            this.rootState = ParserState.None;
-            break;
-        default:
-            this.result.errors.push({token, message: 'Expecting ";" after variable name.'});
-            break;
-        }
-    }
-
-    private parseVarDeclaration(token: ParserToken) {
-        const variable = this.result.variables[this.result.variables.length - 1];
-        switch (token.text){
-        case 'transient': 
-            variable.isTransient = true;
-            token.classification = SemanticClass.Keyword;
-            break;
-        case 'const':
-            variable.isConst = true;
-            token.classification = SemanticClass.Keyword;
-            break;
-        case 'config':
-            variable.isConfig = true;
-            token.classification = SemanticClass.Keyword;
-            break;
-        case '(':
-            this.rootState = ParserState.VarGroupName;
-            break;
-        default:
-            variable.type = token;
-            token.classification = SemanticClass.TypeReference;
-            this.rootState = ParserState.VarName;
-            break;
-        }
-    }
-    
-    private parseVarName(token: ParserToken) {
-        switch (token.text){
-        case ';':
-            const message = 'Expected variable name isntead of ";"';
-            this.result.errors.push({ token, message });
-            this.rootState = ParserState.None;
-            break;
-        default:
-            const variable = this.result.variables[this.result.variables.length - 1];
-            token.classification = SemanticClass.ClassVariable;
-            variable.name = token;
-            this.rootState = ParserState.VarNext;
-            break;
-        }
-    }
-
-    private parseNoneState(token: Token) 
-    {
-        switch (token.text.toLocaleLowerCase()){
-        case 'class':
-            this.rootState = ParserState.ClassName;
-            this.result.classFirstToken = token;
-            token.classification = SemanticClass.Keyword;
-            break;
-        case 'var': 
-            this.rootState= ParserState.VarDeclaration;
-            this.result.variables.push({ 
-                name: null, 
-                type: null,
-                isConst: false,
-                isTransient: false,
-                group: null,
-                isConfig: false,
-            });
-            token.classification = SemanticClass.Keyword;
-            break;
-        case 'enum':
-            this.rootState = ParserState.EnumDeclaration;
-            this.result.enums.push({
-                name: null,
-                firstToken: token,
-                lastToken: token,
-                enumeration: [],
-            });
-            token.classification = SemanticClass.Keyword;
-            break;
-        case 'const':
-            this.rootState = ParserState.ConstDeclaration;
-            this.result.constants.push({
-                name: null, 
-                value: null
-            });
-            token.classification = SemanticClass.Keyword;
-            break;
-        default:
-            this.result.errors.push({ token, message: "Reached unexpected token." });
-            break;
-        }
-    }
-
-    private parseClassName(token: Token) {
-        this.result.name = token;
-        this.rootState = ParserState.ClassDecorators;
-        token.classification = SemanticClass.ClassDeclaration;
-    }
-    
-    private parseClassDecorators(token: Token) { 
-        switch (token.text)
-        {
-        case 'expands':
-        case 'extends':
-            this.rootState = ParserState.ClassParent;
-            token.classification = SemanticClass.Keyword;
-            break;
-            
-        case 'abstract':
-            this.result.isAbstract = true;
-            break;
-
-        case 'native':
-            this.result.isNative = true;
-            break;
-
-        case 'nativereplication':
-            this.result.isNativeReplication = true;
-            break;
-
-        case ';':
-            this.rootState = ParserState.None;
-            break;
-
-        case 'var':
-        case 'function':
-            this.result.errors.push({ token, message: `Unexpected "${token.text}", forgot a ";" after class declaration.`});
-            // error recovery
-            this.rootState = ParserState.None;
-            this.parseToken(token);
-            break;
-
-        default:
-            this.result.errors.push({ token, message: 'Unexpected class decorator, maybe forgot a ";"'});
-            break;
-        }
-    }
-
-    private parseClassParent(token: ParserToken) {
-        this.result.parentName = token;
-        this.rootState = ParserState.ClassDecorators;
-        token.classification = SemanticClass.ClassReference;
-    }
-
 
 }
 
 function isLineComment(token: Token) {
     return token.text.startsWith("//");
 }
+
+export function parseNoneState(parser: UcParser, token: Token) 
+{
+    switch (token.text.toLocaleLowerCase()){
+    case 'class':
+        parser.rootFn = parseClassName;
+        parser.result.classFirstToken = token;
+        token.classification = SemanticClass.Keyword;
+        break;
+    case 'var': 
+        parser.rootFn = parseVarDeclaration;
+        parser.result.variables.push({ 
+            name: null, 
+            type: null,
+            isConst: false,
+            isTransient: false,
+            group: null,
+            isConfig: false,
+        });
+        token.classification = SemanticClass.Keyword;
+        break;
+    case 'enum':
+        parser.rootFn = parseEnumDeclaration;
+        parser.result.enums.push({
+            name: null,
+            firstToken: token,
+            lastToken: token,
+            enumeration: [],
+        });
+        token.classification = SemanticClass.Keyword;
+        break;
+    case 'const':
+        parser.rootFn = parseConstDeclaration;
+        parser.result.constants.push({
+            name: null, 
+            value: null
+        });
+        token.classification = SemanticClass.Keyword;
+        break;
+    default:
+        parser.result.errors.push({ token, message: "Reached unexpected token." });
+        break;
+    }
+}
+

@@ -1,6 +1,6 @@
+import { toIndentString } from "../indentation/toIndentString";
 import { LintResult } from "../LintResult";
 import { TokenBasedLinter } from "../TokenBasedLinter";
-import { toIndentString } from "../toIndentString";
 
 export class IndentRule implements TokenBasedLinter 
 {
@@ -30,7 +30,7 @@ export class IndentRule implements TokenBasedLinter
                 this.controlStructureState = 'parenOpened';
             }
             if (token === ')' && this.controlStructureState === 'parenOpened'){
-                this.controlStructureState = 'parenClosed'
+                this.controlStructureState = 'parenClosed';
                 this.controlStructureIndent++;
             }
             if (token === '{' && this.controlStructureState === 'parenClosed'){
@@ -47,7 +47,7 @@ export class IndentRule implements TokenBasedLinter
             this.indentLevel--;
         }
         let result: LintResult[] | null = null;
-        if (line != this.lastLine){
+        if (line !== this.lastLine){
             // line change
             let indentChars = 0;
             for (let i=0; i<lineText.length; i++){
@@ -61,7 +61,7 @@ export class IndentRule implements TokenBasedLinter
             }
             let indent = lineText.substring(0, indentChars);
             let expectedIndent = toIndentString(this.indentLevel + this.controlStructureIndent);
-            if (indent != expectedIndent){
+            if (indent !== expectedIndent){
                 // correct it
                 result = [{
                     line,
@@ -70,7 +70,7 @@ export class IndentRule implements TokenBasedLinter
                     fixedText: expectedIndent,
                     message: `Expected ${expectedIndent} spaces`,
                     originalText: indent
-                }]
+                }];
             }
         }
         if (token === '{' || token === '[' || token === '('){

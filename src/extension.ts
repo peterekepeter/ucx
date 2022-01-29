@@ -6,9 +6,7 @@ import { ALL_RULES } from './lib/rules';
 import { KeywordFormatRule } from './lib/rules/KeywordFormatRule';
 import { ucTokenizeLine } from './lib/tokenizer/ucTokenizeLine';
 import { TokenBasedLinter } from './lib/TokenBasedLinter';
-import { UcParser } from './lib/parser/UcParser';
-import { ParserToken } from "./lib/parser/ParserToken";
-import { SemanticClass } from "./lib/parser/SemanticClass";
+import { ParserToken, SemanticClass, UcParser } from './lib/parser';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed

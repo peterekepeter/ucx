@@ -1,4 +1,4 @@
-import { ParserToken } from "../ParserToken";
+import { ParserToken } from "../types";
 
 
 export interface UnrealClassEnum {

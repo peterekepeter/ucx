@@ -1,5 +1,4 @@
 import { UcParser } from "./UcParser";
-import { UnrealClass } from "./ast/UnrealClass";
 import { ucTokenizeLine } from "../tokenizer/ucTokenizeLine";
 
 

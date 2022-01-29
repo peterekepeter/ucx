@@ -1,5 +1,4 @@
-import { ParserError } from "../ParserError";
-import { ParserToken } from "../ParserToken";
+import { ParserError, ParserToken } from "../types";
 import { UnrealClassConstant } from "./UnrealClassConstant";
 import { UnrealClassEnum } from "./UnrealClassEnum";
 import { UnrealClassVariable } from "./UnrealClassVariable";

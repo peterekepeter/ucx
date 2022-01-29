@@ -1,5 +1,5 @@
-import { SemanticClass } from "./SemanticClass";
-import { Token } from "./UcParser";
+import { SemanticClass, Token } from "../types";
+
 
 export function getExpressionTokenType(token: Token): SemanticClass {
     const text = token.text;
@@ -15,7 +15,6 @@ export function getExpressionTokenType(token: Token): SemanticClass {
     else if (/^[a-z_]/i) {
         return SemanticClass.Identifier;
     }
-
     else {
         return SemanticClass.None;
     }
