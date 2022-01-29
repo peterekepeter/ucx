@@ -53,7 +53,7 @@ test("parse variable declaration with group", () => { parsing(`
     .hasNoErrors();
 });
 
-test("parse enum delcaration", () => { parsing(`
+test("parse enum declaration", () => { parsing(`
     enum ENetRole
     {
         ROLE_None,              // No role at all.
