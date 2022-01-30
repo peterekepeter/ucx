@@ -105,7 +105,7 @@ test("parse empty function", () => { parsing(`
     .hasNoErrors();
 });
 
-test("parse empty function", () => { parsing(`
+test("parse empty function with local var", () => { parsing(`
     function PostBeginPlay(){
         local int i;
     }
@@ -119,6 +119,38 @@ test("parse empty function", () => { parsing(`
     })
     .hasNoErrors();
 });
+
+test("parse function with empty function call", () => { parsing(`
+    function PreBeginPlay(){
+        Init();
+    }`)
+    .hasFunction(0, {
+        name: 'PreBeginPlay',
+        body: [
+            {
+                op: 'Init',
+            }
+        ]
+    })
+    .hasNoErrors();
+});
+
+test.skip("parse function with log", () => { parsing(`
+    function PreBeginPlay(){
+        Log("Hello World!");
+    }`)
+    .hasFunction(0, {
+        name: 'PreBeginPlay',
+        body: [
+            {
+                op: 'Log',
+                args: ['"Hello World!"']
+            }
+        ]
+    })
+    .hasNoErrors();
+});
+
 
 function parsing(input: string) {
     const parser = new UcParser();
@@ -173,6 +205,10 @@ function parsing(input: string) {
                 locals?:{
                    name?:string,
                    type?:string 
+                }[],
+                body?:{
+                    op?:string,
+                    args?:string[]
                 }[]
             }){
             const obj = ast.functions[index];
@@ -181,6 +217,10 @@ function parsing(input: string) {
                 locals: obj?.locals?.map(l => ({
                     name: l.name?.text,
                     type: l.type?.text
+                })),
+                body: obj?.body?.map(b => ({
+                    op: b.op?.text,
+                    args: b.args
                 }))
             }, props);
             return checks;

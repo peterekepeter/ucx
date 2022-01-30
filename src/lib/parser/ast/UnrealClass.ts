@@ -24,10 +24,17 @@ export interface UnrealClassFunction
 {
     name: ParserToken | null;
     locals: UnrealClassFunctionLocal[];
+    body: UnrealClassExpression[]
 }
 
 export interface UnrealClassFunctionLocal
 {
     type: ParserToken | null;
     name: ParserToken | null;
+}
+
+export interface UnrealClassExpression
+{
+    op: ParserToken | null,
+    args: (UnrealClassExpression | ParserToken)[]
 }

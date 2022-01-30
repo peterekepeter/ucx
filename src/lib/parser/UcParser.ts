@@ -27,6 +27,8 @@ export class UcParser{
         constants: [],
         functions: [],
     };
+    
+    opIdentifier: Token | null = null;
 
     getAst() {
         return this.result;
@@ -161,7 +163,8 @@ export function parseNoneState(parser: UcParser, token: Token)
         parser.rootFn = parseFnDeclaration;
         parser.result.functions.push({
             name: null,
-            locals: []
+            locals: [],
+            body: []
         });
         token.classification = SemanticClass.Keyword;
         break;

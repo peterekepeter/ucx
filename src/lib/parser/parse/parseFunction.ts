@@ -1,6 +1,7 @@
 import { SemanticClass, UcParser } from "..";
 import { Token } from "../types";
 import { parseNoneState } from "../UcParser";
+import { getExpressionTokenType } from "./getExpressionTokenType";
 
 
 export function parseFnDeclaration(parser: UcParser, token: Token){
@@ -8,6 +9,8 @@ export function parseFnDeclaration(parser: UcParser, token: Token){
     fn.name = token;
     token.classification = SemanticClass.FunctionDeclaration;
     parser.rootFn = parseFnParamBegin;
+    // clear statement & expression state
+    parser.opIdentifier = null;
 }
 
 function parseFnParamBegin(parser:UcParser, token:Token){
@@ -41,7 +44,7 @@ function parseFnAfterParameters(parser: UcParser, token: Token)
 {
     switch (token.text){
     case "{":
-        parser.rootFn = parseFnBody;
+        parser.rootFn = parseStatement;
         break;
     case ";":
         parser.rootFn = parseNoneState;
@@ -49,7 +52,7 @@ function parseFnAfterParameters(parser: UcParser, token: Token)
     }
 }
 
-function parseFnBody(parser: UcParser, token: Token)
+function parseStatement(parser: UcParser, token: Token)
 {
     switch(token.text)
     {
@@ -60,8 +63,13 @@ function parseFnBody(parser: UcParser, token: Token)
     case "}":
         parser.rootFn = parseNoneState;
         break;
+    default:
+        parser.rootFn = parseExpression;
+        parser.parseToken(token);
+        break;
     }
 }
+
 
 function parseFnLocalDeclaration(parser: UcParser, token: Token)
 {
@@ -79,12 +87,52 @@ function parseFnLocalVar(parser: UcParser, token: Token)
     switch(token.text)
     {
     case ';':
-        parser.rootFn = parseFnBody;
+        parser.rootFn = parseStatement;
         break;
     default:
         const local = parser.lastFnLocal;
         local.name = token;
         token.classification = SemanticClass.LocalVariable;
+        break;
+    }
+}
+
+function parseExpression(parser: UcParser, token: Token)
+{
+    switch (token.text)
+    {
+    case ";":
+        parser.rootFn = parseStatement;
+        break;
+    case "(":
+        if (parser.opIdentifier){
+            parser.rootFn = parseExpressionFnCall;
+            const fn = parser.lastFn;
+            fn.body.push({
+                op: parser.opIdentifier,
+                args: []
+            });
+            parser.opIdentifier.classification = SemanticClass.FunctionReference;
+            parser.opIdentifier = null;
+        }
+        break;
+    default:
+        const type = getExpressionTokenType(token);
+        token.classification = type;
+        switch (type){
+        case SemanticClass.Identifier:
+            parser.opIdentifier = token;
+            break;
+        }
+        break;
+    }
+}
+
+function parseExpressionFnCall(parser: UcParser, token: Token){
+    switch (token.text)
+    {
+    case ")":
+        parser.rootFn = parseExpression;
         break;
     }
 }
