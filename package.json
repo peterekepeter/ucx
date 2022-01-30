@@ -3,6 +3,7 @@
 	"displayName": "uclint",
 	"description": "UnrealScript linter&formatter",
 	"version": "0.0.1",
+	"repository": "https://github.com/peterekepeter/uclint",
 	"engines": {
 		"vscode": "^1.63.0"
 	},
@@ -48,12 +49,12 @@
 		"lint": "eslint src --ext ts",
 		"test": "node ./out/test/runTest.js",
 		"unittest": "jest",
-		"unittest:watch": "jest --watch"
+		"unittest:watch": "jest --watch",
+		"pack": "npx vsce package"
 	},
 	"devDependencies": {
 		"@types/vscode": "^1.63.0",
 		"@types/glob": "^7.1.4",
-		"@types/mocha": "^9.0.0",
 		"@types/node": "14.x",
 		"@typescript-eslint/eslint-plugin": "^5.1.0",
 		"@typescript-eslint/parser": "^5.1.0",
