@@ -2,7 +2,7 @@
 	"name": "uclint",
 	"displayName": "uclint",
 	"description": "UnrealScript linter&formatter",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"repository": "https://github.com/peterekepeter/uclint",
 	"engines": {
 		"vscode": "^1.63.0"
@@ -21,6 +21,16 @@
 				"title": "Hello World"
 			}
 		],
+		"configuration": {
+			"title": "uclint",
+			"properties": {
+				"uclint.reportParserErrors": {
+					"type": "boolean",
+					"default": "false",
+					"description": "Reports parser errors. (useful for parser development)"
+				}
+			}
+		},
 		"configurationDefaults": {
 			"[unrealscript]": {
 				"editor.semanticHighlighting.enabled": true

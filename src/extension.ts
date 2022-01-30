@@ -263,7 +263,11 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {}
 
 function* getDiagnostics(document: vscode.TextDocument, tokenRules: TokenBasedLinter[]): Iterable<vscode.Diagnostic> {
-    for (const lintResult of processLinterRules(document, tokenRules)){
+    
+    const cfg = vscode.workspace.getConfiguration("uclint");
+    let reportParserErrors = !!cfg.get('reportParserErrors') ?? false;
+
+    for (const lintResult of processLinterRules(document, tokenRules, { reportParserErrors })){
         if (lintResult.message != null && 
             lintResult.line != null &&
             lintResult.position != null &&
@@ -283,7 +287,7 @@ function* getDiagnostics(document: vscode.TextDocument, tokenRules: TokenBasedLi
     }
 }
 
-function* processLinterRules(document: vscode.TextDocument, tokenRules: TokenBasedLinter[]): Iterable<LintResult> {
+function* processLinterRules(document: vscode.TextDocument, tokenRules: TokenBasedLinter[], options?: { reportParserErrors?: boolean }): Iterable<LintResult> {
     const parser = new UcParser();
     for (let lineIndex=0; lineIndex < document.lineCount; lineIndex++){
         const line = document.lineAt(lineIndex);
@@ -303,15 +307,17 @@ function* processLinterRules(document: vscode.TextDocument, tokenRules: TokenBas
     }
     parser.endOfFile(document.lineCount, 0);
     const ast = parser.getAst();
-    for (const parseError of ast.errors){
-        yield {
-            message: parseError.message,
-            line: parseError.token.line,
-            position: parseError.token.position,
-            length: parseError.token.text.length,
-            originalText: parseError.token.text,
-            severity: 'error'
-        };
+    if (options?.reportParserErrors){
+        for (const parseError of ast.errors){
+            yield {
+                message: parseError.message,
+                line: parseError.token.line,
+                position: parseError.token.position,
+                length: parseError.token.text.length,
+                originalText: parseError.token.text,
+                severity: 'error'
+            };
+        }
     }
 }
 
