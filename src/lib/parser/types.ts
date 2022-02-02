@@ -5,6 +5,12 @@ export type Token = ParserToken;
 export type ParserFn = (parser: UcParser, token: Token) => void;
 
 
+
+
+
+
+
+
 export enum SemanticClass {
     None,
     Keyword,
@@ -24,6 +30,8 @@ export enum SemanticClass {
     Identifier,
     FunctionDeclaration,
     FunctionReference,
+    Operator,
+    VariableReference
 }
 
 export interface ParserToken {

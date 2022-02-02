@@ -25,6 +25,29 @@ class Actor extends Object
     ['nativereplication', C.Keyword],
 ));
 
+test('tokens when logging literal string', () => parsing(`
+    function PreBeginPlay(){
+        Log("Hello World!");
+    }
+`).hasTokens(
+    ["Log", C.FunctionReference],
+    ["(", C.None],
+    ['"Hello World!"', C.LiteralString],
+    [")", C.None]
+));
+
+test('tokens basic expression', () => parsing(`
+    function Init(){
+        x = x + 4;
+    }
+`).hasTokens(
+    ["x", C.VariableReference],
+    ["=", C.Operator],
+    ["x", C.VariableReference],
+    ["+", C.Operator],
+    ["4", C.LiteralNumber]
+));
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);

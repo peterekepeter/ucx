@@ -5,6 +5,7 @@ type DetectedExpressionTypes
     | SemanticClass.LiteralNumber
     | SemanticClass.LiteralName
     | SemanticClass.Identifier
+    | SemanticClass.Operator
     | SemanticClass.None
 
 export function getExpressionTokenType(token: Token): DetectedExpressionTypes {
@@ -18,8 +19,11 @@ export function getExpressionTokenType(token: Token): DetectedExpressionTypes {
     else if (/^[0-9]/.test(text)) {
         return SemanticClass.LiteralNumber;
     }
-    else if (/^[a-z_]/i) {
+    else if (/^[a-z_]/i.test(text)) {
         return SemanticClass.Identifier;
+    }
+    else if (/^[=*/+-]$/.test(text)){
+        return SemanticClass.Operator;
     }
     else {
         return SemanticClass.None;

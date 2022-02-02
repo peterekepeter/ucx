@@ -135,7 +135,7 @@ test("parse function with empty function call", () => { parsing(`
     .hasNoErrors();
 });
 
-test.skip("parse function with log", () => { parsing(`
+test("parse function with log", () => { parsing(`
     function PreBeginPlay(){
         Log("Hello World!");
     }`)
@@ -149,6 +149,18 @@ test.skip("parse function with log", () => { parsing(`
         ]
     })
     .hasNoErrors();
+});
+
+test("parse expression recovery", () => { parsing(`
+    function Fn1(){ Log( } 
+    function Fn2(){ Log(42 }
+    function Fn3(){ Log(42) }
+    function Fn4(){ Log(42); }
+    `)
+    .hasFunction(0, { name: "Fn1" })
+    .hasFunction(1, { name: "Fn2" })
+    .hasFunction(2, { name: "Fn3" })
+    .hasFunction(3, { name: "Fn4" });
 });
 
 
@@ -220,7 +232,7 @@ function parsing(input: string) {
                 })),
                 body: obj?.body?.map(b => ({
                     op: b.op?.text,
-                    args: b.args
+                    args: b.args?.map(a => "text" in a ? a.text : undefined )
                 }))
             }, props);
             return checks;

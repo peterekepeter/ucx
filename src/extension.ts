@@ -131,6 +131,7 @@ export function activate(context: vscode.ExtensionContext) {
                 case SemanticClass.TypeReference:
                     type = TOKEN_TYPE_TYPE;
                     break;
+                case SemanticClass.Operator:
                 case SemanticClass.AssignmentOperator:
                     type = TOKEN_TYPE_OPERATOR;
                     break;
@@ -151,6 +152,9 @@ export function activate(context: vscode.ExtensionContext) {
                     type = TOKEN_TYPE_FUNCTION;
                     break;
                 case SemanticClass.LocalVariable:
+                    type = TOKEN_TYPE_VARIABLE;
+                    break;
+                case SemanticClass.VariableReference:
                     type = TOKEN_TYPE_VARIABLE;
                     break;
                 }

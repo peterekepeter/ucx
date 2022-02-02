@@ -101,6 +101,10 @@ function parseExpression(parser: UcParser, token: Token)
 {
     switch (token.text)
     {
+    case "}":
+        parser.rootFn = parseNoneState;
+        parser.result.errors.push({ token, message: "Function ended unexpectedly."});
+        break;
     case ";":
         parser.rootFn = parseStatement;
         break;
@@ -122,6 +126,7 @@ function parseExpression(parser: UcParser, token: Token)
         switch (type){
         case SemanticClass.Identifier:
             parser.opIdentifier = token;
+            token.classification = SemanticClass.VariableReference;
             break;
         }
         break;
@@ -131,8 +136,50 @@ function parseExpression(parser: UcParser, token: Token)
 function parseExpressionFnCall(parser: UcParser, token: Token){
     switch (token.text)
     {
+    case "}":
+        parser.rootFn = parseNoneState;
+        parser.result.errors.push({ token, message: "Function ended unexpectedly."});
+        break;
+    case ";":
+        parser.rootFn = parseStatement;
+        parser.result.errors.push({ token, message: "Function call ended unexpectedly."});
+        break;
     case ")":
         parser.rootFn = parseExpression;
         break;
+    default: 
+        const fn = parser.lastFn;
+        const statement = fn.body[fn.body.length - 1];
+        statement.args.push(token);
+        token.classification = getExpressionTokenType(token); 
+        if (token.classification === SemanticClass.Identifier)
+        {
+            // expression should refer to variables.
+            token.classification = SemanticClass.VariableReference;
+        }
+        parser.rootFn = parseExpressionFnCallComma;
+        break;
+    }
+}
+
+function parseExpressionFnCallComma(parser: UcParser, token: Token){
+    switch (token.text){
+    case "}":
+        parser.rootFn = parseNoneState;
+        parser.result.errors.push({ token, message: "Function ended unexpectedly."});
+        break;
+    case ";":
+        parser.rootFn = parseStatement;
+        parser.result.errors.push({ token, message: "Function call ended too soon."});
+        break;
+    case ",":
+        parser.rootFn = parseExpressionFnCall;
+        break;
+    case ")":
+        parser.rootFn = parseExpression;
+        break;
+    default:
+        const message = 'Expected "," between function call parameters.';
+        parser.result.errors.push({ token, message });
     }
 }
