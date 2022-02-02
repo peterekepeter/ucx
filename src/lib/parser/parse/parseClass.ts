@@ -26,14 +26,17 @@ function parseClassDecorators(parser: UcParser, token: Token) {
         
     case 'abstract':
         parser.result.isAbstract = true;
+        token.classification = SemanticClass.Keyword;
         break;
 
     case 'native':
         parser.result.isNative = true;
+        token.classification = SemanticClass.Keyword;
         break;
 
     case 'nativereplication':
         parser.result.isNativeReplication = true;
+        token.classification = SemanticClass.Keyword;
         break;
 
     case ';':
