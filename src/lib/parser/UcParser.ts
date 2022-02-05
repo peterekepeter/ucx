@@ -121,8 +121,10 @@ export class UcParser{
     }
 
     get lastStatement() : UnrealClassStatement {
-        const fn = this.lastFn;
-        const body = fn.body;
+        const body = this.lastFnBody;
+        if (body.length === 0 && this.innerStatement){
+            return this.innerStatement;
+        }
         return body[body.length - 1];
     }
 

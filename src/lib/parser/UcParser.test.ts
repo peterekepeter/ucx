@@ -201,6 +201,48 @@ test("parse if statement", () => { parsing(`
     });
 });
 
+test("parse two sequential if statements", () => { parsing(`
+    function Timer(){
+        if (bFeatureA) {}
+        if (bFeatureB) {}
+    }`)
+    .hasFunction(0, {
+        name: "Timer", 
+        body: [{
+            op: "if",
+            args: ['bFeatureA'],
+            body: []
+        },{
+            op: "if",
+            args: ['bFeatureB'],
+            body: []
+        }] 
+    });
+});
+
+test("parse if inside if", () => { parsing(`
+    function Timer(){
+        if (bFlagA) {
+            if (bFlagB) {
+                Log("Hi");
+            }
+        }
+    }`)
+    .hasFunction(0, { body: [{
+        op: "if",
+        args: ["bFlagA"],
+        body: [{
+            op: 'if',
+            args: ["bFlagB"],
+            body: [{
+                op:'Log',
+                args: ['"Hi"']
+            }]
+        }]
+    }] });
+
+});
+
 
 function parsing(input: string) {
     const parser = new UcParser();
@@ -256,14 +298,7 @@ function parsing(input: string) {
                    name?:string,
                    type?:string 
                 }[],
-                body?:{
-                    op?:string,
-                    args?:string[]
-                    body?: {
-                        op?:string,
-                        args?:string[]
-                    }[]
-                }[]
+                body?:StatementCheckObj[]
             }){
             const obj = ast.functions[index];
             checkMatches({
@@ -300,13 +335,13 @@ function mapBodyToCheck(body: UnrealClassStatement[]) {
 
 interface ExpressionCheckObj
 {
-    op: string,
-    args: (string | ExpressionCheckObj)[],
+    op?: string,
+    args?: (string | ExpressionCheckObj)[],
 }
 
 interface StatementCheckObj extends ExpressionCheckObj
 {
-    body: ExpressionCheckObj[]
+    body?: StatementCheckObj[]
 }
 
 function mapStatementToCheck(e: UnrealClassStatement): StatementCheckObj {

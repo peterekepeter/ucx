@@ -85,6 +85,7 @@ function parseStatement(parser: UcParser, token: Token)
     case "}":
         if (parser.innerStatement){
             parser.innerStatement = null;
+            break;
         }
         parser.rootFn = parseNoneState;
         break;
@@ -174,8 +175,7 @@ function parseExpressionFnCall(parser: UcParser, token: Token){
         parser.rootFn = parseExpression;
         break;
     default: 
-        const fn = parser.lastFn;
-        const statement = fn.body[fn.body.length - 1];
+        const statement = parser.lastStatement;
         statement.args.push(token);
         token.classification = getExpressionTokenType(token); 
         if (token.classification === SemanticClass.Identifier)
@@ -230,11 +230,15 @@ function parseIfCondition(parser: UcParser, token: Token)
         parser.rootFn = parseIfBody;
         break;
     default:
+        const st = parser.lastStatement;
+        if (!st){
+            console.error("missing last statement????");
+            break;
+        }
         parser.lastStatement.args.push(token);
         break;
     }
 }
-
 
 function parseIfBody(parser: UcParser, token: Token)
 {
