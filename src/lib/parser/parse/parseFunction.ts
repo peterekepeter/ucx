@@ -60,20 +60,31 @@ function parseStatement(parser: UcParser, token: Token)
         parser.rootFn = parseFnLocalDeclaration;
         token.classification = SemanticClass.Keyword;
         break;
+    case "if":
+        parser.rootFn = parseIfStatement;
+        token.classification = SemanticClass.Keyword;
+        const ifStatement = {
+            op: token,
+            args: [],
+            body: []
+        };
+        parser.lastFnBody.push(ifStatement);
+        parser.innerStatement = ifStatement;
+        break;
     case "{":
         // codeblock
-        const body = parser.currentFnBody;
+        const body = parser.lastFnBody;
         const codeBlock = {
             op: token,
             args: [],
             body: [],
         };
         body.push(codeBlock);
-        parser.innerBody = codeBlock.body;
+        parser.innerStatement = codeBlock;
         break;
     case "}":
-        if (parser.innerBody){
-            parser.innerBody = null;
+        if (parser.innerStatement){
+            parser.innerStatement = null;
         }
         parser.rootFn = parseNoneState;
         break;
@@ -125,7 +136,7 @@ function parseExpression(parser: UcParser, token: Token)
     case "(":
         if (parser.opIdentifier){
             parser.rootFn = parseExpressionFnCall;
-            const body = parser.currentFnBody;
+            const body = parser.lastFnBody;
             body.push({
                 op: parser.opIdentifier,
                 args: [],
@@ -196,5 +207,43 @@ function parseExpressionFnCallComma(parser: UcParser, token: Token){
     default:
         const message = 'Expected "," between function call parameters.';
         parser.result.errors.push({ token, message });
+    }
+}
+
+function parseIfStatement(parser: UcParser, token: Token)
+{
+    let message = "Error";
+    switch (token.text){
+    case "(":
+        parser.rootFn = parseIfCondition;
+        break;
+    default:
+        message = "Expected '(' after if keyword.";
+        parser.result.errors.push({ token, message });
+    }
+}
+
+function parseIfCondition(parser: UcParser, token: Token)
+{
+    switch (token.text){
+    case ")":
+        parser.rootFn = parseIfBody;
+        break;
+    default:
+        parser.lastStatement.args.push(token);
+        break;
+    }
+}
+
+
+function parseIfBody(parser: UcParser, token: Token)
+{
+    switch (token.text){
+    case "{":
+        parser.rootFn = parseStatement;
+    default:
+        const message = "Expected '{'";
+        parser.result.errors.push({ token, message });
+        break;
     }
 }

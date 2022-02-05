@@ -164,7 +164,7 @@ test("parse expression recovery", () => { parsing(`
     .hasFunction(3, { name: "Fn4" });
 });
 
-test("parse if statement", () => { parsing(`
+test("parse block statement", () => { parsing(`
     function PreBeginPlay(){
         {
             Init();
@@ -174,6 +174,26 @@ test("parse if statement", () => { parsing(`
     .hasFunction(0, { 
         name: "PreBeginPlay", 
         body: [{
+            body: [{
+                op: "Init"
+            }]
+        }] 
+    });
+});
+
+test("parse if statement", () => { parsing(`
+    function PreBeginPlay(){
+        if (bFirstRun)
+        {
+            Init();
+        }
+    }
+    `)
+    .hasFunction(0, { 
+        name: "PreBeginPlay", 
+        body: [{
+            op: "if",
+            args: ['bFirstRun'],
             body: [{
                 op: "Init"
             }]

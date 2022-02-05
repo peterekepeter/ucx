@@ -30,7 +30,7 @@ export class UcParser{
     };
     
     opIdentifier: Token | null = null;
-    innerBody: UnrealClassStatement[] | null = null;
+    innerStatement: UnrealClassStatement | null = null;
 
     getAst() {
         return this.result;
@@ -112,12 +112,18 @@ export class UcParser{
         return fn.locals[fn.locals.length - 1];
     }
 
-    get currentFnBody() : UnrealClassStatement[] {
-        if (this.innerBody){
-            return this.innerBody;
+    get lastFnBody() : UnrealClassStatement[] {
+        if (this.innerStatement){
+            return this.innerStatement.body;
         }
         const fn = this.lastFn;
         return fn.body;
+    }
+
+    get lastStatement() : UnrealClassStatement {
+        const fn = this.lastFn;
+        const body = fn.body;
+        return body[body.length - 1];
     }
 
 }
