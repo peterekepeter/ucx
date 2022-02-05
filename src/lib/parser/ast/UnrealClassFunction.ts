@@ -1,0 +1,22 @@
+import { ParserToken } from "../types";
+
+
+export interface UnrealClassFunction {
+    name: ParserToken | null;
+    locals: UnrealClassFunctionLocal[];
+    body: UnrealClassStatement[];
+}
+
+export interface UnrealClassFunctionLocal {
+    type: ParserToken | null;
+    name: ParserToken | null;
+}
+
+export interface UnrealClassExpression {
+    op: ParserToken | null;
+    args: (UnrealClassExpression | ParserToken)[];
+}
+
+export interface UnrealClassStatement extends UnrealClassExpression {
+    body: UnrealClassStatement[];
+}

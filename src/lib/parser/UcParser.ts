@@ -1,4 +1,5 @@
-import { UnrealClass, UnrealClassFunction, UnrealClassFunctionLocal } from "./ast/UnrealClass";
+import { UnrealClass } from "./ast/UnrealClass";
+import { UnrealClassFunction, UnrealClassFunctionLocal, UnrealClassStatement } from "./ast/UnrealClassFunction";
 import { UnrealClassConstant } from "./ast/UnrealClassConstant";
 import { UnrealClassEnum } from "./ast/UnrealClassEnum";
 import { UnrealClassVariable } from "./ast/UnrealClassVariable";
@@ -29,6 +30,7 @@ export class UcParser{
     };
     
     opIdentifier: Token | null = null;
+    innerBody: UnrealClassStatement[] | null = null;
 
     getAst() {
         return this.result;
@@ -108,6 +110,14 @@ export class UcParser{
     get lastFnLocal(): UnrealClassFunctionLocal {
         const fn = this.lastFn;
         return fn.locals[fn.locals.length - 1];
+    }
+
+    get currentFnBody() : UnrealClassStatement[] {
+        if (this.innerBody){
+            return this.innerBody;
+        }
+        const fn = this.lastFn;
+        return fn.body;
     }
 
 }

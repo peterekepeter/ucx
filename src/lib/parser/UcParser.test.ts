@@ -1,5 +1,6 @@
 import { UcParser } from "./UcParser";
 import { ucTokenizeLine } from "../tokenizer/ucTokenizeLine";
+import { UnrealClassExpression, UnrealClassStatement } from "./ast/UnrealClassFunction";
 
 
 test("parse basic class declration", () => { 
@@ -163,6 +164,23 @@ test("parse expression recovery", () => { parsing(`
     .hasFunction(3, { name: "Fn4" });
 });
 
+test("parse if statement", () => { parsing(`
+    function PreBeginPlay(){
+        {
+            Init();
+        }
+    }
+    `)
+    .hasFunction(0, { 
+        name: "PreBeginPlay", 
+        body: [{
+            body: [{
+                op: "Init"
+            }]
+        }] 
+    });
+});
+
 
 function parsing(input: string) {
     const parser = new UcParser();
@@ -221,6 +239,10 @@ function parsing(input: string) {
                 body?:{
                     op?:string,
                     args?:string[]
+                    body?: {
+                        op?:string,
+                        args?:string[]
+                    }[]
                 }[]
             }){
             const obj = ast.functions[index];
@@ -230,10 +252,7 @@ function parsing(input: string) {
                     name: l.name?.text,
                     type: l.type?.text
                 })),
-                body: obj?.body?.map(b => ({
-                    op: b.op?.text,
-                    args: b.args?.map(a => "text" in a ? a.text : undefined )
-                }))
+                body: mapBodyToCheck(obj?.body) ?? []
             }, props);
             return checks;
         }
@@ -255,3 +274,32 @@ function parsing(input: string) {
         return checks;
     }
 }
+function mapBodyToCheck(body: UnrealClassStatement[]) {
+    return body?.map(mapStatementToCheck) ?? [];
+}
+
+interface ExpressionCheckObj
+{
+    op: string,
+    args: (string | ExpressionCheckObj)[],
+}
+
+interface StatementCheckObj extends ExpressionCheckObj
+{
+    body: ExpressionCheckObj[]
+}
+
+function mapStatementToCheck(e: UnrealClassStatement): StatementCheckObj {
+    return ({
+        ...mapExpressionToCheck(e),
+        body: mapBodyToCheck(e.body)
+    });
+}
+
+function mapExpressionToCheck(e: UnrealClassExpression): ExpressionCheckObj {
+    return ({
+        op: e.op?.text ?? '',
+        args: e.args?.map(a => "text" in a ? a.text : mapExpressionToCheck(a) )
+    });
+}
+

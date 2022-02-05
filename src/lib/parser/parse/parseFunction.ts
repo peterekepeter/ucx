@@ -1,7 +1,7 @@
 import { SemanticClass, UcParser } from "..";
 import { Token } from "../types";
 import { parseNoneState } from "../UcParser";
-import { getExpressionTokenType } from "./getExpressionTokenType";
+import { getExpressionTokenType } from "./classifyTokenType";
 
 
 export function parseFnDeclaration(parser: UcParser, token: Token){
@@ -60,7 +60,21 @@ function parseStatement(parser: UcParser, token: Token)
         parser.rootFn = parseFnLocalDeclaration;
         token.classification = SemanticClass.Keyword;
         break;
+    case "{":
+        // codeblock
+        const body = parser.currentFnBody;
+        const codeBlock = {
+            op: token,
+            args: [],
+            body: [],
+        };
+        body.push(codeBlock);
+        parser.innerBody = codeBlock.body;
+        break;
     case "}":
+        if (parser.innerBody){
+            parser.innerBody = null;
+        }
         parser.rootFn = parseNoneState;
         break;
     default:
@@ -111,10 +125,11 @@ function parseExpression(parser: UcParser, token: Token)
     case "(":
         if (parser.opIdentifier){
             parser.rootFn = parseExpressionFnCall;
-            const fn = parser.lastFn;
-            fn.body.push({
+            const body = parser.currentFnBody;
+            body.push({
                 op: parser.opIdentifier,
-                args: []
+                args: [],
+                body: []
             });
             parser.opIdentifier.classification = SemanticClass.FunctionReference;
             parser.opIdentifier = null;

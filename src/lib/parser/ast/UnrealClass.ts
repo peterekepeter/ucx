@@ -1,6 +1,7 @@
 import { ParserError, ParserToken } from "../types";
 import { UnrealClassConstant } from "./UnrealClassConstant";
 import { UnrealClassEnum } from "./UnrealClassEnum";
+import { UnrealClassFunction } from "./UnrealClassFunction";
 import { UnrealClassVariable } from "./UnrealClassVariable";
 
 
@@ -20,21 +21,4 @@ export interface UnrealClass {
     functions: UnrealClassFunction[];
 }
 
-export interface UnrealClassFunction
-{
-    name: ParserToken | null;
-    locals: UnrealClassFunctionLocal[];
-    body: UnrealClassExpression[]
-}
 
-export interface UnrealClassFunctionLocal
-{
-    type: ParserToken | null;
-    name: ParserToken | null;
-}
-
-export interface UnrealClassExpression
-{
-    op: ParserToken | null,
-    args: (UnrealClassExpression | ParserToken)[]
-}

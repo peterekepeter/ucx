@@ -1,4 +1,4 @@
-import { getExpressionTokenType } from "./getExpressionTokenType";
+import { getExpressionTokenType } from "./classifyTokenType";
 import { UcParser, parseNoneState } from "../UcParser";
 import { ParserToken, SemanticClass } from "../types";
 

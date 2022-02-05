@@ -1,5 +1,5 @@
 import { SemanticClass as C } from "..";
-import { getExpressionTokenType } from "./getExpressionTokenType";
+import { getExpressionTokenType } from "./classifyTokenType";
 
 
 test("numbers", () => {
