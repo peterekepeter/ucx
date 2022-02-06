@@ -243,6 +243,40 @@ test("parse if inside if", () => { parsing(`
 
 });
 
+test("parse while loop", () => { parsing(`
+    function Main(){
+        while (True)
+        {
+            Log("Hello");
+        }
+    }
+    `)
+    .hasFunction(0, { 
+        name: "Main", 
+        body: [{
+            op: "while",
+            args: ['True'],
+            body: [{
+                op: "Log",
+                args: ['"Hello"']
+            }]
+        }] 
+    });
+});
+
+test.skip("parse basic assignment", () => { parsing(`
+    function Init(){
+        Count = 4;
+    }
+    `)
+    .hasFunction(0, { 
+        body: [{
+            op: "=",
+            args: ['Count', "4"]
+        }] 
+    });
+});
+
 
 function parsing(input: string) {
     const parser = new UcParser();

@@ -60,8 +60,9 @@ function parseStatement(parser: UcParser, token: Token)
         parser.rootFn = parseFnLocalDeclaration;
         token.classification = SemanticClass.Keyword;
         break;
+    case "while":
     case "if":
-        parser.rootFn = parseIfStatement;
+        parser.rootFn = parseControlStatement;
         token.classification = SemanticClass.Keyword;
         const ifStatement = {
             op: token,
@@ -210,12 +211,12 @@ function parseExpressionFnCallComma(parser: UcParser, token: Token){
     }
 }
 
-function parseIfStatement(parser: UcParser, token: Token)
+function parseControlStatement(parser: UcParser, token: Token)
 {
     let message = "Error";
     switch (token.text){
     case "(":
-        parser.rootFn = parseIfCondition;
+        parser.rootFn = parseControlCondition;
         break;
     default:
         message = "Expected '(' after if keyword.";
@@ -223,11 +224,11 @@ function parseIfStatement(parser: UcParser, token: Token)
     }
 }
 
-function parseIfCondition(parser: UcParser, token: Token)
+function parseControlCondition(parser: UcParser, token: Token)
 {
     switch (token.text){
     case ")":
-        parser.rootFn = parseIfBody;
+        parser.rootFn = parseAfterControlCondition;
         break;
     default:
         const st = parser.lastStatement;
@@ -240,7 +241,7 @@ function parseIfCondition(parser: UcParser, token: Token)
     }
 }
 
-function parseIfBody(parser: UcParser, token: Token)
+function parseAfterControlCondition(parser: UcParser, token: Token)
 {
     switch (token.text){
     case "{":
