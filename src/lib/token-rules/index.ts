@@ -7,11 +7,11 @@ import { ValidateNamesRule } from "./ValidateNamesRule";
 import { ValidateStringRule } from "./ValidateStringRule";
 
 export const ALL_RULES = [
-    new KeywordFormatRule(),
-    new NoneFormatRule(),
-    new TrueFalseFormatRule(),
-    new IndentRule(),
-    new BracketSpacingRule(),
+//    new KeywordFormatRule(),
+//    new NoneFormatRule(),
+//    new TrueFalseFormatRule(),
+//    new IndentRule(),
+//    new BracketSpacingRule(),
     new ValidateNamesRule(),
     new ValidateStringRule()
 ];

@@ -31,6 +31,12 @@ test("operators", () => {
     verify("-", C.Operator);
     verify("*", C.Operator);
     verify("/", C.Operator);
+    verify("<", C.Operator);
+    verify(">", C.Operator);
+    verify("<=", C.Operator);
+    verify(">=", C.Operator);
+    verify("++", C.Operator);
+    verify("--", C.Operator);
 });
 
 function verify(input: string, expectedType: C){

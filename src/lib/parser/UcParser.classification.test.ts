@@ -48,6 +48,17 @@ test('tokens basic expression', () => parsing(`
     ["4", C.LiteralNumber]
 ));
 
+test('tokens fn call with no params', () => parsing(`
+    function PreBeginPlay(){
+        Init();
+    }
+`).hasTokens(
+    ["Init", C.FunctionReference],
+    ["(", C.None],
+    [")", C.None]
+));
+
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);

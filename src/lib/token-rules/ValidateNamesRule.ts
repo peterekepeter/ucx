@@ -26,7 +26,8 @@ export class ValidateNamesRule implements TokenBasedLinter
         if (error !== ''){
             return [{
                 line, position, originalText: tokenText, length: tokenText.length, 
-                message: error
+                message: error,
+                severity: "error"
             }];
         }
         return null;

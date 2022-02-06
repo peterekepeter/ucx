@@ -240,7 +240,28 @@ test("parse if inside if", () => { parsing(`
             }]
         }]
     }] });
+});
 
+test("parse if with else", () => { parsing(`
+    function Timer(){
+        if (bFlag) { Log("enabled"); } 
+        else { Log("disabled"); }
+    }`)
+    .hasFunction(0, { body: [{
+        op: "if",
+        args: ["bFlag"],
+        body: [{
+            op: 'Log',
+            args: ['"enabled"'],
+        }]
+    },{
+        op: "else",
+        args: [],
+        body: [{
+            op: 'Log',
+            args: ['"disabled"'],
+        }]
+    }] });
 });
 
 test("parse while loop", () => { parsing(`
@@ -264,7 +285,7 @@ test("parse while loop", () => { parsing(`
     });
 });
 
-test.skip("parse basic assignment", () => { parsing(`
+test("parse basic assignment", () => { parsing(`
     function Init(){
         Count = 4;
     }
@@ -276,6 +297,42 @@ test.skip("parse basic assignment", () => { parsing(`
         }] 
     });
 });
+
+
+test("parse for loop", () => { parsing(`
+    function Main(){
+        for (i=0;i<10;i++)
+        {
+            Log("Hello");
+        }
+    }
+    `)
+    .hasFunction(0, { 
+        name: "Main", 
+        body: [{
+            op: "for",
+            args: [
+                {
+                    op: '=',
+                    args: ['i', '0']
+                },
+                {
+                    op: '<',
+                    args: ['i', '10']
+                },
+                {
+                    op: '++',
+                    args: ['i']
+                }
+            ],
+            body: [{
+                op: "Log",
+                args: ['"Hello"']
+            }]
+        }] 
+    });
+});
+
 
 
 function parsing(input: string) {

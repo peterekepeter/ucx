@@ -2,11 +2,12 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { LintResult } from './lib/LintResult';
-import { ALL_RULES } from './lib/rules';
-import { KeywordFormatRule } from './lib/rules/KeywordFormatRule';
+import { ALL_RULES } from './lib/token-rules';
+import { KeywordFormatRule } from './lib/token-rules/KeywordFormatRule';
 import { ucTokenizeLine } from './lib/tokenizer/ucTokenizeLine';
 import { TokenBasedLinter } from './lib/TokenBasedLinter';
 import { ParserToken, SemanticClass, UcParser } from './lib/parser';
+import { ALL_AST_RULES } from './lib/ast-rules';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -17,6 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
     console.log('Extension "uclint" is now active!');
 
     const tokenRules = ALL_RULES;
+    const astRules = ALL_AST_RULES;
 
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with registerCommand
@@ -321,6 +323,14 @@ function* processLinterRules(document: vscode.TextDocument, tokenRules: TokenBas
                 originalText: parseError.token.text,
                 severity: 'error'
             };
+        }
+    }
+    for (const rule of ALL_AST_RULES){
+        const astResult = rule.lint(ast);
+        if (astResult != null){
+            for (const item of astResult){
+                yield item;
+            }
         }
     }
 }
