@@ -2,6 +2,7 @@ import { SemanticClass, UcParser } from "..";
 import { Token } from "../types";
 import { parseNoneState } from "../UcParser";
 import { getExpressionTokenType } from "./classifyTokenType";
+import { resolveExpression } from "./resolveExpression";
 
 
 export function parseFnDeclaration(parser: UcParser, token: Token){
@@ -9,8 +10,6 @@ export function parseFnDeclaration(parser: UcParser, token: Token){
     fn.name = token;
     token.classification = SemanticClass.FunctionDeclaration;
     parser.rootFn = parseFnParamBegin;
-    // clear statement & expression state
-    parser.opIdentifier = null;
 }
 
 function parseFnParamBegin(parser:UcParser, token:Token){
@@ -91,6 +90,8 @@ function parseStatement(parser: UcParser, token: Token)
         parser.rootFn = parseNoneState;
         break;
     default:
+        // default to expression
+        parser.expressionTokens = [];
         parser.rootFn = parseExpression;
         parser.parseToken(token);
         break;
@@ -133,81 +134,14 @@ function parseExpression(parser: UcParser, token: Token)
         parser.result.errors.push({ token, message: "Function ended unexpectedly."});
         break;
     case ";":
+        parser.lastFnBody.push({ ...resolveExpression(parser.expressionTokens), body: [] });
         parser.rootFn = parseStatement;
-        break;
-    case "(":
-        if (parser.opIdentifier){
-            parser.rootFn = parseExpressionFnCall;
-            const body = parser.lastFnBody;
-            body.push({
-                op: parser.opIdentifier,
-                args: [],
-                body: []
-            });
-            parser.opIdentifier.classification = SemanticClass.FunctionReference;
-            parser.opIdentifier = null;
-        }
         break;
     default:
         const type = getExpressionTokenType(token);
         token.classification = type;
-        switch (type){
-        case SemanticClass.Identifier:
-            parser.opIdentifier = token;
-            token.classification = SemanticClass.VariableReference;
-            break;
-        }
+        parser.expressionTokens.push(token);
         break;
-    }
-}
-
-function parseExpressionFnCall(parser: UcParser, token: Token){
-    switch (token.text)
-    {
-    case "}":
-        parser.rootFn = parseNoneState;
-        parser.result.errors.push({ token, message: "Function ended unexpectedly."});
-        break;
-    case ";":
-        parser.rootFn = parseStatement;
-        parser.result.errors.push({ token, message: "Function call ended unexpectedly."});
-        break;
-    case ")":
-        parser.rootFn = parseExpression;
-        break;
-    default: 
-        const statement = parser.lastStatement;
-        statement.args.push(token);
-        token.classification = getExpressionTokenType(token); 
-        if (token.classification === SemanticClass.Identifier)
-        {
-            // expression should refer to variables.
-            token.classification = SemanticClass.VariableReference;
-        }
-        parser.rootFn = parseExpressionFnCallComma;
-        break;
-    }
-}
-
-function parseExpressionFnCallComma(parser: UcParser, token: Token){
-    switch (token.text){
-    case "}":
-        parser.rootFn = parseNoneState;
-        parser.result.errors.push({ token, message: "Function ended unexpectedly."});
-        break;
-    case ";":
-        parser.rootFn = parseStatement;
-        parser.result.errors.push({ token, message: "Function call ended too soon."});
-        break;
-    case ",":
-        parser.rootFn = parseExpressionFnCall;
-        break;
-    case ")":
-        parser.rootFn = parseExpression;
-        break;
-    default:
-        const message = 'Expected "," between function call parameters.';
-        parser.result.errors.push({ token, message });
     }
 }
 

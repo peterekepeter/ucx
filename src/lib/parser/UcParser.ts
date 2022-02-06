@@ -29,7 +29,7 @@ export class UcParser{
         functions: [],
     };
     
-    opIdentifier: Token | null = null;
+    expressionTokens: Token[] = [];
     innerStatement: UnrealClassStatement | null = null;
 
     getAst() {
