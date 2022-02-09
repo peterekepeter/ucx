@@ -20,26 +20,31 @@ function parseClassDecorators(parser: UcParser, token: Token) {
     {
     case 'expands':
     case 'extends':
+        parser.result.classDeclarationLastToken = token;
         parser.rootFn = parseClassParent;
         token.classification = SemanticClass.Keyword;
         break;
         
     case 'abstract':
+        parser.result.classDeclarationLastToken = token;
         parser.result.isAbstract = true;
         token.classification = SemanticClass.Keyword;
         break;
 
     case 'native':
+        parser.result.classDeclarationLastToken = token;
         parser.result.isNative = true;
         token.classification = SemanticClass.Keyword;
         break;
 
     case 'nativereplication':
+        parser.result.classDeclarationLastToken = token;
         parser.result.isNativeReplication = true;
         token.classification = SemanticClass.Keyword;
         break;
 
     case ';':
+        parser.result.classDeclarationLastToken = token;
         parser.rootFn = parseNoneState;
         break;
 

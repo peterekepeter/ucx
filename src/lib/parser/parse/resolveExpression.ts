@@ -8,12 +8,16 @@ export function resolveStatementExpression(tokens: ParserToken[]): UnrealClassSt
         return {
             op: expression,
             args: [],
-            body:[]
+            body:[],
+            bodyFirstToken: null,
+            bodyLastToken: null
         };
     } else {
         return {
             ...expression, 
-            body: []
+            body: [],
+            bodyFirstToken: null,
+            bodyLastToken: null
         };
     }
 }

@@ -1,4 +1,5 @@
 import { SemanticClass, UcParser } from "..";
+import { UnrealClassStatement } from "../ast/UnrealClassFunction";
 import { Token } from "../types";
 import { parseNoneState } from "../UcParser";
 import { getExpressionTokenType } from "./classifyTokenType";
@@ -41,11 +42,15 @@ function parseFnParams(parser: UcParser, token: Token)
 
 function parseFnAfterParameters(parser: UcParser, token: Token)
 {
+    const fn = parser.lastFn;
     switch (token.text){
     case "{":
+        fn.bodyFirstToken = token;
+        fn.bodyLastToken = token;
         parser.rootFn = parseStatement;
         break;
     case ";":
+        // missing body, don't set body tokens
         parser.rootFn = parseNoneState;
         break;
     }
@@ -65,10 +70,12 @@ function parseStatement(parser: UcParser, token: Token)
     case "if":
         parser.rootFn = parseControlStatement;
         token.classification = SemanticClass.Keyword;
-        const statement = {
+        const statement: UnrealClassStatement = {
             op: token,
             args: [],
-            body: []
+            body: [],
+            bodyFirstToken: null,
+            bodyLastToken: null
         };
         parser.lastFnBody.push(statement);
         parser.innerStatement = statement;
@@ -76,19 +83,24 @@ function parseStatement(parser: UcParser, token: Token)
     case "{":
         // codeblock
         const body = parser.lastFnBody;
-        const codeBlock = {
+        const codeBlock: UnrealClassStatement = {
             op: token,
             args: [],
             body: [],
+            bodyFirstToken: token,
+            bodyLastToken: token
         };
         body.push(codeBlock);
         parser.innerStatement = codeBlock;
         break;
     case "}":
         if (parser.innerStatement){
+            parser.innerStatement.bodyLastToken = token;
             parser.innerStatement = null;
             break;
         }
+        const fn = parser.lastFn;
+        fn.bodyLastToken = token;
         parser.rootFn = parseNoneState;
         break;
     default:
@@ -132,8 +144,10 @@ function parseExpression(parser: UcParser, token: Token)
     switch (token.text)
     {
     case "}":
+        const fn = parser.lastFn;
         parser.lastFnBody.push(resolveStatementExpression(parser.expressionTokens));
         parser.expressionTokens = [];
+        fn.bodyLastToken = token;
         parser.rootFn = parseNoneState;
         parser.result.errors.push({ token, message: "Function ended unexpectedly."});
         break;
@@ -159,6 +173,7 @@ function parseControlStatement(parser: UcParser, token: Token)
     switch (token.text){
     case "{":
         parser.rootFn = parseStatement;
+        parser.lastStatement.bodyFirstToken = token;
         break;
     case "(":
         parser.expressionTokens = [];
@@ -197,6 +212,7 @@ function parseAfterControlCondition(parser: UcParser, token: Token)
     switch (token.text){
     case "{":
         parser.rootFn = parseStatement;
+        parser.lastStatement.bodyFirstToken = token;
     default:
         const message = "Expected '{'";
         parser.result.errors.push({ token, message });

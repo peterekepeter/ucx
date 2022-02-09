@@ -8,6 +8,8 @@ import { UnrealClassVariable } from "./UnrealClassVariable";
 export interface UnrealClass {
     classFirstToken?: ParserToken | null;
     classLastToken?: ParserToken | null;
+    classDeclarationFirstToken?: ParserToken;
+    classDeclarationLastToken?: ParserToken;
     name: ParserToken | null;
     parentName: ParserToken | null;
     isAbstract: boolean;
@@ -19,6 +21,7 @@ export interface UnrealClass {
     enums: UnrealClassEnum[];
     tokens: ParserToken[];
     functions: UnrealClassFunction[];
+    textLines: string[];
 }
 
 

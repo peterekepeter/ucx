@@ -5,6 +5,8 @@ export interface UnrealClassFunction {
     name: ParserToken | null;
     locals: UnrealClassFunctionLocal[];
     body: UnrealClassStatement[];
+    bodyFirstToken: ParserToken | null;
+    bodyLastToken: ParserToken | null;
 }
 
 export interface UnrealClassFunctionLocal {
@@ -19,4 +21,6 @@ export interface UnrealClassExpression {
 
 export interface UnrealClassStatement extends UnrealClassExpression {
     body: UnrealClassStatement[];
+    bodyFirstToken: ParserToken | null;
+    bodyLastToken: ParserToken | null;
 }

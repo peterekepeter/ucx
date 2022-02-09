@@ -8,4 +8,6 @@ export interface UnrealClassVariable {
     isConst: boolean;
     group: ParserToken | null;
     isConfig: boolean;
+    firstToken: ParserToken;
+    lastToken: ParserToken;
 }

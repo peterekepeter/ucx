@@ -1,5 +1,5 @@
 import { LintResult } from "./LintResult";
-import { UnrealClass } from "./parser";
+import { UnrealClass } from "../";
 
 export interface AstBasedLinter
 {

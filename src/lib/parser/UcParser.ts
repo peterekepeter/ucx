@@ -27,6 +27,7 @@ export class UcParser{
         tokens: [],
         constants: [],
         functions: [],
+        textLines: [],
     };
     
     expressionTokens: Token[] = [];
@@ -141,6 +142,7 @@ export function parseNoneState(parser: UcParser, token: Token)
     case 'class':
         parser.rootFn = parseClassName;
         parser.result.classFirstToken = token;
+        parser.result.classDeclarationFirstToken = token;
         token.classification = SemanticClass.Keyword;
         break;
 
@@ -153,6 +155,8 @@ export function parseNoneState(parser: UcParser, token: Token)
             isTransient: false,
             group: null,
             isConfig: false,
+            firstToken: token,
+            lastToken: token,
         });
         token.classification = SemanticClass.Keyword;
         break;
@@ -182,7 +186,9 @@ export function parseNoneState(parser: UcParser, token: Token)
         parser.result.functions.push({
             name: null,
             locals: [],
-            body: []
+            body: [],
+            bodyFirstToken: null,
+            bodyLastToken: null
         });
         token.classification = SemanticClass.Keyword;
         break;

@@ -1,13 +1,13 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { LintResult } from './lib/LintResult';
-import { ALL_RULES } from './lib/token-rules';
-import { KeywordFormatRule } from './lib/token-rules/KeywordFormatRule';
+import { ALL_RULES } from './lib/lint/token-rules';
+import { KeywordFormatRule } from './lib/lint/token-rules/KeywordFormatRule';
 import { ucTokenizeLine } from './lib/tokenizer/ucTokenizeLine';
-import { TokenBasedLinter } from './lib/TokenBasedLinter';
+import { TokenBasedLinter } from './lib/lint/TokenBasedLinter';
 import { ParserToken, SemanticClass, UcParser } from './lib/parser';
-import { ALL_AST_RULES } from './lib/ast-rules';
+import { ALL_AST_RULES } from './lib/lint/ast-rules';
+import { LintResult } from './lib/lint/LintResult';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -35,7 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
         provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.TextEdit[] {
             const edits = new Array<vscode.TextEdit>();
             processFormattingRules(document, edits, tokenRules);
-            insertSemicolonEndOfLine(document, edits);
+            // insertSemicolonEndOfLine(document, edits);
             return edits;
         }
     });
@@ -295,8 +295,10 @@ function* getDiagnostics(document: vscode.TextDocument, tokenRules: TokenBasedLi
 
 function* processLinterRules(document: vscode.TextDocument, tokenRules: TokenBasedLinter[], options?: { reportParserErrors?: boolean }): Iterable<LintResult> {
     const parser = new UcParser();
+    const lines = new Array<string>(document.lineCount);
     for (let lineIndex=0; lineIndex < document.lineCount; lineIndex++){
         const line = document.lineAt(lineIndex);
+        lines[lineIndex] = line.text;
         const lineTokens = ucTokenizeLine(line.text);
         for (const token of lineTokens){
             for (const rule of tokenRules){
@@ -313,6 +315,7 @@ function* processLinterRules(document: vscode.TextDocument, tokenRules: TokenBas
     }
     parser.endOfFile(document.lineCount, 0);
     const ast = parser.getAst();
+    ast.textLines = lines;
     if (options?.reportParserErrors){
         for (const parseError of ast.errors){
             yield {

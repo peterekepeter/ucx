@@ -27,7 +27,7 @@ export function toIndentString(count: number): string {
     case 18: s = '\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t'; break;
     case 19: s = '\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t'; break;
     case 20: s = '\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t'; break;
-    default: s = toIndentString(Math.floor(count / 2)) + toIndentString(Math.ceil(count / 2)); break;
+    default: throw new Error(`indent count "${count}" not supported`);
     }
     if (s.length !== count) {
         throw new Error('numberToSpaces implementation error');

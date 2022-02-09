@@ -48,14 +48,15 @@ function parseVarGroupNext(parser: UcParser, token: ParserToken) {
 }
 
 function parseVarName(parser: UcParser, token: ParserToken) {
+    const variable = parser.lastVar;
     switch (token.text) {
     case ';':
         const message = 'Expected variable name isntead of ";"';
         parser.result.errors.push({ token, message });
         parser.rootFn = parseNoneState;
+        variable.lastToken = token;
         break;
     default:
-        const variable = parser.lastVar;
         token.classification = SemanticClass.ClassVariable;
         variable.name = token;
         parser.rootFn = parseVarNext;
@@ -64,8 +65,10 @@ function parseVarName(parser: UcParser, token: ParserToken) {
 }
 
 function parseVarNext(parser: UcParser, token: ParserToken) {
+    const variable = parser.lastVar;
     switch (token.text) {
     case ';':
+        variable.lastToken = token;
         parser.rootFn = parseNoneState;
         break;
     default:
