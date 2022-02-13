@@ -341,6 +341,16 @@ test("parse for loop", () => { parsing(`
     });
 });
 
+test.skip("parse recovers from bad control statement", () => { parsing(`
+    function F0() { if }
+    function F1() { if }
+    function ModifyPlayer(Pawn pawn) { }
+    `)
+    .hasFunction(0, { name: 'F0' })
+    .hasFunction(1, { name: 'F1' })
+    .hasFunction(2, { name: 'ModifyPlayer' });
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);

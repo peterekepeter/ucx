@@ -94,16 +94,7 @@ function parseStatement(parser: UcParser, token: Token)
         parser.codeBlockStack.push(codeBlock);
         break;
     case "}":
-        if (parser.codeBlockStack.length > 0){
-            const popped = parser.codeBlockStack.pop();
-            if (popped) {
-                popped.bodyLastToken = token;
-            }
-            break;
-        }
-        const fn = parser.lastFn;
-        fn.bodyLastToken = token;
-        parser.rootFn = parseNoneState;
+        endCurrentStatementOrFunctionBlock(parser, token);
         break;
     default:
         // default to expression
@@ -167,7 +158,7 @@ function parseExpression(parser: UcParser, token: Token)
 }
 
 /**
- * Can be for, while, if
+ * After keyword for, while, if
  */
 function parseControlStatement(parser: UcParser, token: Token)
 {
@@ -180,6 +171,13 @@ function parseControlStatement(parser: UcParser, token: Token)
     case "(":
         parser.expressionTokens = [];
         parser.rootFn = parseControlCondition;
+        break;
+    case ";":
+        endCurrentStatementBlock(parser, token);
+        parser.rootFn = parseStatement;
+        break;
+    case "}":
+        endCurrentStatementOrFunctionBlock(parser, token);
         break;
     default:
         message = "Expected '(' or '{' after keyword.";
@@ -201,6 +199,9 @@ function parseControlCondition(parser: UcParser, token: Token)
         parser.lastStatement.args.push(resolveExpression(parser.expressionTokens));
         parser.expressionTokens = [];
         break;
+    case "}":
+        endCurrentStatementOrFunctionBlock(parser, token);
+        break;
     default:
         const type = getExpressionTokenType(token);
         token.classification = type;
@@ -212,6 +213,9 @@ function parseControlCondition(parser: UcParser, token: Token)
 function parseAfterControlCondition(parser: UcParser, token: Token)
 {
     switch (token.text){
+    case ";":
+        parser.rootFn = parseStatement;
+        break;
     case "{":
         parser.rootFn = parseStatement;
         parser.lastStatement.bodyFirstToken = token;
@@ -220,5 +224,33 @@ function parseAfterControlCondition(parser: UcParser, token: Token)
         const message = "Expected '{'";
         parser.result.errors.push({ token, message });
         break;
+    }
+}
+
+function endCurrentStatementOrFunctionBlock(parser: UcParser, endingToken: Token)
+{   
+    if (parser.codeBlockStack.length > 0) {
+        endCurrentStatementBlock(parser, endingToken);
+        parser.rootFn = parseStatement;
+    }
+    else {
+        const fn = parser.lastFn;
+        fn.bodyLastToken = endingToken;
+        parser.rootFn = parseNoneState;
+    }
+}
+
+function endCurrentStatementBlock(parser: UcParser, endingToken: Token){
+    const popped = parser.codeBlockStack.pop();
+    if (!popped){
+        parser.result.errors.push({
+            token: endingToken, 
+            message: 'Failed to close statement',
+        });
+        return;
+    }
+    popped.bodyLastToken = endingToken;
+    if (!popped.bodyFirstToken) {
+        popped.bodyFirstToken = endingToken;
     }
 }
