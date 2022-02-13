@@ -77,12 +77,12 @@ function parseStatement(parser: UcParser, token: Token)
             bodyFirstToken: null,
             bodyLastToken: null
         };
-        parser.lastFnBody.push(statement);
-        parser.innerStatement = statement;
+        parser.lastCodeBlock.push(statement);
+        parser.codeBlockStack.push(statement);
         break;
     case "{":
         // codeblock
-        const body = parser.lastFnBody;
+        const body = parser.lastCodeBlock;
         const codeBlock: UnrealClassStatement = {
             op: token,
             args: [],
@@ -91,12 +91,14 @@ function parseStatement(parser: UcParser, token: Token)
             bodyLastToken: token
         };
         body.push(codeBlock);
-        parser.innerStatement = codeBlock;
+        parser.codeBlockStack.push(codeBlock);
         break;
     case "}":
-        if (parser.innerStatement){
-            parser.innerStatement.bodyLastToken = token;
-            parser.innerStatement = null;
+        if (parser.codeBlockStack.length > 0){
+            const popped = parser.codeBlockStack.pop();
+            if (popped) {
+                popped.bodyLastToken = token;
+            }
             break;
         }
         const fn = parser.lastFn;
@@ -145,14 +147,14 @@ function parseExpression(parser: UcParser, token: Token)
     {
     case "}":
         const fn = parser.lastFn;
-        parser.lastFnBody.push(resolveStatementExpression(parser.expressionTokens));
+        parser.lastCodeBlock.push(resolveStatementExpression(parser.expressionTokens));
         parser.expressionTokens = [];
         fn.bodyLastToken = token;
         parser.rootFn = parseNoneState;
         parser.result.errors.push({ token, message: "Function ended unexpectedly."});
         break;
     case ";":
-        parser.lastFnBody.push(resolveStatementExpression(parser.expressionTokens));
+        parser.lastCodeBlock.push(resolveStatementExpression(parser.expressionTokens));
         parser.expressionTokens = [];
         parser.rootFn = parseStatement;
         break;
@@ -213,6 +215,7 @@ function parseAfterControlCondition(parser: UcParser, token: Token)
     case "{":
         parser.rootFn = parseStatement;
         parser.lastStatement.bodyFirstToken = token;
+        break;
     default:
         const message = "Expected '{'";
         parser.result.errors.push({ token, message });

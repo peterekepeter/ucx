@@ -31,7 +31,7 @@ export class UcParser{
     };
     
     expressionTokens: Token[] = [];
-    innerStatement: UnrealClassStatement | null = null;
+    codeBlockStack: UnrealClassStatement[] = [];
 
     getAst() {
         return this.result;
@@ -113,18 +113,20 @@ export class UcParser{
         return fn.locals[fn.locals.length - 1];
     }
 
-    get lastFnBody() : UnrealClassStatement[] {
-        if (this.innerStatement){
-            return this.innerStatement.body;
+    get lastCodeBlock() : UnrealClassStatement[] {
+        if (this.codeBlockStack.length > 0){
+            const last = this.codeBlockStack.length - 1;
+            return this.codeBlockStack[last].body;
         }
         const fn = this.lastFn;
         return fn.body;
     }
 
     get lastStatement() : UnrealClassStatement {
-        const body = this.lastFnBody;
-        if (body.length === 0 && this.innerStatement){
-            return this.innerStatement;
+        const body = this.lastCodeBlock;
+        if (body.length === 0 && this.codeBlockStack.length > 0){
+            const last = this.codeBlockStack.length - 1;
+            return this.codeBlockStack[last];
         }
         return body[body.length - 1];
     }

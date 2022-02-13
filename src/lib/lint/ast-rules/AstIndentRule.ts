@@ -4,6 +4,7 @@ import { UnrealClass } from "../../";
 import { ParserToken } from "../../parser";
 import { getIndentLevel } from "../../indentation/getIndentLevel";
 import { toIndentString } from "../../indentation/toIndentString";
+import { UnrealClassStatement } from "../../parser/ast/UnrealClassFunction";
 
 
 export class AstIndentRule implements AstBasedLinter
@@ -26,9 +27,7 @@ export class AstIndentRule implements AstBasedLinter
 
         for (const fn of ast.functions){
             this.paintBlockScope(fn.bodyFirstToken, fn.bodyLastToken);
-            for (const statement of fn.body) {
-                this.paintBlockScope(statement.bodyFirstToken, statement.bodyLastToken);
-            }
+            this.recursivePaintStatementScopes(fn.body);
         }
 
         for (let line=0; line<ast.textLines.length; line++)
@@ -51,6 +50,13 @@ export class AstIndentRule implements AstBasedLinter
             
         }
         return results;
+    }
+
+    recursivePaintStatementScopes(body: UnrealClassStatement[]) {
+        for (const st of body) {
+            this.paintBlockScope(st.bodyFirstToken, st.bodyLastToken);
+            this.recursivePaintStatementScopes(st.body);
+        }
     }
 
     paintDeclarationScope(

@@ -60,6 +60,22 @@ test('linting indent codeblock in function', () => {
     });
 });
 
+// needs parser support for begin end tokens
+test('linting indent if inside if', () => {
+    linting([
+        'function Init() {',
+        'if (bVerify) {',
+        'if (bEnabled) {',
+        'Count = 0;',
+        '}',
+        '}',
+        '}'
+    ]).hasResult({ line: 1, fixedText: '\t'
+    }).hasResult({ line: 2, fixedText: '\t\t'
+    }).hasResult({ line: 3, fixedText: '\t\t\t'
+    });
+});
+
 
 function linting(lines: string[]) {
     const parser = new UcParser();

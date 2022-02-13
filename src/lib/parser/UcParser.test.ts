@@ -194,6 +194,8 @@ test("parse if statement", () => { parsing(`
         body: [{
             op: "if",
             args: ['bFirstRun'],
+            bodyFirst: '{',
+            bodyLast: '}',
             body: [{
                 op: "Init"
             }]
@@ -231,9 +233,13 @@ test("parse if inside if", () => { parsing(`
     .hasFunction(0, { body: [{
         op: "if",
         args: ["bFlagA"],
+        bodyFirst: '{',
+        bodyLast: '}',
         body: [{
             op: 'if',
             args: ["bFlagB"],
+            bodyFirst: '{',
+            bodyLast: '}',
             body: [{
                 op:'Log',
                 args: ['"Hi"']
@@ -241,6 +247,7 @@ test("parse if inside if", () => { parsing(`
         }]
     }] });
 });
+
 
 test("parse if with else", () => { parsing(`
     function Timer(){
@@ -261,7 +268,8 @@ test("parse if with else", () => { parsing(`
             op: 'Log',
             args: ['"disabled"'],
         }]
-    }] });
+    }] })
+    .hasNoErrors();
 });
 
 test("parse while loop", () => { parsing(`
@@ -332,8 +340,6 @@ test("parse for loop", () => { parsing(`
         }] 
     });
 });
-
-
 
 function parsing(input: string) {
     const parser = new UcParser();
@@ -432,13 +438,17 @@ interface ExpressionCheckObj
 
 interface StatementCheckObj extends ExpressionCheckObj
 {
+    bodyFirst?: string,
+    bodyLast?: string,
     body?: StatementCheckObj[]
 }
 
 function mapStatementToCheck(e: UnrealClassStatement): StatementCheckObj {
     return ({
         ...mapExpressionToCheck(e),
-        body: mapBodyToCheck(e.body)
+        body: mapBodyToCheck(e.body),
+        bodyFirst: e.bodyFirstToken?.text,
+        bodyLast: e.bodyLastToken?.text
     });
 }
 
