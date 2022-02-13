@@ -1,7 +1,7 @@
 import { SemanticClass, UcParser } from "..";
 import { UnrealClassStatement } from "../ast/UnrealClassFunction";
 import { Token } from "../types";
-import { parseNoneState } from "../UcParser";
+import { parseNoneState } from "./parseNoneState";
 import { getExpressionTokenType } from "./classifyTokenType";
 import { resolveExpression, resolveStatementExpression } from "./resolveExpression";
 

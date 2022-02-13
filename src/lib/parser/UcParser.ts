@@ -3,12 +3,10 @@ import { UnrealClassFunction, UnrealClassFunctionLocal, UnrealClassStatement } f
 import { UnrealClassConstant } from "./ast/UnrealClassConstant";
 import { UnrealClassEnum } from "./ast/UnrealClassEnum";
 import { UnrealClassVariable } from "./ast/UnrealClassVariable";
-import { parseVarDeclaration } from "./parse/parseVar";
-import { parseEnumBody, parseEnumBodyClosed, parseEnumDeclaration } from "./parse/parseEnum";
-import { parseConstDeclaration } from "./parse/parseConst";
-import { isParsingClassFn, parseClassName } from "./parse/parseClass";
+import { parseEnumBody, parseEnumBodyClosed } from "./parse/parseEnum";
+import { isParsingClassFn } from "./parse/parseClass";
 import { ParserToken, SemanticClass, ParserFn, Token } from "./types";
-import { parseFnDeclaration } from "./parse/parseFunction";
+import { parseNoneState } from "./parse/parseNoneState";
 
 
 export class UcParser{
@@ -137,67 +135,4 @@ function isLineComment(token: Token) {
     return token.text.startsWith("//");
 }
 
-export function parseNoneState(parser: UcParser, token: Token) 
-{
-    switch (token.text.toLocaleLowerCase()){
-
-    case 'class':
-        parser.rootFn = parseClassName;
-        parser.result.classFirstToken = token;
-        parser.result.classDeclarationFirstToken = token;
-        token.classification = SemanticClass.Keyword;
-        break;
-
-    case 'var': 
-        parser.rootFn = parseVarDeclaration;
-        parser.result.variables.push({ 
-            name: null, 
-            type: null,
-            isConst: false,
-            isTransient: false,
-            group: null,
-            isConfig: false,
-            firstToken: token,
-            lastToken: token,
-        });
-        token.classification = SemanticClass.Keyword;
-        break;
-
-    case 'enum':
-        parser.rootFn = parseEnumDeclaration;
-        parser.result.enums.push({
-            name: null,
-            firstToken: token,
-            lastToken: token,
-            enumeration: [],
-        });
-        token.classification = SemanticClass.Keyword;
-        break;
-        
-    case 'const':
-        parser.rootFn = parseConstDeclaration;
-        parser.result.constants.push({
-            name: null, 
-            value: null
-        });
-        token.classification = SemanticClass.Keyword;
-        break;
-
-    case 'function':
-        parser.rootFn = parseFnDeclaration;
-        parser.result.functions.push({
-            name: null,
-            locals: [],
-            body: [],
-            bodyFirstToken: null,
-            bodyLastToken: null
-        });
-        token.classification = SemanticClass.Keyword;
-        break;
-
-    default:
-        parser.result.errors.push({ token, message: "Reached unexpected token." });
-        break;
-    }
-}
 

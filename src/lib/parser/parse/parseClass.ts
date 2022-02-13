@@ -1,5 +1,6 @@
 import { SemanticClass, Token } from "../types";
-import { parseNoneState, UcParser } from "../UcParser";
+import { UcParser } from "../UcParser";
+import { parseNoneState } from "./parseNoneState";
 
 
 export function isParsingClassFn(fn: any){

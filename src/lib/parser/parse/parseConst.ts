@@ -1,5 +1,6 @@
 import { getExpressionTokenType } from "./classifyTokenType";
-import { UcParser, parseNoneState } from "../UcParser";
+import { UcParser } from "../UcParser";
+import { parseNoneState } from "./parseNoneState";
 import { ParserToken, SemanticClass } from "../types";
 
 export function parseConstDeclaration(parser: UcParser, token: ParserToken) {

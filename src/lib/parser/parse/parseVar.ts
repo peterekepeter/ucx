@@ -1,5 +1,6 @@
 import { ParserToken, SemanticClass } from "../types";
-import { UcParser, parseNoneState } from "../UcParser";
+import { UcParser } from "../UcParser";
+import { parseNoneState } from "./parseNoneState";
 
 
 export function parseVarDeclaration(parser: UcParser, token: ParserToken) {
