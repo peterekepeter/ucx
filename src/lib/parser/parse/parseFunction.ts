@@ -177,6 +177,9 @@ function parseControlStatement(parser: UcParser, token: Token)
         parser.rootFn = parseStatement;
         break;
     case "}":
+        // end current control statement
+        endCurrentStatementBlock(parser, token);
+        // } will also close enclosing scope
         endCurrentStatementOrFunctionBlock(parser, token);
         break;
     default:
@@ -200,6 +203,9 @@ function parseControlCondition(parser: UcParser, token: Token)
         parser.expressionTokens = [];
         break;
     case "}":
+        // end current control statement
+        endCurrentStatementBlock(parser, token);
+        // } will also close enclosing scope
         endCurrentStatementOrFunctionBlock(parser, token);
         break;
     default:
@@ -214,7 +220,14 @@ function parseAfterControlCondition(parser: UcParser, token: Token)
 {
     switch (token.text){
     case ";":
+        endCurrentStatementBlock(parser, token);
         parser.rootFn = parseStatement;
+        break;
+    case "}":
+        // end current control statement
+        endCurrentStatementBlock(parser, token);
+        // } will also close enclosing scope
+        endCurrentStatementOrFunctionBlock(parser, token);
         break;
     case "{":
         parser.rootFn = parseStatement;

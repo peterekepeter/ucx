@@ -341,14 +341,20 @@ test("parse for loop", () => { parsing(`
     });
 });
 
-test.skip("parse recovers from bad control statement", () => { parsing(`
+test("parse recovers from bad control statement", () => { parsing(`
     function F0() { if }
-    function F1() { if }
+    function F1() { if; }
+    function F2() { if( }
+    function F3() { if() }
+    function F4() { if(); }
     function ModifyPlayer(Pawn pawn) { }
     `)
     .hasFunction(0, { name: 'F0' })
     .hasFunction(1, { name: 'F1' })
-    .hasFunction(2, { name: 'ModifyPlayer' });
+    .hasFunction(2, { name: 'F2' })
+    .hasFunction(3, { name: 'F3' })
+    .hasFunction(4, { name: 'F4' })
+    .hasFunction(5, { name: 'ModifyPlayer' });
 });
 
 function parsing(input: string) {
