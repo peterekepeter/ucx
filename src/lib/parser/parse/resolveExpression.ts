@@ -10,14 +10,18 @@ export function resolveStatementExpression(tokens: ParserToken[]): UnrealClassSt
             args: [],
             body:[],
             bodyFirstToken: null,
-            bodyLastToken: null
+            bodyLastToken: null,
+            argsFirstToken: tokens[0],
+            argsLastToken: tokens[tokens.length-1]
         };
     } else {
         return {
             ...expression, 
             body: [],
             bodyFirstToken: null,
-            bodyLastToken: null
+            bodyLastToken: null,
+            argsFirstToken: tokens[0],
+            argsLastToken: tokens[tokens.length-1]
         };
     }
 }
@@ -43,7 +47,7 @@ function resolveSubExpression(tokens: ParserToken[], begin: number, end: number)
         tokens[begin].classification = SemanticClass.FunctionReference;
         return {
             op: tokens[begin],
-            args: resolveCallArgs(tokens, begin + 2, end - 1)
+            args: resolveCallArgs(tokens, begin + 2, end - 1),
         };
     }
     for (let i=begin; i<end; i++){
@@ -54,25 +58,25 @@ function resolveSubExpression(tokens: ParserToken[], begin: number, end: number)
     if (tokenCount === 3 && tokens[begin+1].classification === SemanticClass.Operator){
         return {
             args: [tokens[begin], tokens[begin+2]],
-            op: tokens[begin+1]
+            op: tokens[begin+1],
         };
     }
     if (tokenCount === 2){
         if (tokens[begin].classification === SemanticClass.Operator){
             return {
                 args: [tokens[begin + 1]],
-                op: tokens[begin]
+                op: tokens[begin],
             };
         } else if (tokens[begin + 1].classification === SemanticClass.Operator) {
             return {
                 args: [tokens[begin]],
-                op: tokens[begin + 1]
+                op: tokens[begin + 1],
             };
         }
     }
     return {
         args: tokens.slice(begin+1, end),
-        op:tokens[begin]
+        op:tokens[begin],
     };
 }
 

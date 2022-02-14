@@ -75,7 +75,9 @@ function parseStatement(parser: UcParser, token: Token)
             args: [],
             body: [],
             bodyFirstToken: null,
-            bodyLastToken: null
+            bodyLastToken: null,
+            argsFirstToken: null,
+            argsLastToken: null
         };
         parser.lastCodeBlock.push(statement);
         parser.codeBlockStack.push(statement);
@@ -88,7 +90,9 @@ function parseStatement(parser: UcParser, token: Token)
             args: [],
             body: [],
             bodyFirstToken: token,
-            bodyLastToken: token
+            bodyLastToken: token,
+            argsFirstToken: null,
+            argsLastToken: null
         };
         body.push(codeBlock);
         parser.codeBlockStack.push(codeBlock);
@@ -170,6 +174,7 @@ function parseControlStatement(parser: UcParser, token: Token)
         break;
     case "(":
         parser.expressionTokens = [];
+        parser.lastStatement.argsFirstToken = token;
         parser.rootFn = parseControlCondition;
         break;
     case ";":
@@ -193,6 +198,7 @@ function parseControlCondition(parser: UcParser, token: Token)
     switch (token.text){
     case ")":
         parser.rootFn = parseAfterControlCondition;
+        parser.lastStatement.argsLastToken = token;
     case ";":
         const st = parser.lastStatement;
         if (!st){
@@ -201,8 +207,10 @@ function parseControlCondition(parser: UcParser, token: Token)
         }
         parser.lastStatement.args.push(resolveExpression(parser.expressionTokens));
         parser.expressionTokens = [];
+        st.argsLastToken = token;
         break;
     case "}":
+        parser.lastStatement.argsLastToken = token;
         // end current control statement
         endCurrentStatementBlock(parser, token);
         // } will also close enclosing scope

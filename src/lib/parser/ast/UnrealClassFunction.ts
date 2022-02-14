@@ -20,6 +20,8 @@ export interface UnrealClassExpression {
 }
 
 export interface UnrealClassStatement extends UnrealClassExpression {
+    argsFirstToken: ParserToken | null;
+    argsLastToken: ParserToken | null;
     body: UnrealClassStatement[];
     bodyFirstToken: ParserToken | null;
     bodyLastToken: ParserToken | null;

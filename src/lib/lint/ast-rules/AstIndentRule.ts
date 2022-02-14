@@ -4,7 +4,7 @@ import { UnrealClass } from "../../";
 import { ParserToken } from "../../parser";
 import { getIndentLevel } from "../../indentation/getIndentLevel";
 import { toIndentString } from "../../indentation/toIndentString";
-import { UnrealClassStatement } from "../../parser/ast/UnrealClassFunction";
+import { UnrealClassExpression, UnrealClassStatement } from "../../parser/ast/UnrealClassFunction";
 
 
 export class AstIndentRule implements AstBasedLinter
@@ -54,6 +54,12 @@ export class AstIndentRule implements AstBasedLinter
 
     recursivePaintStatementScopes(body: UnrealClassStatement[]) {
         for (const st of body) {
+            const maxLine = findLineMax(st.args);
+            if (maxLine === st.argsLastToken?.line){
+                this.paintDeclarationScope(st.argsFirstToken, st.argsLastToken);
+            } else {
+                this.paintBlockScope(st.argsFirstToken, st.argsLastToken);
+            }
             this.paintBlockScope(st.bodyFirstToken, st.bodyLastToken);
             this.recursivePaintStatementScopes(st.body);
         }
@@ -97,4 +103,20 @@ export class AstIndentRule implements AstBasedLinter
         let indent = lineText.substring(0, indentChars);
         return indent;
     }
+}
+function findLineMax(args: (UnrealClassExpression | ParserToken)[]) {
+    let line = -1;
+    for (const arg of args){
+        if ('op' in arg){
+            if (arg.op && arg.op.line > line){
+                line = arg.op.line;
+            }
+            line = Math.max(line, findLineMax(arg.args));
+        }
+        else 
+        {
+            line = Math.max(line, arg.line);
+        }
+    }
+    return line;
 }

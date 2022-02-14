@@ -1,6 +1,6 @@
-import { ALL_AST_RULES } from ".";
-import { LintResult } from "../LintResult";
-import { UcParser, ucTokenizeLine } from "../../";
+import { ALL_AST_RULES } from "./ast-rules";
+import { LintResult } from "./LintResult";
+import { UcParser, ucTokenizeLine } from "..";
 
 test('linting indent class declaration', () => {
     linting([
@@ -60,13 +60,12 @@ test('linting indent codeblock in function', () => {
     });
 });
 
-// needs parser support for begin end tokens
 test('linting indent if inside if', () => {
     linting([
         'function Init() {',
         'if (bVerify) {',
         'if (bEnabled) {',
-        'Count = 0;',
+        'Count = 0;', // should have 3 indent
         '}',
         '}',
         '}'
@@ -74,6 +73,40 @@ test('linting indent if inside if', () => {
     }).hasResult({ line: 2, fixedText: '\t\t'
     }).hasResult({ line: 3, fixedText: '\t\t\t'
     });
+});
+
+test('multiline argument indentation', () => {
+    linting([
+        'function Init()',
+        '{',
+        '    if (bEnabled && ',
+        '    bAnotherEnabled) ', // should have 2 indent
+        '    {',
+        '    }',
+        '}'
+    ]).hasResult({ line: 3, originalText:'    ', fixedText: '\t\t'});
+});
+
+test('closing parenthesis is not indented', () => {
+    linting([
+        'function Init() {',
+        '\tif (bEnabled',
+        ')', // should have 1 indent, not 2
+        '\t{', 
+        '\t}',
+        '}'
+    ]).hasResult({ line: 2, fixedText: '\t'});
+});
+
+test.skip('expression closing paranthesis is not indented', () => {
+    linting([
+        'function Init() {',
+        '    x = (',
+        '        3 + 4',
+        '    );',
+        '}'
+    ]).hasResult({ line: 2, fixedText: '\t\t' 
+    }).hasResult({ line: 3, fixedText: '\t' });
 });
 
 
@@ -102,8 +135,8 @@ function linting(lines: string[]) {
             let bestScore = 0;
             for (const result of results){
                 let score = 
-                    Number(result.line === obj.line) +
-                    Number(result.position === obj.position) +
+                    Number(result.line === obj.line)*2 +
+                    Number(result.position === obj.position)*3 +
                     Number(result.length === obj.length) +
                     Number(result.message === obj.message) +
                     Number(result.originalText === obj.originalText) +
