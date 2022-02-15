@@ -144,6 +144,19 @@ test('lint indent single statment if on one line', () => {
     });
 });
 
+test('lint indent if with function call in condition', () => {
+    linting([
+        'function Init(){',
+        '    if (CheckSomething()){',
+        '        SaveConfig();',
+        '    }',
+        '}',
+    ]).hasResult({ line: 1, fixedText: '\t' 
+    }).hasResult({ line: 2, fixedText: '\t\t' 
+    }).hasResult({ line: 3, fixedText: '\t' 
+    });
+});
+
 function linting(lines: string[]) {
     const parser = new UcParser();
     for (let i = 0; i < lines.length; i++) {

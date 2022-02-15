@@ -30,6 +30,7 @@ export class UcParser{
     
     expressionTokens: Token[] = [];
     codeBlockStack: UnrealClassStatement[] = [];
+    parenOpenCount = 0;
 
     getAst() {
         return this.result;

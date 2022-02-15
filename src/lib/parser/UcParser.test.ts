@@ -378,6 +378,29 @@ test("parse if statement without brackets", () => { parsing(`
     });
 });
 
+test("parse if statement with function call in condition", () => { parsing(`
+    function Init(){
+        if (CheckSomething()){
+            SaveConfig();
+        }
+    }
+    `)
+    .hasFunction(0, {
+        body: [{
+            op: "if",
+            args: [{
+                op: "CheckSomething",
+                args: [],
+            }],
+            body:[{
+                op: "SaveConfig",
+                args: [],
+            }]
+        }]
+    })
+    .hasNoErrors();
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);

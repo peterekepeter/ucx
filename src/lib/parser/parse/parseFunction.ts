@@ -176,6 +176,7 @@ function parseControlStatement(parser: UcParser, token: Token)
         parser.expressionTokens = [];
         parser.lastStatement.argsFirstToken = token;
         parser.rootFn = parseControlCondition;
+        parser.parenOpenCount = 1;
         break;
     case ";":
         endCurrentStatementBlock(parser, token);
@@ -197,8 +198,16 @@ function parseControlCondition(parser: UcParser, token: Token)
 {
     switch (token.text){
     case ")":
+        parser.parenOpenCount--;
+        if (parser.parenOpenCount !== 0){
+            const type = getExpressionTokenType(token);
+            token.classification = type;
+            parser.expressionTokens.push(token);
+            break;
+        }
         parser.rootFn = parseAfterControlCondition;
         parser.lastStatement.argsLastToken = token;
+        // intentionally let through
     case ";":
         const st = parser.lastStatement;
         if (!st){
@@ -216,6 +225,9 @@ function parseControlCondition(parser: UcParser, token: Token)
         // } will also close enclosing scope
         endCurrentStatementOrFunctionBlock(parser, token);
         break;
+    case "(":
+        parser.parenOpenCount++;
+        // intentionally let through
     default:
         const type = getExpressionTokenType(token);
         token.classification = type;
