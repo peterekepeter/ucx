@@ -203,6 +203,28 @@ test("parse if statement", () => { parsing(`
     });
 });
 
+test("parse if statement with nonstadard casing", () => { parsing(`
+    function PreBeginPlay(){
+        If (bFirstRun)
+        {
+            Init();
+        }
+    }
+    `)
+    .hasFunction(0, { 
+        name: "PreBeginPlay", 
+        body: [{
+            op: "If",
+            args: ['bFirstRun'],
+            bodyFirst: '{',
+            bodyLast: '}',
+            body: [{
+                op: "Init"
+            }]
+        }] 
+    });
+});
+
 test("parse two sequential if statements", () => { parsing(`
     function Timer(){
         if (bFeatureA) {}

@@ -57,7 +57,7 @@ function parseFnAfterParameters(parser: UcParser, token: Token)
 
 function parseStatement(parser: UcParser, token: Token)
 {
-    switch(token.text)
+    switch(token.textLower)
     {
     case "local":
         parser.rootFn = parseFnLocalDeclaration;
