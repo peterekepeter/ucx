@@ -98,7 +98,7 @@ test('closing parenthesis is not indented', () => {
     ]).hasResult({ line: 2, fixedText: '\t'});
 });
 
-test.skip('expression closing paranthesis is not indented', () => {
+test('expression closing paranthesis is not indented', () => {
     linting([
         'function Init() {',
         '    x = (',
@@ -106,6 +106,18 @@ test.skip('expression closing paranthesis is not indented', () => {
         '    );',
         '}'
     ]).hasResult({ line: 2, fixedText: '\t\t' 
+    }).hasResult({ line: 3, fixedText: '\t' });
+});
+
+test('lint indent only increases once when multiple scopes combine on same line', () => {
+    linting([
+        'function Init() {',
+        '    if (c<10) { if (c>5) {',
+        '        Log("test");',
+        '    }}',
+        '}'
+    ]).hasResult({ line: 1, fixedText: '\t' 
+    }).hasResult({ line: 2, fixedText: '\t\t' 
     }).hasResult({ line: 3, fixedText: '\t' });
 });
 

@@ -15,6 +15,12 @@
 				"kind": "build",
 				"isDefault": true
 			}
+		},
+		{
+			"type": "npm",
+			"script": "unittest:watch",
+			"problemMatcher": [],
+			"label": "npm: unittest:watch"
 		}
 	]
 }

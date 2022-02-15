@@ -17,11 +17,11 @@ export interface UnrealClassFunctionLocal {
 export interface UnrealClassExpression {
     op: ParserToken | null;
     args: (UnrealClassExpression | ParserToken)[];
+    argsFirstToken: ParserToken | null;
+    argsLastToken: ParserToken | null;
 }
 
 export interface UnrealClassStatement extends UnrealClassExpression {
-    argsFirstToken: ParserToken | null;
-    argsLastToken: ParserToken | null;
     body: UnrealClassStatement[];
     bodyFirstToken: ParserToken | null;
     bodyLastToken: ParserToken | null;

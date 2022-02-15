@@ -30,6 +30,41 @@ export class AstIndentRule implements AstBasedLinter
             this.recursivePaintStatementScopes(fn.body);
         }
 
+        let prevIndent = 0;
+        for (let line=0; line<ast.textLines.length; line++)
+        {
+            const indent = this.indent[line];
+            let collapse = false;
+            let collapseUntil = line;
+            const difference = indent - prevIndent;
+            if (difference >= 2){
+                for (let i=line+1; i<ast.textLines.length; i++){
+                    const scanIndent = this.indent[i];
+                    if (scanIndent >= indent){
+                        continue;
+                    }
+                    else if (scanIndent <= prevIndent){
+                        collapse = true;
+                        collapseUntil = i;
+                        break;
+                    }
+                    else { // prevIndent < scanIndent < indent
+                        break; // cannot collapse
+                    }
+                }
+            }
+            if (collapse) {
+                const collapseBy = difference - 1;
+                for (let i=line; i<collapseUntil; i++){
+                    this.indent[i] -= collapseBy;
+                } 
+                prevIndent = indent - collapseBy;  
+            }
+            else {
+                prevIndent = indent;
+            }
+        }
+
         for (let line=0; line<ast.textLines.length; line++)
         {
             const textLine = ast.textLines[line];
@@ -47,21 +82,37 @@ export class AstIndentRule implements AstBasedLinter
                     originalText: actual
                 });
             }
-            
         }
+
+
+
         return results;
     }
 
     recursivePaintStatementScopes(body: UnrealClassStatement[]) {
         for (const st of body) {
-            const maxLine = findLineMax(st.args);
-            if (maxLine === st.argsLastToken?.line){
+            if (st.argsLastToken?.text !== ')'){
                 this.paintDeclarationScope(st.argsFirstToken, st.argsLastToken);
             } else {
                 this.paintBlockScope(st.argsFirstToken, st.argsLastToken);
             }
+            this.recursivePaintArgsScope(st.args);
+
             this.paintBlockScope(st.bodyFirstToken, st.bodyLastToken);
             this.recursivePaintStatementScopes(st.body);
+        }
+    }
+
+    recursivePaintArgsScope(args: (UnrealClassExpression | ParserToken)[]) {
+        for (const arg of args) {
+            if ('argsFirstToken' in arg){
+                if (arg.argsLastToken?.text !== ')'){
+                    this.paintDeclarationScope(arg.argsFirstToken, arg.argsLastToken);
+                } else {
+                    this.paintBlockScope(arg.argsFirstToken, arg.argsLastToken);
+                }
+                this.recursivePaintArgsScope(arg.args);
+            }
         }
     }
 
@@ -103,20 +154,4 @@ export class AstIndentRule implements AstBasedLinter
         let indent = lineText.substring(0, indentChars);
         return indent;
     }
-}
-function findLineMax(args: (UnrealClassExpression | ParserToken)[]) {
-    let line = -1;
-    for (const arg of args){
-        if ('op' in arg){
-            if (arg.op && arg.op.line > line){
-                line = arg.op.line;
-            }
-            line = Math.max(line, findLineMax(arg.args));
-        }
-        else 
-        {
-            line = Math.max(line, arg.line);
-        }
-    }
-    return line;
 }

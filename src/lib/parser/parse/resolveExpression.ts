@@ -48,6 +48,8 @@ function resolveSubExpression(tokens: ParserToken[], begin: number, end: number)
         return {
             op: tokens[begin],
             args: resolveCallArgs(tokens, begin + 2, end - 1),
+            argsFirstToken: tokens[begin + 1],
+            argsLastToken: tokens[end - 1]
         };
     }
     for (let i=begin; i<end; i++){
@@ -59,6 +61,8 @@ function resolveSubExpression(tokens: ParserToken[], begin: number, end: number)
         return {
             args: [tokens[begin], tokens[begin+2]],
             op: tokens[begin+1],
+            argsFirstToken: tokens[begin],
+            argsLastToken: tokens[begin + 2]
         };
     }
     if (tokenCount === 2){
@@ -66,17 +70,23 @@ function resolveSubExpression(tokens: ParserToken[], begin: number, end: number)
             return {
                 args: [tokens[begin + 1]],
                 op: tokens[begin],
+                argsFirstToken: tokens[begin + 1],
+                argsLastToken: tokens[begin + 1]
             };
         } else if (tokens[begin + 1].classification === SemanticClass.Operator) {
             return {
                 args: [tokens[begin]],
                 op: tokens[begin + 1],
+                argsFirstToken: tokens[begin],
+                argsLastToken: tokens[begin]
             };
         }
     }
     return {
         args: tokens.slice(begin+1, end),
         op:tokens[begin],
+        argsFirstToken: tokens[begin],
+        argsLastToken: tokens[end - 1],
     };
 }
 
