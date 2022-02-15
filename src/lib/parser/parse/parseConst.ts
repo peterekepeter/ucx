@@ -1,9 +1,9 @@
-import { getExpressionTokenType } from "./classifyTokenType";
 import { UcParser } from "../UcParser";
 import { parseNoneState } from "./parseNoneState";
-import { ParserToken, SemanticClass } from "../types";
+import { SemanticClass as C } from "../token/SemanticClass";
+import { ParserToken as Token } from "..";
 
-export function parseConstDeclaration(parser: UcParser, token: ParserToken) {
+export function parseConstDeclaration(parser: UcParser, token: Token) {
     switch (token.text) {
     case ';':
         parser.result.errors.push({
@@ -14,17 +14,17 @@ export function parseConstDeclaration(parser: UcParser, token: ParserToken) {
         break;
     default:
         const constant = parser.lastConst;
-        token.classification = SemanticClass.ClassConstant;
+        token.type = C.ClassConstant;
         constant.name = token;
         parser.rootFn = parseConstParsedName;
         break;
     }
 }
-function parseConstParsedName(parser: UcParser, token: ParserToken) {
+function parseConstParsedName(parser: UcParser, token: Token) {
     switch (token.text) {
     case '=':
         parser.rootFn = parseConstExpectValue;
-        token.classification = SemanticClass.AssignmentOperator;
+        token.type = C.AssignmentOperator;
         break;
     default:
         parser.result.errors.push({ token, message: `Expecting "=" operator.` });
@@ -32,7 +32,7 @@ function parseConstParsedName(parser: UcParser, token: ParserToken) {
         break;
     }
 }
-function parseConstExpectValue(parser: UcParser, token: ParserToken) {
+function parseConstExpectValue(parser: UcParser, token: Token) {
     switch (token.text) {
     case ';':
         parser.result.errors.push({ token, message: 'Expecting constant value.' });
@@ -41,13 +41,11 @@ function parseConstExpectValue(parser: UcParser, token: ParserToken) {
     default:
         const constant = parser.lastConst;
         constant.value = token;
-        const expressionType = getExpressionTokenType(token);
-        token.classification = expressionType;
         parser.rootFn = parseConstParsedValue;
         break;
     }
 }
-function parseConstParsedValue(parser: UcParser, token: ParserToken) {
+function parseConstParsedValue(parser: UcParser, token: Token) {
     if (token.text === ';') {
         parser.rootFn = parseNoneState;
     } else {

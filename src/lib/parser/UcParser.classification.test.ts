@@ -72,7 +72,7 @@ function parsing(input: string) {
 
     const checks = {
         hasTokens(...expected: [string, C][]){
-            const actual: [string, string][] = ast.tokens.map(t => [t.text, C[t.classification]]);
+            const actual: [string, string][] = ast.tokens.map(t => [t.text, C[t.type]]);
             const startIndex = actual.findIndex(t => t[0] === expected[0][0]);
             const actualSlice = actual.slice(startIndex, startIndex + expected.length);
             const expectedMapped = expected.map(t => [t[0], C[t[1]]]);

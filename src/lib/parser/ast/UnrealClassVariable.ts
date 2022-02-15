@@ -1,13 +1,12 @@
-import { ParserToken } from "../types";
-
+import { ParserToken as Token } from "..";
 
 export interface UnrealClassVariable {
-    type: ParserToken | null;
-    name: ParserToken | null;
+    type: Token | null;
+    name: Token | null;
     isTransient: boolean;
     isConst: boolean;
-    group: ParserToken | null;
+    group: Token | null;
     isConfig: boolean;
-    firstToken: ParserToken;
-    lastToken: ParserToken;
+    firstToken: Token;
+    lastToken: Token;
 }

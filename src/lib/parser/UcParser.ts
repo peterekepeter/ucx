@@ -5,7 +5,8 @@ import { UnrealClassEnum } from "./ast/UnrealClassEnum";
 import { UnrealClassVariable } from "./ast/UnrealClassVariable";
 import { parseEnumBody, parseEnumBodyClosed } from "./parse/parseEnum";
 import { isParsingClassFn } from "./parse/parseClass";
-import { ParserToken, SemanticClass, ParserFn, Token } from "./types";
+import { ParserFn, Token } from "./types";
+import { LazyParserToken, ParserToken, SemanticClass } from "./token";
 import { parseNoneState } from "./parse/parseNoneState";
 
 
@@ -37,9 +38,8 @@ export class UcParser{
     }
 
     endOfFile(line: number, position: number) {
-        const token :ParserToken = {
-            line, position, text:'', classification: SemanticClass.None
-        };
+        const index = this.result.tokens.length;
+        const token = new LazyParserToken(line, position, '', index);
         if (this.rootFn !== parseNoneState){
             this.result.errors.push({ 
                 token, 
@@ -71,19 +71,15 @@ export class UcParser{
     }
 
     parse(line: number, position: number, text: string) {
-        const token: Token = {
-            classification: SemanticClass.None,
-            line,
-            position,
-            text
-        };
+        const index = this.result.tokens.length;
+        const token = new LazyParserToken(line, position, text, index);
         this.parseToken(token);
         this.result.tokens.push(token);
     }
 
     parseToken(token: ParserToken){
         if (isLineComment(token)){
-            token.classification = SemanticClass.Comment;
+            token.type = SemanticClass.Comment;
             return;
         }
         else {

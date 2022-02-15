@@ -1,6 +1,7 @@
-import { ParserToken } from "../types";
+import { ParserToken as Token } from "..";
+
 
 export interface UnrealClassConstant {
-    name: ParserToken | null;
-    value: ParserToken | null;
+    name: Token | null;
+    value: Token | null;
 }

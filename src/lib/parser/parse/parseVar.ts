@@ -1,41 +1,42 @@
-import { ParserToken, SemanticClass } from "../types";
+import { ParserToken as Token } from "../";
+import { SemanticClass as C } from "../token/SemanticClass";
 import { UcParser } from "../UcParser";
 import { parseNoneState } from "./parseNoneState";
 
 
-export function parseVarDeclaration(parser: UcParser, token: ParserToken) {
+export function parseVarDeclaration(parser: UcParser, token: Token) {
     const variable = parser.lastVar;
     switch (token.text){
     case 'transient': 
         variable.isTransient = true;
-        token.classification = SemanticClass.Keyword;
+        token.type = C.Keyword;
         break;
     case 'const':
         variable.isConst = true;
-        token.classification = SemanticClass.Keyword;
+        token.type = C.Keyword;
         break;
     case 'config':
         variable.isConfig = true;
-        token.classification = SemanticClass.Keyword;
+        token.type = C.Keyword;
         break;
     case '(':
         parser.rootFn = parseVarGroup;
         break;
     default:
         variable.type = token;
-        token.classification = SemanticClass.TypeReference;
+        token.type = C.TypeReference;
         parser.rootFn = parseVarName;
         break;
     }
 }
 
-function parseVarGroup(parser: UcParser, token: ParserToken) {
+function parseVarGroup(parser: UcParser, token: Token) {
     const variable = parser.lastVar;
     variable.group = token;
     parser.rootFn = parseVarGroupNext;
 }
 
-function parseVarGroupNext(parser: UcParser, token: ParserToken) {
+function parseVarGroupNext(parser: UcParser, token: Token) {
     switch (token.text) {
     case ")":
         parser.rootFn = parseVarDeclaration;
@@ -48,7 +49,7 @@ function parseVarGroupNext(parser: UcParser, token: ParserToken) {
     }
 }
 
-function parseVarName(parser: UcParser, token: ParserToken) {
+function parseVarName(parser: UcParser, token: Token) {
     const variable = parser.lastVar;
     switch (token.text) {
     case ';':
@@ -58,14 +59,14 @@ function parseVarName(parser: UcParser, token: ParserToken) {
         variable.lastToken = token;
         break;
     default:
-        token.classification = SemanticClass.ClassVariable;
+        token.type = C.ClassVariable;
         variable.name = token;
         parser.rootFn = parseVarNext;
         break;
     }
 }
 
-function parseVarNext(parser: UcParser, token: ParserToken) {
+function parseVarNext(parser: UcParser, token: Token) {
     const variable = parser.lastVar;
     switch (token.text) {
     case ';':

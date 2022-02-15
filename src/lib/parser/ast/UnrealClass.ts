@@ -1,4 +1,5 @@
-import { ParserError, ParserToken } from "../types";
+import { ParserToken as Token } from "..";
+import { ParserError } from "../types";
 import { UnrealClassConstant } from "./UnrealClassConstant";
 import { UnrealClassEnum } from "./UnrealClassEnum";
 import { UnrealClassFunction } from "./UnrealClassFunction";
@@ -6,12 +7,12 @@ import { UnrealClassVariable } from "./UnrealClassVariable";
 
 
 export interface UnrealClass {
-    classFirstToken?: ParserToken | null;
-    classLastToken?: ParserToken | null;
-    classDeclarationFirstToken?: ParserToken;
-    classDeclarationLastToken?: ParserToken;
-    name: ParserToken | null;
-    parentName: ParserToken | null;
+    classFirstToken?: Token | null;
+    classLastToken?: Token | null;
+    classDeclarationFirstToken?: Token;
+    classDeclarationLastToken?: Token;
+    name: Token | null;
+    parentName: Token | null;
     isAbstract: boolean;
     isNative: boolean;
     isNativeReplication: boolean;
@@ -19,7 +20,7 @@ export interface UnrealClass {
     constants: UnrealClassConstant[];
     variables: UnrealClassVariable[];
     enums: UnrealClassEnum[];
-    tokens: ParserToken[];
+    tokens: Token[];
     functions: UnrealClassFunction[];
     textLines: string[];
 }

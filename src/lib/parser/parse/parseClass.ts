@@ -1,4 +1,5 @@
-import { SemanticClass, Token } from "../types";
+import { Token } from "../types";
+import { SemanticClass } from "../token";
 import { UcParser } from "../UcParser";
 import { parseNoneState } from "./parseNoneState";
 
@@ -12,7 +13,7 @@ export function isParsingClassFn(fn: any){
 export function parseClassName(parser: UcParser, token: Token) {
     parser.result.name = token;
     parser.rootFn = parseClassDecorators;
-    token.classification = SemanticClass.ClassDeclaration;
+    token.type = SemanticClass.ClassDeclaration;
 }
 
 function parseClassDecorators(parser: UcParser, token: Token) { 
@@ -23,25 +24,25 @@ function parseClassDecorators(parser: UcParser, token: Token) {
     case 'extends':
         parser.result.classDeclarationLastToken = token;
         parser.rootFn = parseClassParent;
-        token.classification = SemanticClass.Keyword;
+        token.type = SemanticClass.Keyword;
         break;
         
     case 'abstract':
         parser.result.classDeclarationLastToken = token;
         parser.result.isAbstract = true;
-        token.classification = SemanticClass.Keyword;
+        token.type = SemanticClass.Keyword;
         break;
 
     case 'native':
         parser.result.classDeclarationLastToken = token;
         parser.result.isNative = true;
-        token.classification = SemanticClass.Keyword;
+        token.type = SemanticClass.Keyword;
         break;
 
     case 'nativereplication':
         parser.result.classDeclarationLastToken = token;
         parser.result.isNativeReplication = true;
-        token.classification = SemanticClass.Keyword;
+        token.type = SemanticClass.Keyword;
         break;
 
     case ';':
@@ -66,6 +67,6 @@ function parseClassDecorators(parser: UcParser, token: Token) {
 function parseClassParent(parser: UcParser, token: Token) {
     parser.result.parentName = token;
     parser.rootFn = parseClassDecorators;
-    token.classification = SemanticClass.ClassReference;
+    token.type = SemanticClass.ClassReference;
 }
 

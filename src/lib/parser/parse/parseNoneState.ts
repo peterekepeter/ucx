@@ -2,19 +2,20 @@ import { parseVarDeclaration } from "./parseVar";
 import { parseEnumDeclaration } from "./parseEnum";
 import { parseConstDeclaration } from "./parseConst";
 import { parseClassName } from "./parseClass";
-import { SemanticClass, Token } from "../types";
+import { Token } from "../types";
+import { SemanticClass } from "../token/SemanticClass";
 import { parseFnDeclaration } from "./parseFunction";
 import { UcParser } from "../UcParser";
 
 
 export function parseNoneState(parser: UcParser, token: Token) {
-    switch (token.text.toLocaleLowerCase()) {
+    switch (token.textLower) {
 
     case 'class':
         parser.rootFn = parseClassName;
         parser.result.classFirstToken = token;
         parser.result.classDeclarationFirstToken = token;
-        token.classification = SemanticClass.Keyword;
+        token.type = SemanticClass.Keyword;
         break;
 
     case 'var':
@@ -29,7 +30,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
             firstToken: token,
             lastToken: token,
         });
-        token.classification = SemanticClass.Keyword;
+        token.type = SemanticClass.Keyword;
         break;
 
     case 'enum':
@@ -40,7 +41,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
             lastToken: token,
             enumeration: [],
         });
-        token.classification = SemanticClass.Keyword;
+        token.type = SemanticClass.Keyword;
         break;
 
     case 'const':
@@ -49,7 +50,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
             name: null,
             value: null
         });
-        token.classification = SemanticClass.Keyword;
+        token.type = SemanticClass.Keyword;
         break;
 
     case 'function':
@@ -61,11 +62,12 @@ export function parseNoneState(parser: UcParser, token: Token) {
             bodyFirstToken: null,
             bodyLastToken: null
         });
-        token.classification = SemanticClass.Keyword;
+        token.type = SemanticClass.Keyword;
         break;
 
     default:
-        parser.result.errors.push({ token, message: "Reached unexpected token." });
+        parser.result.errors.push({ 
+            token, message: "Reached unexpected token." });
         break;
     }
 }

@@ -1,4 +1,5 @@
-import { SemanticClass, Token } from "../types";
+import { Token } from "../types";
+import { SemanticClass } from "./SemanticClass";
 
 type DetectedExpressionTypes 
     = SemanticClass.LiteralString   

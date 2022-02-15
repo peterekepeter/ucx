@@ -1,5 +1,6 @@
 import { SemanticClass as C } from "..";
-import { getExpressionTokenType } from "./classifyTokenType";
+import { getExpressionTokenType } from "./getExpressionTokenType";
+import { LazyParserToken } from "./LazyParserToken";
 
 
 test("numbers", () => {
@@ -39,14 +40,22 @@ test("operators", () => {
     verify("--", C.Operator);
 });
 
-function verify(input: string, expectedType: C){
-    const actualType = getExpressionTokenType({
-        text: input,
-        classification: C.None,
-        line: 0,
-        position: 0,
+test("lazy token properties", () => {
+    const token = new LazyParserToken(13, 4, "Help", 42);
+    expect(token).toMatchObject({
+        line: 13, 
+        position: 4, 
+        index: 42,
+        text: "Help",
+        textLower: "help",
+        type: C.Identifier
     });
-    expect(format(input, actualType))
+});
+
+function verify(input: string, expectedType: C){
+    const token = new LazyParserToken(0, 0, input, 0);
+    const type = getExpressionTokenType(token);
+    expect(format(input, type))
         .toBe(format(input, expectedType));
 }
 

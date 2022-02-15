@@ -1,28 +1,28 @@
-import { ParserToken } from "../types";
+import { ParserToken as Token } from "..";
 
 
 export interface UnrealClassFunction {
-    name: ParserToken | null;
+    name: Token | null;
     locals: UnrealClassFunctionLocal[];
     body: UnrealClassStatement[];
-    bodyFirstToken: ParserToken | null;
-    bodyLastToken: ParserToken | null;
+    bodyFirstToken: Token | null;
+    bodyLastToken: Token | null;
 }
 
 export interface UnrealClassFunctionLocal {
-    type: ParserToken | null;
-    name: ParserToken | null;
+    type: Token | null;
+    name: Token | null;
 }
 
 export interface UnrealClassExpression {
-    op: ParserToken | null;
-    args: (UnrealClassExpression | ParserToken)[];
-    argsFirstToken: ParserToken | null;
-    argsLastToken: ParserToken | null;
+    op: Token | null;
+    args: (UnrealClassExpression | Token)[];
+    argsFirstToken: Token | null;
+    argsLastToken: Token | null;
 }
 
 export interface UnrealClassStatement extends UnrealClassExpression {
     body: UnrealClassStatement[];
-    bodyFirstToken: ParserToken | null;
-    bodyLastToken: ParserToken | null;
+    bodyFirstToken: Token | null;
+    bodyLastToken: Token | null;
 }

@@ -1,9 +1,9 @@
-import { ParserToken } from "../types";
+import { ParserToken as Token } from "..";
 
 
 export interface UnrealClassEnum {
-    name: ParserToken | null;
-    enumeration: ParserToken[];
-    firstToken: ParserToken;
-    lastToken: ParserToken;
+    name: Token | null;
+    enumeration: Token[];
+    firstToken: Token;
+    lastToken: Token;
 }

@@ -1,15 +1,14 @@
-import { SemanticClass, UcParser } from "..";
+import { SemanticClass as C, UcParser } from "..";
 import { UnrealClassStatement } from "../ast/UnrealClassFunction";
 import { Token } from "../types";
 import { parseNoneState } from "./parseNoneState";
-import { getExpressionTokenType } from "./classifyTokenType";
 import { resolveExpression, resolveStatementExpression } from "./resolveExpression";
 
 
 export function parseFnDeclaration(parser: UcParser, token: Token){
     const fn = parser.lastFn;
     fn.name = token;
-    token.classification = SemanticClass.FunctionDeclaration;
+    token.type = C.FunctionDeclaration;
     parser.rootFn = parseFnParamBegin;
 }
 
@@ -62,14 +61,14 @@ function parseStatement(parser: UcParser, token: Token)
     {
     case "local":
         parser.rootFn = parseFnLocalDeclaration;
-        token.classification = SemanticClass.Keyword;
+        token.type = C.Keyword;
         break;
     case "else":
     case "for":
     case "while":
     case "if":
         parser.rootFn = parseControlStatement;
-        token.classification = SemanticClass.Keyword;
+        token.type = C.Keyword;
         const statement: UnrealClassStatement = {
             op: token,
             args: [],
@@ -118,7 +117,7 @@ function parseFnLocalDeclaration(parser: UcParser, token: Token)
         name: null
     });
     parser.rootFn = parseFnLocalVar;
-    token.classification = SemanticClass.TypeReference;
+    token.type = C.TypeReference;
 }
 
 function parseFnLocalVar(parser: UcParser, token: Token)
@@ -131,7 +130,7 @@ function parseFnLocalVar(parser: UcParser, token: Token)
     default:
         const local = parser.lastFnLocal;
         local.name = token;
-        token.classification = SemanticClass.LocalVariable;
+        token.type = C.LocalVariable;
         break;
     }
 }
@@ -154,8 +153,6 @@ function parseExpression(parser: UcParser, token: Token)
         parser.rootFn = parseStatement;
         break;
     default:
-        const type = getExpressionTokenType(token);
-        token.classification = type;
         parser.expressionTokens.push(token);
         break;
     }
@@ -200,8 +197,6 @@ function parseControlCondition(parser: UcParser, token: Token)
     case ")":
         parser.parenOpenCount--;
         if (parser.parenOpenCount !== 0){
-            const type = getExpressionTokenType(token);
-            token.classification = type;
             parser.expressionTokens.push(token);
             break;
         }
@@ -229,8 +224,6 @@ function parseControlCondition(parser: UcParser, token: Token)
         parser.parenOpenCount++;
         // intentionally let through
     default:
-        const type = getExpressionTokenType(token);
-        token.classification = type;
         parser.expressionTokens.push(token);
         break;
     }
@@ -280,8 +273,6 @@ function parseSingleStatementBody(parser: UcParser, token: Token)
         endCurrentStatementOrFunctionBlock(parser, token);
         break;
     default:
-        const type = getExpressionTokenType(token);
-        token.classification = type;
         parser.expressionTokens.push(token);
         break;
     }
