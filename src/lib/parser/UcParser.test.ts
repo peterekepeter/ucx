@@ -357,6 +357,27 @@ test("parse recovers from bad control statement", () => { parsing(`
     .hasFunction(5, { name: 'ModifyPlayer' });
 });
 
+test("parse if statement without brackets", () => { parsing(`
+    function PreBeginPlay(){
+        if (bFirstRun)
+            Init();
+    }
+    `)
+    .hasNoErrors()
+    .hasFunction(0, { 
+        name: "PreBeginPlay", 
+        body: [{
+            op: "if",
+            args: ['bFirstRun'],
+            bodyFirst: 'Init',
+            bodyLast: ';',
+            body: [{
+                op: "Init"
+            }]
+        }] 
+    });
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);

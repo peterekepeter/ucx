@@ -128,11 +128,11 @@ export class AstIndentRule implements AstBasedLinter
         if (!first || !last){
             return;
         }
-        for (let i=first.line + 1; i<=last.line; i++){
-            this.indent[i] += 1;
-        }
+        const from = first.line + 1;
+        const to = last.line;
+        this.paintIndentLines(from, to);
     }
-
+    
     paintBlockScope(
         first?: ParserToken | null,
         last?: ParserToken | null
@@ -140,7 +140,17 @@ export class AstIndentRule implements AstBasedLinter
         if (!first || !last){
             return;
         }
-        for (let i=first.line + 1; i<last.line; i++){
+        let from = first.line;
+        let to = last.line;
+        if (last.text === '}' || last.text === ')'){
+            from += 1;
+            to -= 1;
+        }
+        this.paintIndentLines(from, to);
+    }
+
+    paintIndentLines(from: number, to: number) {
+        for (let i=from; i<=to; i++){
             this.indent[i] += 1;
         }
     }

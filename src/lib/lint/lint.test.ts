@@ -121,6 +121,16 @@ test('lint indent only increases once when multiple scopes combine on same line'
     }).hasResult({ line: 3, fixedText: '\t' });
 });
 
+test('lint indent single statement if without braces', () => {
+    linting([
+        'function Init() {',
+        '    if (bFirstRun)',
+        '        SaveConfig();',
+        '}'
+    ]).hasResult({ line: 1, fixedText: '\t' 
+    }).hasResult({ line: 2, fixedText: '\t\t' 
+    });
+});
 
 function linting(lines: string[]) {
     const parser = new UcParser();

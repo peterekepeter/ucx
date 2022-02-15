@@ -242,8 +242,35 @@ function parseAfterControlCondition(parser: UcParser, token: Token)
         parser.lastStatement.bodyFirstToken = token;
         break;
     default:
-        const message = "Expected '{'";
-        parser.result.errors.push({ token, message });
+        parser.rootFn = parseSingleStatementBody;
+        parser.lastStatement.bodyFirstToken = token;
+        parseSingleStatementBody(parser, token);
+        break;
+    }
+}
+
+function parseSingleStatementBody(parser: UcParser, token: Token)
+{
+    switch (token.text){
+    case ";":
+        parser.lastStatement.body.push(resolveStatementExpression(parser.expressionTokens));
+        parser.lastStatement.bodyLastToken = token;
+        parser.expressionTokens = [];
+        endCurrentStatementBlock(parser, token);
+        parser.rootFn = parseStatement;
+        break;
+    case "}":
+        parser.lastStatement.body.push(resolveStatementExpression(parser.expressionTokens));
+        parser.lastStatement.bodyLastToken = token;
+        parser.expressionTokens = [];
+        endCurrentStatementBlock(parser, token);
+        // } will also close enclosing scope
+        endCurrentStatementOrFunctionBlock(parser, token);
+        break;
+    default:
+        const type = getExpressionTokenType(token);
+        token.classification = type;
+        parser.expressionTokens.push(token);
         break;
     }
 }
