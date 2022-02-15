@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { ALL_RULES } from './lib/lint/token-rules';
+import { ALL_RULES, ALL_V2_TOKEN_RULES } from './lib/lint/token-rules';
 import { KeywordFormatRule } from './lib/lint/token-rules/KeywordFormatRule';
 import { ucTokenizeLine } from './lib/tokenizer/ucTokenizeLine';
 import { TokenBasedLinter } from './lib/lint/TokenBasedLinter';
@@ -106,7 +106,7 @@ export function activate(context: vscode.ExtensionContext) {
             for (const token of ast.tokens){
                 let type: number | undefined;
                 let modifier: number | undefined = undefined;
-                switch(token.classification){
+                switch(token.type){
                 case SemanticClass.Comment: 
                     type = TOKEN_TYPE_COMMENT; 
                     break;
@@ -333,6 +333,16 @@ function* processLinterRules(document: vscode.TextDocument, tokenRules: TokenBas
         if (astResult != null){
             for (const item of astResult){
                 yield item;
+            }
+        }
+    }
+    for (const token of ast.tokens){
+        for (const rule of ALL_V2_TOKEN_RULES){
+            const result = rule.nextToken(token);
+            if (result != null){
+                for (const item of result){
+                    yield item;
+                }
             }
         }
     }

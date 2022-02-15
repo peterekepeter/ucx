@@ -18,7 +18,7 @@ export function parseClassName(parser: UcParser, token: Token) {
 
 function parseClassDecorators(parser: UcParser, token: Token) { 
     let message: string;
-    switch (token.text)
+    switch (token.textLower)
     {
     case 'expands':
     case 'extends':

@@ -1,6 +1,7 @@
 import { ALL_AST_RULES } from "./ast-rules";
 import { LintResult } from "./LintResult";
 import { UcParser, ucTokenizeLine } from "..";
+import { ALL_V2_TOKEN_RULES } from "./token-rules";
 
 test('linting indent class declaration', () => {
     linting([
@@ -157,6 +158,16 @@ test('lint indent if with function call in condition', () => {
     });
 });
 
+test("lint keyword casing", () => {
+    linting([
+        'Class Test ExPands Actor;',
+        'Const MAX = 5;'
+    ]).hasResult({ line:0, originalText: 'Class', fixedText: 'class' 
+    }).hasResult({ line:0, position: 11, originalText: 'ExPands', fixedText: 'expands' 
+    }).hasResult({ line:1, originalText: 'Const', fixedText: 'const' 
+    });
+});
+
 function linting(lines: string[]) {
     const parser = new UcParser();
     for (let i = 0; i < lines.length; i++) {
@@ -173,6 +184,15 @@ function linting(lines: string[]) {
         const result = rule.lint(ast);
         if (result){
             results = [...results, ...result];
+        }
+    }
+
+    for (const token of ast.tokens){
+        for (const rule of ALL_V2_TOKEN_RULES) {
+            const result = rule.nextToken(token);
+            if (result != null){
+                results.push(...result);
+            }
         }
     }
 
