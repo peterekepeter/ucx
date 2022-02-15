@@ -132,6 +132,18 @@ test('lint indent single statement if without braces', () => {
     });
 });
 
+test('lint indent single statment if on one line', () => {
+    linting([
+        'function Init(object M)',
+        '{',
+        '   if (M == self) return;',
+        '   Count = 0;',
+        '}'
+    ]).hasResult({ line: 2, fixedText: '\t' 
+    }).hasResult({ line: 3, fixedText: '\t' 
+    });
+});
+
 function linting(lines: string[]) {
     const parser = new UcParser();
     for (let i = 0; i < lines.length; i++) {

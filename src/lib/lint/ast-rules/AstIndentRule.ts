@@ -20,16 +20,16 @@ export class AstIndentRule implements AstBasedLinter
         this.indent = new Array(ast.textLines.length);
         this.indent.fill(0);
         
-        this.paintDeclarationScope(
+        this.paintScope(
             ast.classDeclarationFirstToken, ast.classDeclarationLastToken);
         
         for (const variable of ast.variables){
-            this.paintDeclarationScope(
+            this.paintScope(
                 variable.firstToken, variable.lastToken);
         }
 
         for (const fn of ast.functions){
-            this.paintBlockScope(fn.bodyFirstToken, fn.bodyLastToken);
+            this.paintScope(fn.bodyFirstToken, fn.bodyLastToken);
             this.recursivePaintStatementScopes(fn.body);
         }
     }
@@ -96,14 +96,14 @@ export class AstIndentRule implements AstBasedLinter
 
     recursivePaintStatementScopes(body: UnrealClassStatement[]): void {
         for (const st of body) {
-            if (st.argsLastToken?.text !== ')'){
-                this.paintDeclarationScope(st.argsFirstToken, st.argsLastToken);
-            } else {
-                this.paintBlockScope(st.argsFirstToken, st.argsLastToken);
-            }
+            this.paintScope(st.argsFirstToken, st.argsLastToken);
             this.recursivePaintArgsScope(st.args);
 
-            this.paintBlockScope(st.bodyFirstToken, st.bodyLastToken);
+            if (st.bodyFirstToken?.text !== '{'){
+                this.paintScope(st.op, st.bodyLastToken);
+            } else {
+                this.paintScope(st.bodyFirstToken, st.bodyLastToken);
+            }
             this.recursivePaintStatementScopes(st.body);
         }
     }
@@ -111,17 +111,13 @@ export class AstIndentRule implements AstBasedLinter
     recursivePaintArgsScope(args: (UnrealClassExpression | ParserToken)[]) {
         for (const arg of args) {
             if ('argsFirstToken' in arg){
-                if (arg.argsLastToken?.text !== ')'){
-                    this.paintDeclarationScope(arg.argsFirstToken, arg.argsLastToken);
-                } else {
-                    this.paintBlockScope(arg.argsFirstToken, arg.argsLastToken);
-                }
+                this.paintScope(arg.argsFirstToken, arg.argsLastToken)
                 this.recursivePaintArgsScope(arg.args);
             }
         }
     }
 
-    paintDeclarationScope(
+    paintScope(
         first?: ParserToken | null,
         last?: ParserToken | null
     ) {
@@ -129,22 +125,11 @@ export class AstIndentRule implements AstBasedLinter
             return;
         }
         const from = first.line + 1;
-        const to = last.line;
-        this.paintIndentLines(from, to);
-    }
-    
-    paintBlockScope(
-        first?: ParserToken | null,
-        last?: ParserToken | null
-    ) {
-        if (!first || !last){
-            return;
-        }
-        let from = first.line;
         let to = last.line;
-        if (last.text === '}' || last.text === ')'){
-            from += 1;
-            to -= 1;
+        if (last.text !== '}' && last.text !== ')') {
+            // declaration scope
+        } else { 
+            to -= 1; // block scope
         }
         this.paintIndentLines(from, to);
     }
