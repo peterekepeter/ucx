@@ -2,7 +2,6 @@ import {AstBasedLinter} from "../AstBasedLinter";
 import { LintResult } from "../LintResult";
 import { UnrealClass } from "../../";
 import { ParserToken } from "../../parser";
-import { getIndentLevel } from "../../indentation/getIndentLevel";
 import { toIndentString } from "../../indentation/toIndentString";
 import { UnrealClassExpression, UnrealClassStatement } from "../../parser/ast/UnrealClassFunction";
 
@@ -12,8 +11,12 @@ export class AstIndentRule implements AstBasedLinter
     indent: number[] = [];
 
     lint(ast: UnrealClass): LintResult[] {
-        const eofLine = (ast.classLastToken?.line ?? 0) + 1;
-        const results: LintResult[] = [];
+        this.paintScopes(ast);
+        this.collapseDeepIndent(ast);
+        return this.gatherLinterResults(ast);
+    }
+    
+    paintScopes(ast: UnrealClass) {        
         this.indent = new Array(ast.textLines.length);
         this.indent.fill(0);
         
@@ -29,7 +32,9 @@ export class AstIndentRule implements AstBasedLinter
             this.paintBlockScope(fn.bodyFirstToken, fn.bodyLastToken);
             this.recursivePaintStatementScopes(fn.body);
         }
+    }
 
+    collapseDeepIndent(ast: UnrealClass){
         let prevIndent = 0;
         for (let line=0; line<ast.textLines.length; line++)
         {
@@ -64,7 +69,10 @@ export class AstIndentRule implements AstBasedLinter
                 prevIndent = indent;
             }
         }
+    }
 
+    gatherLinterResults(ast: UnrealClass): LintResult[] {
+        const results: LintResult[] = [];
         for (let line=0; line<ast.textLines.length; line++)
         {
             const textLine = ast.textLines[line];
@@ -83,13 +91,10 @@ export class AstIndentRule implements AstBasedLinter
                 });
             }
         }
-
-
-
         return results;
     }
 
-    recursivePaintStatementScopes(body: UnrealClassStatement[]) {
+    recursivePaintStatementScopes(body: UnrealClassStatement[]): void {
         for (const st of body) {
             if (st.argsLastToken?.text !== ')'){
                 this.paintDeclarationScope(st.argsFirstToken, st.argsLastToken);
