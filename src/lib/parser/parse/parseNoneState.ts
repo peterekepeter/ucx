@@ -38,6 +38,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
         parser.result.enums.push({
             name: null,
             firstToken: token,
+            firstBodyToken: token,
             lastToken: token,
             enumeration: [],
         });

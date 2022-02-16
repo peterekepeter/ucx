@@ -12,6 +12,7 @@ export function parseEnumDeclaration(parser: UcParser, token: Token) {
 function parseEnumNameParsed(parser: UcParser, token: Token) {
     if (token.text === "{") {
         parser.rootFn = parseEnumBody;
+        parser.lastEnum.firstBodyToken = token;
         return;
     }
 }

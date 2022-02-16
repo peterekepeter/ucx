@@ -168,6 +168,28 @@ test("lint keyword casing", () => {
     });
 });
 
+test("lint indent enum", () => {
+    linting([
+        'enum TestEnum {',
+        '   TE_Stuff',
+        '   TE_MoreStuff',
+        '}'
+    ]).hasResult({ line: 1, fixedText:'\t' 
+    }).hasResult({ line: 2, fixedText:'\t' 
+    });
+});
+
+test("lint indent enum with bracket newline", () => {
+    linting([
+        'enum TestEnum',
+        ' {',
+        '   TE_MoreStuff',
+        ' }'
+    ]).hasResult({ line: 1, fixedText:'' 
+    }).hasResult({ line: 2, fixedText:'\t' 
+    });
+});
+
 function linting(lines: string[]) {
     const parser = new UcParser();
     for (let i = 0; i < lines.length; i++) {
