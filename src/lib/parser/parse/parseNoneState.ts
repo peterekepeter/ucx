@@ -11,11 +11,17 @@ import { UcParser } from "../UcParser";
 export function parseNoneState(parser: UcParser, token: Token) {
     switch (token.textLower) {
 
+    case 'static':
+        token.type = SemanticClass.Keyword;
+        parser.modifiers.push(token);
+        break;
+
     case 'class':
         parser.rootFn = parseClassName;
         parser.result.classFirstToken = token;
         parser.result.classDeclarationFirstToken = token;
         token.type = SemanticClass.Keyword;
+        clearModifiers(parser);
         break;
 
     case 'var':
@@ -31,6 +37,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
             lastToken: token,
         });
         token.type = SemanticClass.Keyword;
+        clearModifiers(parser);
         break;
 
     case 'enum':
@@ -43,6 +50,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
             enumeration: [],
         });
         token.type = SemanticClass.Keyword;
+        clearModifiers(parser);
         break;
 
     case 'const':
@@ -52,6 +60,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
             value: null
         });
         token.type = SemanticClass.Keyword;
+        clearModifiers(parser);
         break;
 
     case 'function':
@@ -61,9 +70,11 @@ export function parseNoneState(parser: UcParser, token: Token) {
             locals: [],
             body: [],
             bodyFirstToken: null,
-            bodyLastToken: null
+            bodyLastToken: null,
+            isStatic: parser.modifiers.findIndex(m => m.textLower === 'static') !== -1,
         });
         token.type = SemanticClass.Keyword;
+        clearModifiers(parser);
         break;
 
     default:
@@ -72,3 +83,10 @@ export function parseNoneState(parser: UcParser, token: Token) {
         break;
     }
 }
+
+function clearModifiers(parser: UcParser) {
+    if (parser.modifiers.length > 0){
+        parser.modifiers = [];
+    }
+}
+

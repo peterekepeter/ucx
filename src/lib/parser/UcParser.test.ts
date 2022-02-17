@@ -435,6 +435,16 @@ test("parse else if statement", () => { parsing(`
     .hasNoErrors();
 });
 
+test("parse static function", () => { parsing(`
+    static function Hello(){
+        Log("Hello World!");
+    }
+    `)
+    .hasFunction(0, { name: "Hello", isStatic: true })
+    .hasNoErrors();
+;
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
@@ -489,7 +499,8 @@ function parsing(input: string) {
                    name?:string,
                    type?:string 
                 }[],
-                body?:StatementCheckObj[]
+                body?:StatementCheckObj[],
+                isStatic?: boolean,
             }){
             const obj = ast.functions[index];
             checkMatches({
@@ -498,7 +509,8 @@ function parsing(input: string) {
                     name: l.name?.text,
                     type: l.type?.text
                 })),
-                body: mapBodyToCheck(obj?.body) ?? []
+                body: mapBodyToCheck(obj?.body) ?? [],
+                isStatic: obj.isStatic,
             }, props);
             return checks;
         }

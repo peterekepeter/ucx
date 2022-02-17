@@ -71,6 +71,13 @@ test('tokens else if recognized as keyowrds', () => parsing(`
     ["bAnotherFeature", C.Identifier]
 ));
 
+test('tokens static function', () => parsing(`
+    static function Init() {}
+`).hasTokens(
+    ['static', C.Keyword],
+    ['function', C.Keyword]
+));
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
