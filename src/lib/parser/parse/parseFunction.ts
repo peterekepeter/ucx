@@ -1,5 +1,5 @@
 import { SemanticClass as C, SemanticClass, UcParser } from "..";
-import { UnrealClassStatement } from "../ast/UnrealClassFunction";
+import { UnrealClassFunctionArgument, UnrealClassStatement } from "../ast/UnrealClassFunction";
 import { Token } from "../types";
 import { parseNoneState } from "./parseNoneState";
 import { resolveExpression, resolveStatementExpression } from "./resolveExpression";
@@ -34,6 +34,7 @@ function parseFnParamBegin(parser:UcParser, token:Token){
     let message = '';
     switch (token.text){
     case "(":
+        parser.fnArgTokens = [];
         parser.rootFn = parseFnParams;
         break;
     default: 
@@ -45,14 +46,22 @@ function parseFnParamBegin(parser:UcParser, token:Token){
 
 function parseFnParams(parser: UcParser, token: Token)
 {
+    const fn = parser.lastFn;
     let message = '';
     switch (token.text){
+    case ",":
+        token.type = SemanticClass.None;
+        fn.fnArgs.push(resolveFnArg(parser.fnArgTokens));
+        parser.fnArgTokens = [];
+        break;
     case ")":
+        if (parser.fnArgTokens.length > 0){
+            fn.fnArgs.push(resolveFnArg(parser.fnArgTokens));
+        }
         parser.rootFn = parseFnAfterParameters;
         break;
     default: 
-        message = "Expected function pameter or closing parentheis ')'";
-        parser.result.errors.push({ token, message });
+        parser.fnArgTokens.push(token);
         break;
     }
 }
@@ -331,4 +340,26 @@ function endCurrentStatementBlock(parser: UcParser, endingToken: Token){
     if (!popped.bodyFirstToken) {
         popped.bodyFirstToken = endingToken;
     }
+}
+
+function resolveFnArg(tokens: Token[]): UnrealClassFunctionArgument {
+    const name = tokens.length >= 1 ? tokens[tokens.length - 1] : null;
+    const type = tokens.length >= 2 ? tokens[tokens.length - 2] : null;
+    if (name != null){
+        name.type = C.LocalVariable;
+    }
+    if (type != null){
+        type.type = C.TypeReference;
+    }
+    const modifiers = tokens.length >= 3 ? tokens.slice(0, tokens.length - 2) : [];
+    let isOut = false;
+    for (const modifier of modifiers){
+        if (modifier.textLower === 'out'){
+            isOut = true;
+            modifier.type = C.Keyword;
+        } else {
+            // error! 
+        }
+    }
+    return { name, type, isOut };
 }

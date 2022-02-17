@@ -466,6 +466,34 @@ test("parse function return", () => { parsing(`
     });
 });
 
+test("parse function argument", () => { parsing(`
+    function int DoubleIt(int num){
+        return num*2;
+    }`)
+    .hasFunction(0, {
+        fnArgs:[{
+            type: 'int', 
+            name: 'num'
+        }]
+    });
+});
+
+test("parse function argument out", () => { parsing(`
+    function DoubleIt(int num, out int result) {
+        result = num * 2;
+    }`)
+    .hasFunction(0, {
+        fnArgs: [{
+            type: 'int',
+            name: 'num',
+        }, {
+            type: 'int',
+            name: 'result',
+            isOut: true,
+        }]
+    });
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
@@ -523,17 +551,27 @@ function parsing(input: string) {
                 body?:StatementCheckObj[],
                 isStatic?: boolean,
                 returnType?: string,
+                fnArgs?: { 
+                    type?: string,
+                    name?: string,
+                    isOut?: boolean
+                }[]
             }){
             const obj = ast.functions[index];
             checkMatches({
                 name: obj?.name?.text,
                 locals: obj?.locals?.map(l => ({
                     name: l.name?.text,
-                    type: l.type?.text
+                    type: l.type?.text,
                 })),
                 body: mapBodyToCheck(obj?.body) ?? [],
                 isStatic: obj.isStatic,
-                returnType: obj.returnType?.text
+                returnType: obj.returnType?.text,
+                fnArgs: obj.fnArgs.map(a => ({ 
+                    name:a.name?.text,
+                    type: a.type?.text,
+                    isOut: a.isOut, 
+                }))
             }, props);
             return checks;
         }

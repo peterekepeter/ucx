@@ -72,7 +72,8 @@ export function parseNoneState(parser: UcParser, token: Token) {
             bodyFirstToken: null,
             bodyLastToken: null,
             isStatic: parser.modifiers.findIndex(m => m.textLower === 'static') !== -1,
-            returnType: null
+            returnType: null,
+            fnArgs: []
         });
         token.type = SemanticClass.Keyword;
         clearModifiers(parser);

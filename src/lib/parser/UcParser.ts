@@ -33,6 +33,7 @@ export class UcParser{
     codeBlockStack: UnrealClassStatement[] = [];
     parenOpenCount = 0;
     modifiers: Token[] = [];
+    fnArgTokens: Token[] = [];
 
     getAst() {
         return this.result;

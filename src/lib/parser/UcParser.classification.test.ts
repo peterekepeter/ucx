@@ -87,6 +87,28 @@ test('return statement detects return as keyword', () => parsing(`
     ['42', C.LiteralNumber]
 ));
 
+test('function parameters', () => parsing(`
+    function int Test(int a, int b) { }
+`).hasTokens(
+    ['(', C.None],
+    ['int', C.TypeReference],
+    ['a', C.LocalVariable],
+    [',', C.None],
+    ['int', C.TypeReference],
+    ['b', C.LocalVariable],
+    [')', C.None]
+));
+
+test('function parameters out modifier detected as keyword', () => parsing(`
+    function int Test(out int a) { }
+`).hasTokens(
+    ['(', C.None],
+    ['out', C.Keyword],
+    ['int', C.TypeReference],
+    ['a', C.LocalVariable]
+));
+
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);

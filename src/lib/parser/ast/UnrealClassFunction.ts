@@ -9,6 +9,7 @@ export interface UnrealClassFunction {
     bodyLastToken: Token | null;
     isStatic?: boolean;
     returnType: Token | null;
+    fnArgs: UnrealClassFunctionArgument[];
 }
 
 export interface UnrealClassFunctionLocal {
@@ -27,4 +28,10 @@ export interface UnrealClassStatement extends UnrealClassExpression {
     body: UnrealClassStatement[];
     bodyFirstToken: Token | null;
     bodyLastToken: Token | null;
+}
+
+export interface UnrealClassFunctionArgument {
+    type: Token | null,
+    name: Token | null,
+    isOut: boolean;
 }
