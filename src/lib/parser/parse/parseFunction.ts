@@ -164,7 +164,7 @@ function parseExpression(parser: UcParser, token: Token)
 function parseControlStatement(parser: UcParser, token: Token)
 {
     let message = "Error";
-    switch (token.text){
+    switch (token.textLower){
     case "{":
         parser.rootFn = parseStatement;
         parser.lastStatement.bodyFirstToken = token;
@@ -185,6 +185,13 @@ function parseControlStatement(parser: UcParser, token: Token)
         // } will also close enclosing scope
         endCurrentStatementOrFunctionBlock(parser, token);
         break;
+    case "if":
+        if (parser.lastStatement.op?.textLower === 'else')
+        {
+            // this is an else if
+            token.type = C.Keyword;
+            break;
+        }
     default:
         message = "Expected '(' or '{' after keyword.";
         parser.result.errors.push({ token, message });

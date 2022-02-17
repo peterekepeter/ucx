@@ -58,6 +58,18 @@ test('tokens fn call with no params', () => parsing(`
     [")", C.None]
 ));
 
+test('tokens else if recognized as keyowrds', () => parsing(`
+    function PreBeginPlay(){
+        if (bFeature) {} 
+        else if (bAnotherFeature) {}
+    }
+`).hasTokens(
+    ["}", C.None],
+    ["else", C.Keyword],
+    ["if", C.Keyword],
+    ["(", C.None],
+    ["bAnotherFeature", C.Identifier]
+));
 
 function parsing(input: string) {
     const parser = new UcParser();

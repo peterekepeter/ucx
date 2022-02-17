@@ -423,6 +423,18 @@ test("parse if statement with function call in condition", () => { parsing(`
     .hasNoErrors();
 });
 
+test("parse else if statement", () => { parsing(`
+    function Init(){
+        if (OptionA) { Log("A"); }
+        else if (OptionB) { Log("B"); }
+        else { Log("None"); }
+    }`)
+    .hasFunction(0, {
+        name:"Init"
+    })
+    .hasNoErrors();
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
