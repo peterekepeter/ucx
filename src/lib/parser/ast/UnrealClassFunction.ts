@@ -8,6 +8,7 @@ export interface UnrealClassFunction {
     bodyFirstToken: Token | null;
     bodyLastToken: Token | null;
     isStatic?: boolean;
+    returnType: Token | null;
 }
 
 export interface UnrealClassFunctionLocal {

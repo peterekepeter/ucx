@@ -1,4 +1,4 @@
-import { SemanticClass as C, UcParser } from "..";
+import { SemanticClass as C, SemanticClass, UcParser } from "..";
 import { UnrealClassStatement } from "../ast/UnrealClassFunction";
 import { Token } from "../types";
 import { parseNoneState } from "./parseNoneState";
@@ -9,7 +9,25 @@ export function parseFnDeclaration(parser: UcParser, token: Token){
     const fn = parser.lastFn;
     fn.name = token;
     token.type = C.FunctionDeclaration;
-    parser.rootFn = parseFnParamBegin;
+    parser.rootFn = parseFnParamBeginOrName;
+}
+
+function parseFnParamBeginOrName(parser: UcParser, token:Token){
+    switch (token.text){
+    case "(":
+        parseFnParamBegin(parser, token);
+        break;
+    default:
+        const fn = parser.lastFn;
+        if (fn.name != null){
+            // misinterpreted, name is actually the type
+            fn.returnType = fn.name;
+            fn.returnType.type = C.TypeReference;
+        }
+        fn.name = token;
+        token.type = C.FunctionDeclaration;
+        break;
+    }
 }
 
 function parseFnParamBegin(parser:UcParser, token:Token){
@@ -99,6 +117,8 @@ function parseStatement(parser: UcParser, token: Token)
     case "}":
         endCurrentStatementOrFunctionBlock(parser, token);
         break;
+    case "return":
+        token.type = SemanticClass.Keyword;
     default:
         // default to expression
         parser.expressionTokens = [];

@@ -78,6 +78,15 @@ test('tokens static function', () => parsing(`
     ['function', C.Keyword]
 ));
 
+test('return statement detects return as keyword', () => parsing(`
+    static function int Init() {
+        return 42;
+    }
+`).hasTokens(
+    ['return', C.Keyword],
+    ['42', C.LiteralNumber]
+));
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);

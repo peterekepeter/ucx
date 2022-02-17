@@ -445,6 +445,27 @@ test("parse static function", () => { parsing(`
 ;
 });
 
+test("parse function return type", () => { parsing(`
+    function bool IsAlive() {}
+    `)
+    .hasFunction(0,{
+        name: 'IsAlive',
+        returnType: 'bool',
+    });
+});
+
+test("parse function return", () => { parsing(`
+    function int GetNumber(){
+        return 42;
+    }`)
+    .hasFunction(0, {
+        body: [{
+            op: 'return',
+            args: ['42']
+        }]
+    });
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
@@ -501,6 +522,7 @@ function parsing(input: string) {
                 }[],
                 body?:StatementCheckObj[],
                 isStatic?: boolean,
+                returnType?: string,
             }){
             const obj = ast.functions[index];
             checkMatches({
@@ -511,6 +533,7 @@ function parsing(input: string) {
                 })),
                 body: mapBodyToCheck(obj?.body) ?? [],
                 isStatic: obj.isStatic,
+                returnType: obj.returnType?.text
             }, props);
             return checks;
         }
