@@ -494,6 +494,14 @@ test("parse function argument out", () => { parsing(`
     });
 });
 
+test("parse variable with array", () => { parsing(`
+    var string Items[32];
+    `)
+    .hasVariable(0, 'string', 'Items', {
+        array: 32,
+    });
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
@@ -512,7 +520,7 @@ function parsing(input: string) {
         isAbstract: (flag: boolean) => checkEquals(flag, ast.isAbstract, "isAbstract should be " + flag),
         isNative: (flag: boolean) => checkEquals(flag, ast.isNative, "isNative should be " + flag),
         hasNativeReplication: (flag: boolean) => checkEquals(flag, ast.isNativeReplication, "hasNativeReplication should be " + flag),
-        hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean }) => {
+        hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean, array?:number }) => {
             checkEquals(ast.variables[index]?.type?.text, type);
             checkEquals(ast.variables[index]?.name?.text, name);
             if (props?.transient != null) {
@@ -527,6 +535,9 @@ function parsing(input: string) {
             if (props?.config != null) {
                 checkEquals(ast.variables[index]?.isConfig, props.config);
             } 
+            if (props?.array != null){
+                checkEquals(ast.variables[index]?.arrayCount, props.array);
+            }
             return checks;
         },
         hasEnum: (index: number, name: string, enumIndex: number, enumName: string) => {

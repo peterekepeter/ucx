@@ -65,6 +65,12 @@ test("tokenize for loop", () => verifyTokens(`
     'for', '(', 'P', '=', 'Level', '.', 'PawnList', ';', 'P', '!=', 'None', ';', 'P', '=', 'P', '.', 'nextPawn', ')'
 ]));
 
+test("tokenize var array", () => verifyTokens(`
+    var string Items[32];
+`, [
+    'var', 'string', 'Items', '[', '32', ']', ';'
+]));
+
 test("tokenzie positions", () => {
     expect(ucTokenizeLine("local int i;")).toEqual([
         { 

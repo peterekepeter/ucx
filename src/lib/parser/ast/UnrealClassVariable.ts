@@ -9,4 +9,6 @@ export interface UnrealClassVariable {
     isConfig: boolean;
     firstToken: Token;
     lastToken: Token;
+    arrayCountToken: Token | null;
+    arrayCount: number | null;
 }

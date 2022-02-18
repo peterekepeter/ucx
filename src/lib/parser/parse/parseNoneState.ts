@@ -35,6 +35,8 @@ export function parseNoneState(parser: UcParser, token: Token) {
             isConfig: false,
             firstToken: token,
             lastToken: token,
+            arrayCount: null,
+            arrayCountToken: null
         });
         token.type = SemanticClass.Keyword;
         clearModifiers(parser);

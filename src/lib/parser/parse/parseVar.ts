@@ -69,12 +69,44 @@ function parseVarName(parser: UcParser, token: Token) {
 function parseVarNext(parser: UcParser, token: Token) {
     const variable = parser.lastVar;
     switch (token.text) {
+    case '[':
+        parser.rootFn = parseArrayCount;
+        break;
     case ';':
         variable.lastToken = token;
         parser.rootFn = parseNoneState;
         break;
     default:
         parser.result.errors.push({ token, message: 'Expecting ";" after variable name.' });
+        break;
+    }
+}
+
+function parseArrayCount(parser: UcParser, token:Token){
+    const variable = parser.lastVar;
+    switch (token.text){
+    default:
+        variable.arrayCountToken = token;
+        variable.arrayCount = parseInt(token.text);
+        parser.rootFn = parseAfterArrayCount;
+        break;
+    }
+}
+
+function parseAfterArrayCount(parser: UcParser, token:Token){
+    const variable = parser.lastVar;
+    switch (token.text){
+    case ']':
+        parser.rootFn = parseVarNext;
+        break;
+    case ';':
+        variable.lastToken = token;
+        parser.rootFn = parseNoneState;
+        parser.result.errors.push({ token, message: "Expected ']' before ';'"});
+        break;
+    default:
+        parser.rootFn = parseVarNext;
+        parser.result.errors.push({ token, message: "Expected ']'"});
         break;
     }
 }
