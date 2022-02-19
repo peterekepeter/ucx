@@ -3,16 +3,17 @@ import { parseEnumDeclaration } from "./parseEnum";
 import { parseConstDeclaration } from "./parseConst";
 import { parseClassName } from "./parseClass";
 import { Token } from "../types";
-import { SemanticClass } from "../token/SemanticClass";
+import { SemanticClass as C } from "../token/SemanticClass";
 import { parseFnDeclaration } from "./parseFunction";
 import { UcParser } from "../UcParser";
+import { parseDefaultProperties } from "./parseDefaultProperties";
 
 
 export function parseNoneState(parser: UcParser, token: Token) {
     switch (token.textLower) {
 
     case 'static':
-        token.type = SemanticClass.Keyword;
+        token.type = C.Keyword;
         parser.modifiers.push(token);
         break;
 
@@ -20,7 +21,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
         parser.rootFn = parseClassName;
         parser.result.classFirstToken = token;
         parser.result.classDeclarationFirstToken = token;
-        token.type = SemanticClass.Keyword;
+        token.type = C.Keyword;
         clearModifiers(parser);
         break;
 
@@ -38,7 +39,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
             arrayCount: null,
             arrayCountToken: null
         });
-        token.type = SemanticClass.Keyword;
+        token.type = C.Keyword;
         clearModifiers(parser);
         break;
 
@@ -51,7 +52,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
             lastToken: token,
             enumeration: [],
         });
-        token.type = SemanticClass.Keyword;
+        token.type = C.Keyword;
         clearModifiers(parser);
         break;
 
@@ -61,7 +62,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
             name: null,
             value: null
         });
-        token.type = SemanticClass.Keyword;
+        token.type = C.Keyword;
         clearModifiers(parser);
         break;
 
@@ -77,8 +78,13 @@ export function parseNoneState(parser: UcParser, token: Token) {
             returnType: null,
             fnArgs: []
         });
-        token.type = SemanticClass.Keyword;
+        token.type = C.Keyword;
         clearModifiers(parser);
+        break;
+
+    case 'defaultproperties':
+        parser.rootFn = parseDefaultProperties;
+        token.type = C.Keyword;
         break;
 
     default:

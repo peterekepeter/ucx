@@ -190,6 +190,18 @@ test("lint indent enum with bracket newline", () => {
     });
 });
 
+test("lint indent default properties", () => {
+    linting([
+        'defaultproperties {',
+        'Description="Your description here!"',
+        'DamageModifier=1.0',
+        '}',
+    ]).hasResult({ line: 1, fixedText:'\t' 
+    }).hasResult({ line: 2, fixedText:'\t' 
+    });
+    
+});
+
 function linting(lines: string[]) {
     const parser = new UcParser();
     for (let i = 0; i < lines.length; i++) {

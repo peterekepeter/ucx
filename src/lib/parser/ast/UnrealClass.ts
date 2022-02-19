@@ -23,6 +23,7 @@ export interface UnrealClass {
     tokens: Token[];
     functions: UnrealClassFunction[];
     textLines: string[];
+    defaultProperties: UnrealClassConstant[];
 }
 
 

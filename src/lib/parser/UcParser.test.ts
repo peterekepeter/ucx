@@ -502,6 +502,17 @@ test("parse variable with array", () => { parsing(`
     });
 });
 
+test("parse default properties section", () => { parsing(`
+    defaultproperties {
+        Description="Your description here!"
+        DamageModifier=1.0
+    }
+    `)
+    .hasNoErrors()
+    .hasDefaultProperty(0, { name: "Description", value: '"Your description here!"' })
+    .hasDefaultProperty(1, { name: "DamageModifier", value: "1.0" });
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
@@ -583,6 +594,14 @@ function parsing(input: string) {
                     type: a.type?.text,
                     isOut: a.isOut, 
                 }))
+            }, props);
+            return checks;
+        },
+        hasDefaultProperty(index: number, props: { name?: string, value?: string }){
+            const obj = ast.defaultProperties[index];
+            checkMatches({
+                name: obj?.name?.text,
+                value: obj?.value?.text
             }, props);
             return checks;
         }

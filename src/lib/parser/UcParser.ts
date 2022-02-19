@@ -27,6 +27,7 @@ export class UcParser{
         constants: [],
         functions: [],
         textLines: [],
+        defaultProperties: [],
     };
     
     expressionTokens: Token[] = [];
@@ -128,7 +129,14 @@ export class UcParser{
         return body[body.length - 1];
     }
 
+    get lastDefaultProperty(): UnrealClassConstant {
+        const list = this.result.defaultProperties;
+        return list[list.length - 1];
+    }
+
 }
+
+
 
 function isLineComment(token: Token) {
     return token.text.startsWith("//");
