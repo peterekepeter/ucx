@@ -66,6 +66,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
         clearModifiers(parser);
         break;
 
+    case 'event':
     case 'function':
         parser.rootFn = parseFnDeclaration;
         parser.result.functions.push({

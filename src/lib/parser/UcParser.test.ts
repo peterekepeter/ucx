@@ -513,6 +513,15 @@ test("parse default properties section", () => { parsing(`
     .hasDefaultProperty(1, { name: "DamageModifier", value: "1.0" });
 });
 
+test("parse event as function", () => { parsing(`
+    event ActorEntered( actor Other )
+    {
+        Log("entered");
+    }`)
+    .hasNoErrors()
+    .hasFunction(0, { name:"ActorEntered" });
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
