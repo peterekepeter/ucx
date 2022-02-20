@@ -2,7 +2,7 @@
 	"name": "uclint",
 	"displayName": "uclint",
 	"description": "UnrealScript linter&formatter",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"repository": "https://github.com/peterekepeter/uclint",
 	"engines": {
 		"vscode": "^1.63.0"
@@ -52,7 +52,7 @@
 		]
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
+		"vscode:prepublish": "npx rimraf ./out && npm run esbuild-base -- --minify",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"pretest": "npm run compile && npm run lint",
@@ -60,7 +60,9 @@
 		"test": "node ./out/test/runTest.js",
 		"unittest": "jest",
 		"unittest:watch": "jest --watch",
-		"pack": "npx vsce package"
+		"pack": "npx vsce package",
+		"esbuild-base": "npx esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
+		"esbuild": "npm run esbuild-base -- --sourcemap"
 	},
 	"devDependencies": {
 		"@types/vscode": "^1.63.0",
