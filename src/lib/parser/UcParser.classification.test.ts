@@ -109,6 +109,33 @@ test('function parameters out modifier detected as keyword', () => parsing(`
 ));
 
 
+test('tokens for default properites', () => parsing(`
+defaultproperties {
+    Description="Your description here!"
+    DamageModifier=1.0
+}`).hasTokens(
+    ['defaultproperties', C.Keyword],
+    ['{', C.None],
+    ['Description', C.ClassVariable],
+    ['=', C.Operator],
+    ['"Your description here!"', C.LiteralString],
+    ['DamageModifier', C.ClassVariable],
+    ['=', C.Operator],
+    ['1.0', C.LiteralNumber],
+    ['}', C.None],
+));
+
+
+test('semicolon at end of statement is not an operator', () => parsing(`
+    function Init(){
+        x = x + 4;
+    }
+`).hasTokens(
+    ["4", C.LiteralNumber],
+    [";", C.None]
+));
+
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);

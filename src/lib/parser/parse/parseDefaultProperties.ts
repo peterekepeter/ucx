@@ -1,3 +1,4 @@
+import { SemanticClass as C } from "..";
 import { Token } from "../types";
 import { UcParser } from "../UcParser";
 import { parseNoneState } from "./parseNoneState";
@@ -27,6 +28,7 @@ function parseProperty(parser: UcParser, token: Token) {
             value: null
         });
         parser.rootFn = parsePropertyEquals;
+        token.type = C.ClassVariable;
         break;
     }
 }
@@ -36,6 +38,7 @@ function parsePropertyEquals(parser: UcParser, token: Token)
     switch (token.text) {
     case '=':
         parser.rootFn = parsePropertyValue;
+        token.type = C.Operator;
         break;
     default:
         parser.result.errors.push({ token, message: "Expecting '=' to assign value" });
