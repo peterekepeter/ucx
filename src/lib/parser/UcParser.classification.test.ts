@@ -135,6 +135,22 @@ test('semicolon at end of statement is not an operator', () => parsing(`
     [";", C.None]
 ));
 
+test('inline comment', () => parsing(`
+    function Init(){
+        x = x /*+ 4*/;
+    }
+`).hasTokens(
+    ["x", C.VariableReference],
+    ["=", C.Operator],
+    ["x", C.VariableReference],
+    ["/*", C.Comment],
+    ["+", C.Comment],
+    ["4", C.Comment],
+    ["*/", C.Comment],
+    [";", C.None]
+));
+
+
 
 function parsing(input: string) {
     const parser = new UcParser();

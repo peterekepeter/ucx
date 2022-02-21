@@ -35,6 +35,7 @@ export class UcParser{
     parenOpenCount = 0;
     modifiers: Token[] = [];
     fnArgTokens: Token[] = [];
+    isMultilineComment = false;
 
     getAst() {
         return this.result;
@@ -85,9 +86,21 @@ export class UcParser{
             token.type = SemanticClass.Comment;
             return;
         }
-        else {
-            this.rootFn(this, token);
+        
+        if (isMultilineCommentStart(token)){
+            this.isMultilineComment = true;
         }
+        
+        if (this.isMultilineComment) {
+            token.type = SemanticClass.Comment;
+            if (isMultilineCommentEnd(token))
+            {
+                this.isMultilineComment = false;
+            }
+            return;
+        }
+        
+        this.rootFn(this, token);
     }
 
     get lastVar() : UnrealClassVariable {
@@ -142,4 +155,10 @@ function isLineComment(token: Token) {
     return token.text.startsWith("//");
 }
 
+function isMultilineCommentStart(token: Token){
+    return token.text.startsWith("/*");
+}
 
+function isMultilineCommentEnd(token: Token){
+    return token.text.endsWith("*/");
+}

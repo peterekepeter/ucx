@@ -202,6 +202,24 @@ test("lint indent default properties", () => {
     
 });
 
+test("lint indent ignores commented lines", () => {
+    linting([
+        '/*enum TestEnum {',
+        '   TE_Stuff',
+        '   TE_MoreStuff',
+        '}*/'
+    ]).hasNoLintResults();
+});
+
+test("lint indent ignores empty lines", () => {
+    linting([
+        'function Test() {',
+        '',
+        '}'
+    ]).hasNoLintResults();
+});
+
+
 function linting(lines: string[]) {
     const parser = new UcParser();
     for (let i = 0; i < lines.length; i++) {
@@ -250,6 +268,9 @@ function linting(lines: string[]) {
             }
             expect(bestMatch).toMatchObject(obj);
             return checks;
+        },
+        hasNoLintResults() {
+            expect(results).toHaveLength(0);
         }
     };
 

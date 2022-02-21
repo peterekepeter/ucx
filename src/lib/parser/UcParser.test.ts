@@ -522,6 +522,20 @@ test("parse event as function", () => { parsing(`
     .hasFunction(0, { name:"ActorEntered" });
 });
 
+test("parse multiline comment", () => { parsing(`
+    function Update(){
+        if ( self.bWaterZone )
+        {
+            PP.SetPhysics(PHYS_Swimming);
+        }
+        /*else
+        {
+            PP.SetPhysics(PHYS_Falling);
+        }*/
+    }`)
+    .hasNoErrors();
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);

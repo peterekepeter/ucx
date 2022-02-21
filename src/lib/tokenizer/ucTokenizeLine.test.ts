@@ -36,7 +36,7 @@ test("tokenize multiline comment", () => verifyTokens(`
      */
 	function test(){ 
 `,[ 
-    '/*  \n     * Something\n     */', 
+    '/*', '*','Something','*/', 
     'function', 'test', '(', ')', '{'
 ]));
 
@@ -69,6 +69,12 @@ test("tokenize var array", () => verifyTokens(`
     var string Items[32];
 `, [
     'var', 'string', 'Items', '[', '32', ']', ';'
+]));
+
+test("tokenize comment start/end", () => verifyTokens(`
+    var string /*Items[32]*/ Item;
+`, [
+    'var', 'string', '/*', 'Items', '[', '32', ']', '*/', 'Item', ';'
 ]));
 
 test("tokenzie positions", () => {

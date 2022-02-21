@@ -1,7 +1,7 @@
 import {AstBasedLinter} from "../AstBasedLinter";
 import { LintResult } from "../LintResult";
 import { UnrealClass } from "../../";
-import { ParserToken } from "../../parser";
+import { ParserToken, SemanticClass } from "../../parser";
 import { toIndentString } from "../../indentation/toIndentString";
 import { UnrealClassExpression, UnrealClassStatement } from "../../parser/ast/UnrealClassFunction";
 
@@ -83,8 +83,21 @@ export class AstIndentRule implements AstBasedLinter
 
     gatherLinterResults(ast: UnrealClass): LintResult[] {
         const results: LintResult[] = [];
+        let j=0;
         for (let line=0; line<ast.textLines.length; line++)
         {
+            let lineFirstToken: ParserToken|null = null;
+            for(;ast.tokens[j]?.line <= line; j++){
+                if (!lineFirstToken && ast.tokens[j].line === line){
+                    lineFirstToken = ast.tokens[j];
+                }
+            }
+            if (lineFirstToken === null){
+                continue; // ignore empty lines
+            }
+            if (lineFirstToken?.type === SemanticClass.Comment){
+                continue; // ignore comment line
+            }
             const textLine = ast.textLines[line];
             const actual = this.getLineIndentString(textLine);
             const expectedCount = this.indent[line] ?? 0;
