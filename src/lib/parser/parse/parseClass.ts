@@ -44,6 +44,11 @@ function parseClassDecorators(parser: UcParser, token: Token) {
         parser.result.isNativeReplication = true;
         token.type = SemanticClass.Keyword;
         break;
+    
+    case 'config':
+        token.type = SemanticClass.Keyword;
+        parser.rootFn = parseConfigOpenParen;
+        break;
 
     case ';':
         parser.result.classDeclarationLastToken = token;
@@ -70,3 +75,36 @@ function parseClassParent(parser: UcParser, token: Token) {
     token.type = SemanticClass.ClassReference;
 }
 
+
+function parseConfigOpenParen(parser: UcParser, token: Token) { 
+    switch (token.text){
+    case "(":
+        parser.rootFn = parseClassConfigName;
+        break;
+    default:
+        parser.result.errors.push({token, message: "Expected '('"});
+        parser.rootFn = parseClassDecorators;
+        break;
+    }
+}
+
+function parseClassConfigName(parser: UcParser, token: Token) { 
+    switch (token.text){
+    default:
+        parser.result.configName = token;
+        parser.rootFn = parseConfigCloseParen;
+        break;
+    }
+}
+
+function parseConfigCloseParen(parser: UcParser, token: Token) { 
+    switch (token.text){
+    case ")":
+        parser.rootFn = parseClassDecorators;
+        break;
+    default:
+        parser.result.errors.push({token, message: "Expected ')'"});
+        parser.rootFn = parseClassDecorators;
+        break;
+    }
+}

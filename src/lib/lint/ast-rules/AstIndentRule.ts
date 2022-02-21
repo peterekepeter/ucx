@@ -134,7 +134,7 @@ export class AstIndentRule implements AstBasedLinter
     recursivePaintArgsScope(args: (UnrealClassExpression | ParserToken)[]) {
         for (const arg of args) {
             if ('argsFirstToken' in arg){
-                this.paintScope(arg.argsFirstToken, arg.argsLastToken)
+                this.paintScope(arg.argsFirstToken, arg.argsLastToken);
                 this.recursivePaintArgsScope(arg.args);
             }
         }

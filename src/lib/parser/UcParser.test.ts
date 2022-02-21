@@ -536,6 +536,13 @@ test("parse multiline comment", () => { parsing(`
     .hasNoErrors();
 });
 
+test("parse class custom config", () => { parsing(`
+    class CustomZone expands ZoneInfo config(MyConfig);
+    `)
+    .hasNoErrors()
+    .hasClassConfig('MyConfig')
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
@@ -550,6 +557,7 @@ function parsing(input: string) {
     const checks = {
         hasClassName: (name: string) => checkEquals(name, ast.name?.text),
         hasParentClassName: (name: string) => checkEquals(name, ast.parentName?.text),
+        hasClassConfig: (name: string) => checkEquals(name, ast.configName?.text),
         hasNoErrors: () => checkEmpty(ast.errors),
         isAbstract: (flag: boolean) => checkEquals(flag, ast.isAbstract, "isAbstract should be " + flag),
         isNative: (flag: boolean) => checkEquals(flag, ast.isNative, "isNative should be " + flag),

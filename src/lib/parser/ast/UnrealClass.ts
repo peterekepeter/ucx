@@ -7,6 +7,7 @@ import { UnrealClassVariable } from "./UnrealClassVariable";
 
 
 export interface UnrealClass {
+    configName?: Token | null;
     classFirstToken?: Token | null;
     classLastToken?: Token | null;
     classDeclarationFirstToken?: Token;
