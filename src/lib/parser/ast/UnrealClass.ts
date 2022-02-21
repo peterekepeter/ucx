@@ -25,6 +25,11 @@ export interface UnrealClass {
     functions: UnrealClassFunction[];
     textLines: string[];
     defaultProperties: UnrealClassConstant[];
+    execInstructions: UnrealExecInstruction[];
 }
 
 
+export interface UnrealExecInstruction {
+    firstToken?: Token | null;
+    lastToken?: Token | null;
+}

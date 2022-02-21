@@ -7,9 +7,19 @@ import { SemanticClass as C } from "../token/SemanticClass";
 import { parseFnDeclaration } from "./parseFunction";
 import { UcParser } from "../UcParser";
 import { parseDefaultProperties } from "./parseDefaultProperties";
+import { parseExec } from "./parseExec";
 
 
 export function parseNoneState(parser: UcParser, token: Token) {
+    if (token.textLower.startsWith('#exec')){
+        parser.result.execInstructions.push({
+            firstToken: token,
+            lastToken: token
+        });
+        parser.rootFn = parseExec;
+        token.type = C.ExecInstruction;
+        return;
+    }
     switch (token.textLower) {
 
     case 'static':

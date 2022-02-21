@@ -77,6 +77,12 @@ test("tokenize comment start/end", () => verifyTokens(`
     'var', 'string', '/*', 'Items', '[', '32', ']', '*/', 'Item', ';'
 ]));
 
+test("tokenize exec", () => verifyTokens(`
+    #exec obj load file=..\\Sounds\\Announcer.uax
+`, [
+    '#exec obj load file=..\\Sounds\\Announcer.uax'
+]));
+
 test("tokenzie positions", () => {
     expect(ucTokenizeLine("local int i;")).toEqual([
         { 

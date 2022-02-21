@@ -540,7 +540,14 @@ test("parse class custom config", () => { parsing(`
     class CustomZone expands ZoneInfo config(MyConfig);
     `)
     .hasNoErrors()
-    .hasClassConfig('MyConfig')
+    .hasClassConfig('MyConfig');
+});
+
+test("parse exec instruction", () => { parsing(`
+    #exec Texture Import File=Textures\NuRaRulesBG.pcx Name=NuRaRulesBG Group=Windows Mips=On Flags=2
+    class XClass;
+    `)
+    .hasNoErrors();
 });
 
 function parsing(input: string) {

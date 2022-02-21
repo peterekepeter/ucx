@@ -151,6 +151,15 @@ test('inline comment', () => parsing(`
 ));
 
 
+test('exec', () => parsing(`
+    #exec Texture Import File=Textures\NuRaRulesBG.pcx Name=NuRaRulesBG Group=Windows Mips=On Flags=2
+    class XClass;
+`).hasTokens(
+    ['#exec Texture Import File=Textures\NuRaRulesBG.pcx Name=NuRaRulesBG Group=Windows Mips=On Flags=2', C.ExecInstruction],
+    ['class', C.Keyword],
+    ['XClass', C.ClassDeclaration]
+));
+
 
 function parsing(input: string) {
     const parser = new UcParser();
