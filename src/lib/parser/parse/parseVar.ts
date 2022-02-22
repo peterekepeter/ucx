@@ -11,6 +11,10 @@ export function parseVarDeclaration(parser: UcParser, token: Token) {
         variable.isTransient = true;
         token.type = C.Keyword;
         break;
+    case 'localized':
+        variable.localized = true;
+        token.type = C.Keyword;
+        break;
     case 'const':
         variable.isConst = true;
         token.type = C.Keyword;

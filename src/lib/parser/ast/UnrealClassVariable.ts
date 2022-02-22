@@ -11,4 +11,5 @@ export interface UnrealClassVariable {
     lastToken: Token;
     arrayCountToken: Token | null;
     arrayCount: number | null;
+    localized: boolean;
 }

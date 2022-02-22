@@ -1,6 +1,7 @@
 import { UcParser } from "./UcParser";
 import { ucTokenizeLine } from "../tokenizer/ucTokenizeLine";
 import { UnrealClassExpression, UnrealClassStatement } from "./ast/UnrealClassFunction";
+import { SemanticClass as C } from ".";
 
 
 test("parse basic class declration", () => { 
@@ -550,6 +551,17 @@ test("parse exec instruction", () => { parsing(`
     .hasNoErrors();
 });
 
+test("parse localized string", () => { parsing(`
+        var localized string TimeMessage[16];
+    `)
+    .hasNoErrors()
+    .hasVariable(0, "string", "TimeMessage", {
+        array: 16,
+        localized: true
+    })
+    .hasTokens(['var', C.Keyword], ['localized', C.Keyword]);
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
@@ -569,7 +581,7 @@ function parsing(input: string) {
         isAbstract: (flag: boolean) => checkEquals(flag, ast.isAbstract, "isAbstract should be " + flag),
         isNative: (flag: boolean) => checkEquals(flag, ast.isNative, "isNative should be " + flag),
         hasNativeReplication: (flag: boolean) => checkEquals(flag, ast.isNativeReplication, "hasNativeReplication should be " + flag),
-        hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean, array?:number }) => {
+        hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean, array?:number, localized?:boolean }) => {
             checkEquals(ast.variables[index]?.type?.text, type);
             checkEquals(ast.variables[index]?.name?.text, name);
             if (props?.transient != null) {
@@ -586,6 +598,9 @@ function parsing(input: string) {
             } 
             if (props?.array != null){
                 checkEquals(ast.variables[index]?.arrayCount, props.array);
+            }
+            if (props?.localized != null){
+                checkEquals(ast.variables[index]?.localized, props.localized);
             }
             return checks;
         },
@@ -641,6 +656,14 @@ function parsing(input: string) {
                 name: obj?.name?.text,
                 value: obj?.value?.text
             }, props);
+            return checks;
+        },
+        hasTokens(...expected: [string, C][]){
+            const actual: [string, string][] = ast.tokens.map(t => [t.text, C[t.type]]);
+            const startIndex = actual.findIndex(t => t[0] === expected[0][0]);
+            const actualSlice = actual.slice(startIndex, startIndex + expected.length);
+            const expectedMapped = expected.map(t => [t[0], C[t[1]]]);
+            expect(actualSlice).toMatchObject(expectedMapped);
             return checks;
         }
     };
