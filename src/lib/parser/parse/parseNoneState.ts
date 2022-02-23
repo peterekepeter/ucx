@@ -22,6 +22,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
     }
     switch (token.textLower) {
 
+    case 'simulated':
     case 'static':
         token.type = C.Keyword;
         parser.modifiers.push(token);
@@ -87,6 +88,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
             bodyFirstToken: null,
             bodyLastToken: null,
             isStatic: parser.modifiers.findIndex(m => m.textLower === 'static') !== -1,
+            isSimulated: parser.modifiers.findIndex(m => m.textLower === 'simulated') !== -1,
             returnType: null,
             fnArgs: []
         });

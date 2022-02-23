@@ -562,6 +562,14 @@ test("parse localized string", () => { parsing(`
     .hasTokens(['var', C.Keyword], ['localized', C.Keyword]);
 });
 
+test("parse simulated function", () => { parsing(`
+    static simulated function ClientReceive() { }
+    `)
+    .hasNoErrors()
+    .hasFunction(0, { name: "ClientReceive", isSimulated: true })
+    .hasTokens(['static', C.Keyword], ['simulated', C.Keyword], ['function', C.Keyword]);
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
@@ -625,6 +633,7 @@ function parsing(input: string) {
                 }[],
                 body?:StatementCheckObj[],
                 isStatic?: boolean,
+                isSimulated?: boolean,
                 returnType?: string,
                 fnArgs?: { 
                     type?: string,
@@ -642,6 +651,7 @@ function parsing(input: string) {
                 body: mapBodyToCheck(obj?.body) ?? [],
                 isStatic: obj.isStatic,
                 returnType: obj.returnType?.text,
+                isSimulated: obj.isSimulated,
                 fnArgs: obj.fnArgs.map(a => ({ 
                     name:a.name?.text,
                     type: a.type?.text,

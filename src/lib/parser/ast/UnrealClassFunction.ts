@@ -8,6 +8,7 @@ export interface UnrealClassFunction {
     bodyFirstToken: Token | null;
     bodyLastToken: Token | null;
     isStatic?: boolean;
+    isSimulated?: boolean;
     returnType: Token | null;
     fnArgs: UnrealClassFunctionArgument[];
 }
