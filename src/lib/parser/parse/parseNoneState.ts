@@ -90,7 +90,9 @@ export function parseNoneState(parser: UcParser, token: Token) {
             isStatic: parser.modifiers.findIndex(m => m.textLower === 'static') !== -1,
             isSimulated: parser.modifiers.findIndex(m => m.textLower === 'simulated') !== -1,
             returnType: null,
-            fnArgs: []
+            fnArgs: [],
+            fnArgsFirstToken: null,
+            fnArgsLastToken: null
         });
         token.type = C.Keyword;
         clearModifiers(parser);

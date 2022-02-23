@@ -219,6 +219,17 @@ test("lint indent ignores empty lines", () => {
     ]).hasNoLintResults();
 });
 
+test("function argument on new line indent", () => { linting([
+    'function Max(',
+    'int a,',
+    'int b',
+    ') {',
+    '',
+    '}'])
+    .hasResult({ line:1, fixedText:'\t' })
+    .hasResult({ line:2, fixedText:'\t' });
+});
+
 
 function linting(lines: string[]) {
     const parser = new UcParser();

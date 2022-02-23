@@ -33,6 +33,7 @@ export class AstIndentRule implements AstBasedLinter
         }
 
         for (const fn of ast.functions){
+            this.paintScope(fn.fnArgsFirstToken, fn.fnArgsLastToken);
             this.paintScope(fn.bodyFirstToken, fn.bodyLastToken);
             this.recursivePaintStatementScopes(fn.body);
         }

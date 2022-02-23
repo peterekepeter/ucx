@@ -11,6 +11,8 @@ export interface UnrealClassFunction {
     isSimulated?: boolean;
     returnType: Token | null;
     fnArgs: UnrealClassFunctionArgument[];
+    fnArgsLastToken: Token | null;
+    fnArgsFirstToken: Token | null;
 }
 
 export interface UnrealClassFunctionLocal {
@@ -35,4 +37,6 @@ export interface UnrealClassFunctionArgument {
     type: Token | null,
     name: Token | null,
     isOut: boolean;
+    isOptional: boolean;
+    isCoerce: boolean;
 }

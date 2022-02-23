@@ -34,6 +34,7 @@ function parseFnParamBegin(parser:UcParser, token:Token){
     let message = '';
     switch (token.text){
     case "(":
+        parser.lastFn.fnArgsFirstToken = token;
         parser.fnArgTokens = [];
         parser.rootFn = parseFnParams;
         break;
@@ -58,6 +59,7 @@ function parseFnParams(parser: UcParser, token: Token)
         if (parser.fnArgTokens.length > 0){
             fn.fnArgs.push(resolveFnArg(parser.fnArgTokens));
         }
+        fn.fnArgsLastToken = token;
         parser.rootFn = parseFnAfterParameters;
         break;
     default: 
@@ -353,13 +355,26 @@ function resolveFnArg(tokens: Token[]): UnrealClassFunctionArgument {
     }
     const modifiers = tokens.length >= 3 ? tokens.slice(0, tokens.length - 2) : [];
     let isOut = false;
-    for (const modifier of modifiers){
-        if (modifier.textLower === 'out'){
+    let isOptional = false;
+    let isCoerce = false;
+    for (const modifierToken of modifiers){
+        switch(modifierToken.textLower){
+        case "out":
             isOut = true;
-            modifier.type = C.Keyword;
-        } else {
-            // error! 
+            modifierToken.type = C.Keyword;
+            break;
+        case "optional":
+            isOptional = true;
+            modifierToken.type = C.Keyword;
+            break;
+        case "coerce":
+            isCoerce = true;
+            modifierToken.type = C.Keyword;
+            break;
+        default:
+            // TODO error
+            break;
         }
     }
-    return { name, type, isOut };
+    return { name, type, isOut, isOptional, isCoerce };
 }

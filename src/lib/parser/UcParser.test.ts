@@ -474,7 +474,10 @@ test("parse function argument", () => { parsing(`
     .hasFunction(0, {
         fnArgs:[{
             type: 'int', 
-            name: 'num'
+            name: 'num',
+            isOptional: false,
+            isOut: false,
+            isCoerce: false,
         }]
     });
 });
@@ -570,6 +573,20 @@ test("parse simulated function", () => { parsing(`
     .hasTokens(['static', C.Keyword], ['simulated', C.Keyword], ['function', C.Keyword]);
 });
 
+test("parse optional function parameter", () => { parsing(`
+    function PrintError(optional string message){}
+    `)
+    .hasNoErrors()
+    .hasFunction(0, { name: "PrintError", fnArgs: [ {name: 'message', type:'string', isOptional: true }] })
+});
+
+test("parse coerce function parameter", () => { parsing(`
+    function PrintError(coerce string message){}
+    `)
+    .hasNoErrors()
+    .hasFunction(0, { name: "PrintError", fnArgs: [ {name: 'message', type:'string', isCoerce: true }] })
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
@@ -638,7 +655,9 @@ function parsing(input: string) {
                 fnArgs?: { 
                     type?: string,
                     name?: string,
-                    isOut?: boolean
+                    isOut?: boolean,
+                    isOptional?: boolean,
+                    isCoerce?: boolean,
                 }[]
             }){
             const obj = ast.functions[index];
@@ -656,6 +675,8 @@ function parsing(input: string) {
                     name:a.name?.text,
                     type: a.type?.text,
                     isOut: a.isOut, 
+                    isOptional: a.isOptional,
+                    isCoerce: a.isCoerce,
                 }))
             }, props);
             return checks;
