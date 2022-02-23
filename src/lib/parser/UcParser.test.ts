@@ -647,6 +647,20 @@ test("parse default property boolean value", () => { parsing(`
     });
 });
 
+test("parse default property with struct is not error", () => { parsing(`
+    defaultproperties
+    {
+        DrawColor=(G=255,B=160) 
+    }`)
+    .hasNoErrors()
+    .hasDefaultProperty(0, { 
+        name: "DrawColor", 
+        value: {
+            op: '('
+        }
+    });
+});
+
 
 
 function parsing(input: string) {

@@ -230,7 +230,6 @@ test("function argument on new line indent", () => { linting([
     .hasResult({ line:2, fixedText:'\t' });
 });
 
-
 function linting(lines: string[]) {
     const parser = new UcParser();
     for (let i = 0; i < lines.length; i++) {

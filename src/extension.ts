@@ -142,6 +142,7 @@ export function activate(context: vscode.ExtensionContext) {
                     type = TOKEN_TYPE_PROPERTY;
                     modifier = TOKEN_MODIFIER_READONLY;
                     break;
+                case SemanticClass.ObjectReferenceName:
                 case SemanticClass.LiteralName:
                 case SemanticClass.LiteralString:
                     type = TOKEN_TYPE_STRING;

@@ -148,11 +148,24 @@ function tryResolveDefaultExpression(tokens: Token[]): UnrealClassExpression | T
     else if (tokens.length === 2){
         const [first, second] = tokens;
         if (first.type === C.Identifier && second.type === C.LiteralName){
+            first.type = C.ClassReference;
+            second.type = C.ObjectReferenceName;
             return {
                 op: first,
                 args: [second],
                 argsFirstToken: first,
                 argsLastToken: second,
+            };
+        }
+    }
+    else {
+        if (tokens[0]?.text === '(' && tokens[tokens.length-1]?.text === ')'){
+            // not correct but it's something
+            return {
+                op: tokens[0],
+                args: tokens.slice(1, tokens.length-1),
+                argsFirstToken: tokens[0],
+                argsLastToken: tokens[tokens.length-1],
             };
         }
     }

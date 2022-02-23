@@ -13,7 +13,7 @@ export const ALL_RULES: TokenBasedLinter[] = [
 //    new TrueFalseFormatRule(),
 //    new IndentRule(),
 //    new BracketSpacingRule(),
-    new ValidateNamesRule(),
+//    new ValidateNamesRule(),
     new ValidateStringRule()
 ];
 

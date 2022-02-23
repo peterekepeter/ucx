@@ -160,6 +160,20 @@ test('exec', () => parsing(`
     ['XClass', C.ClassDeclaration]
 ));
 
+test('default property with object reference', () => parsing(`
+    defaultproperties {
+        CustomSound=Sound'Package.sound'
+    }
+`).hasTokens(
+    ['defaultproperties', C.Keyword],
+    ['{', C.None],
+    ['CustomSound', C.ClassVariable],
+    ['=', C.Operator],
+    ['Sound', C.ClassReference],
+    ["'Package.sound'", C.ObjectReferenceName],
+));
+
+
 
 function parsing(input: string) {
     const parser = new UcParser();
