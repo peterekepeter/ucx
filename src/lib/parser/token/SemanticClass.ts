@@ -20,5 +20,6 @@ export enum SemanticClass {
     FunctionReference,
     Operator,
     VariableReference,
-    ExecInstruction
+    ExecInstruction,
+    LanguageConstant
 }

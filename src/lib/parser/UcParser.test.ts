@@ -635,6 +635,19 @@ test("parse default property for array type", () => { parsing(`
     });
 });
 
+test("parse default property boolean value", () => { parsing(`
+    defaultproperties
+    {
+        bEnabled=True
+    }`)
+    .hasNoErrors()
+    .hasDefaultProperty(0, { 
+        name: "bEnabled", 
+        value: "True"
+    });
+});
+
+
 
 function parsing(input: string) {
     const parser = new UcParser();

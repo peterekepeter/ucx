@@ -163,6 +163,9 @@ export function activate(context: vscode.ExtensionContext) {
                 case SemanticClass.ExecInstruction:
                     type = TOKEN_TYPE_MACRO;
                     break;
+                case SemanticClass.LanguageConstant:
+                    type = TOKEN_TYPE_KEYWORD;
+                    break;
                 }
                 if (type !== undefined){
                     tokensBuilder.push(

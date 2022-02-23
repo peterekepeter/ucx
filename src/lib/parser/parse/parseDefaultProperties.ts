@@ -141,6 +141,7 @@ function tryResolveDefaultExpression(tokens: Token[]): UnrealClassExpression | T
         case C.LiteralName:
         case C.LiteralNumber:
         case C.LiteralString:
+        case C.LanguageConstant:
             return token;
         }
     }

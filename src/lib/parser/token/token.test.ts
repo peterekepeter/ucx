@@ -40,6 +40,13 @@ test("operators", () => {
     verify("--", C.Operator);
 });
 
+test("language constants", () => {
+    verify("None", C.LanguageConstant);
+    verify("True", C.LanguageConstant);
+    verify("False", C.LanguageConstant);
+});
+
+
 test("lazy token properties", () => {
     const token = new LazyParserToken(13, 4, "Help", 42);
     expect(token).toMatchObject({

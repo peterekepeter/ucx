@@ -27,7 +27,7 @@ export class AstIndentRule implements AstBasedLinter
             this.paintScope(
                 variable.firstToken, variable.lastToken);
         }
-
+        
         for (const e of ast.enums) {
             this.paintScope(e.firstBodyToken, e.lastToken);
         }
