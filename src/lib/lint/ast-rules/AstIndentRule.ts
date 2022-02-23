@@ -37,12 +37,9 @@ export class AstIndentRule implements AstBasedLinter
             this.paintScope(fn.bodyFirstToken, fn.bodyLastToken);
             this.recursivePaintStatementScopes(fn.body);
         }
-
-        for (const p of ast.defaultProperties){
-            if (p.name && p.value){
-                this.paintIndentLines(p.name?.line, p.value?.line);
-            }
-        }
+        
+        this.paintScope(
+            ast.defaultPropertiesFirstToken, ast.defaultPropertiesLastToken);
     }
 
     collapseDeepIndent(ast: UnrealClass){

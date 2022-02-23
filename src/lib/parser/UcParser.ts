@@ -1,6 +1,6 @@
 import { UnrealClass, UnrealExecInstruction } from "./ast/UnrealClass";
 import { UnrealClassFunction, UnrealClassFunctionLocal, UnrealClassStatement } from "./ast/UnrealClassFunction";
-import { UnrealClassConstant } from "./ast/UnrealClassConstant";
+import { UnrealClassConstant, UnrealDefaultProperty } from "./ast/UnrealClassConstant";
 import { UnrealClassEnum } from "./ast/UnrealClassEnum";
 import { UnrealClassVariable } from "./ast/UnrealClassVariable";
 import { parseEnumBody, parseEnumBodyClosed } from "./parse/parseEnum";
@@ -143,7 +143,7 @@ export class UcParser{
         return body[body.length - 1];
     }
 
-    get lastDefaultProperty(): UnrealClassConstant {
+    get lastDefaultProperty(): UnrealDefaultProperty {
         const list = this.result.defaultProperties;
         return list[list.length - 1];
     }

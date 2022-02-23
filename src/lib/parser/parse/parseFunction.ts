@@ -224,8 +224,10 @@ function parseControlStatement(parser: UcParser, token: Token)
             break;
         }
     default:
-        message = "Expected '(' or '{' after keyword.";
-        parser.result.errors.push({ token, message });
+        parser.rootFn = parseSingleStatementBody;
+        parser.lastStatement.bodyFirstToken = token;
+        parseSingleStatementBody(parser, token);
+        break;
     }
 }
 

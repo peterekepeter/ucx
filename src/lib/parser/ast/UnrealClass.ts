@@ -1,6 +1,6 @@
 import { ParserToken as Token } from "..";
 import { ParserError } from "../types";
-import { UnrealClassConstant } from "./UnrealClassConstant";
+import { UnrealClassConstant, UnrealDefaultProperty } from "./UnrealClassConstant";
 import { UnrealClassEnum } from "./UnrealClassEnum";
 import { UnrealClassFunction } from "./UnrealClassFunction";
 import { UnrealClassVariable } from "./UnrealClassVariable";
@@ -24,7 +24,9 @@ export interface UnrealClass {
     tokens: Token[];
     functions: UnrealClassFunction[];
     textLines: string[];
-    defaultProperties: UnrealClassConstant[];
+    defaultProperties: UnrealDefaultProperty[];
+    defaultPropertiesFirstToken?: Token | null;
+    defaultPropertiesLastToken?: Token | null;
     execInstructions: UnrealExecInstruction[];
 }
 

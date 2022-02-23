@@ -401,6 +401,32 @@ test("parse if statement without brackets", () => { parsing(`
     });
 });
 
+test("parse if else without brackets", () => { parsing(`
+    function PreBeginPlay(){
+        if (bFirstRun)
+            Init();
+        else
+            Log("Ok");
+    }
+    `)
+    .hasNoErrors()
+    .hasFunction(0, { 
+        name: "PreBeginPlay", 
+        body: [{
+            op: "if",
+        },{
+            op: "else",
+            args: [],
+            bodyFirst: 'Log',
+            bodyLast: ';',
+            body: [{
+                op: "Log",
+                args: ['"Ok"']
+            }]
+        }] 
+    });
+});
+
 test("parse if statement with function call in condition", () => { parsing(`
     function Init(){
         if (CheckSomething()){
@@ -577,15 +603,38 @@ test("parse optional function parameter", () => { parsing(`
     function PrintError(optional string message){}
     `)
     .hasNoErrors()
-    .hasFunction(0, { name: "PrintError", fnArgs: [ {name: 'message', type:'string', isOptional: true }] })
+    .hasFunction(0, { name: "PrintError", fnArgs: [ {name: 'message', type:'string', isOptional: true }] });
 });
 
 test("parse coerce function parameter", () => { parsing(`
     function PrintError(coerce string message){}
     `)
     .hasNoErrors()
-    .hasFunction(0, { name: "PrintError", fnArgs: [ {name: 'message', type:'string', isCoerce: true }] })
+    .hasFunction(0, { name: "PrintError", fnArgs: [ {name: 'message', type:'string', isCoerce: true }] });
 });
+
+test("parse default property for array type", () => { parsing(`
+    defaultproperties
+    {
+        TimeMessage(14)="10 seconds left!"
+    }`)
+    .hasNoErrors()
+    .hasDefaultProperty(0, { name: "TimeMessage", arrayIndex: "14" });
+});
+
+test("parse default property for array type", () => { parsing(`
+    defaultproperties
+    {
+        TimeSound(4)=Sound'Announcer.(All).cd1min'
+    }`)
+    .hasNoErrors()
+    .hasDefaultProperty(0, { 
+        name: "TimeSound", 
+        arrayIndex: "4", 
+        value: { op:'Sound', args: ["'Announcer.(All).cd1min'"] } 
+    });
+});
+
 
 function parsing(input: string) {
     const parser = new UcParser();
@@ -681,11 +730,13 @@ function parsing(input: string) {
             }, props);
             return checks;
         },
-        hasDefaultProperty(index: number, props: { name?: string, value?: string }){
+        hasDefaultProperty(index: number, props: { name?: string, value?: ExpressionCheckObj | string, arrayIndex?: string }){
             const obj = ast.defaultProperties[index];
+            const v = obj?.value;
             checkMatches({
                 name: obj?.name?.text,
-                value: obj?.value?.text
+                value: v ? ('text' in v) ? v.text : mapExpressionToCheck(v) : null,
+                arrayIndex: obj?.arrayIndex?.text,
             }, props);
             return checks;
         },
