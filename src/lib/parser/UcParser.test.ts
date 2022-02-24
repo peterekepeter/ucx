@@ -661,7 +661,21 @@ test("parse default property with struct is not error", () => { parsing(`
     });
 });
 
-
+test("parse multiple class variables", () => { parsing(`
+    var int First, Second, Third;
+    `)
+    .hasNoErrors()
+    .hasVariable(0, "int", "First")
+    .hasVariable(1, "int", "Second")
+    .hasVariable(2, "int", "Third")
+    .hasTokens(
+        ['First', C.ClassVariable],
+        [',', C.None],
+        ['Second', C.ClassVariable],
+        [',', C.None],
+        ['Third', C.ClassVariable]
+    );
+});
 
 function parsing(input: string) {
     const parser = new UcParser();

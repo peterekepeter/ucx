@@ -1,3 +1,4 @@
+import { parse } from "path";
 import { ParserToken as Token } from "../";
 import { SemanticClass as C } from "../token/SemanticClass";
 import { UcParser } from "../UcParser";
@@ -76,12 +77,31 @@ function parseVarNext(parser: UcParser, token: Token) {
     case '[':
         parser.rootFn = parseArrayCount;
         break;
+    case ',':
+        parser.rootFn = parseExtraVariable;
+        break;
     case ';':
         variable.lastToken = token;
         parser.rootFn = parseNoneState;
         break;
     default:
         parser.result.errors.push({ token, message: 'Expecting ";" after variable name.' });
+        break;
+    }
+}
+
+function parseExtraVariable(parser: UcParser, token: Token) {
+    switch(token.text){
+    default:
+        const previousVar = parser.lastVar;
+        parser.result.variables.push({
+            ...previousVar,
+            arrayCount: null,
+            lastToken: token,
+            name: token,
+        });
+        token.type = C.ClassVariable;
+        parser.rootFn = parseVarNext;
         break;
     }
 }
