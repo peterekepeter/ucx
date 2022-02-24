@@ -102,7 +102,10 @@ test("parse empty function", () => { parsing(`
     }
     `)
     .hasFunction(0, {
-        name: 'PostBeginPlay'
+        name: 'PostBeginPlay',
+        isFinal: false,
+        isSimulated: false,
+        isStatic: false,
     })
     .hasNoErrors();
 });
@@ -132,7 +135,7 @@ test("parse function with empty function call", () => { parsing(`
             {
                 op: 'Init',
             }
-        ]
+        ],
     })
     .hasNoErrors();
 });
@@ -677,6 +680,13 @@ test("parse multiple class variables", () => { parsing(`
     );
 });
 
+test("parse function with final modifier", () => { parsing(`
+    final function float Init() { }
+    `)
+    .hasNoErrors()
+    .hasFunction(0, { name: 'Init', isFinal: true });
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
@@ -741,6 +751,7 @@ function parsing(input: string) {
                 body?:StatementCheckObj[],
                 isStatic?: boolean,
                 isSimulated?: boolean,
+                isFinal?: boolean
                 returnType?: string,
                 fnArgs?: { 
                     type?: string,
@@ -759,8 +770,9 @@ function parsing(input: string) {
                 })),
                 body: mapBodyToCheck(obj?.body) ?? [],
                 isStatic: obj.isStatic,
-                returnType: obj.returnType?.text,
+                isFinal: obj.isFinal,
                 isSimulated: obj.isSimulated,
+                returnType: obj.returnType?.text,
                 fnArgs: obj.fnArgs.map(a => ({ 
                     name:a.name?.text,
                     type: a.type?.text,

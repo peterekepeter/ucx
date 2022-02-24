@@ -9,6 +9,7 @@ export interface UnrealClassFunction {
     bodyLastToken: Token | null;
     isStatic?: boolean;
     isSimulated?: boolean;
+    isFinal?: boolean;
     returnType: Token | null;
     fnArgs: UnrealClassFunctionArgument[];
     fnArgsLastToken: Token | null;
