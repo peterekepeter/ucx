@@ -715,7 +715,15 @@ test("parse type variable", () => { parsing(`
     .hasNoErrors()
     .hasVariable(0, 'class', 'EnterActor', {
         template: 'actor',
-    });
+    })
+    .hasTokens(['var',C.Keyword], ['class', C.TypeReference], ['<', C.None], ['actor', C.ClassReference], ['>', C.None]);
+});
+
+test("parse globalconfig var", () => { parsing(`
+    var globalconfig int FragLimit;
+    `)
+    .hasNoErrors()
+    .hasVariable(0, 'int', 'FragLimit', { config: true });
 });
 
 function parsing(input: string) {
