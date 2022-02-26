@@ -700,9 +700,13 @@ test("parse foreach", () =>{ parsing(`
     .hasTokens(['foreach', C.Keyword])
     .hasFunction(0, {
         body: [
-            { op:'foreach', body: [ { op: 'Log' }]}
+            {
+                bodyFirst: '{',
+                bodyLast: '}',
+                op:'foreach', body: [ { op: 'Log' }]
+            }
         ]
-    })
+    });
 });
 
 function parsing(input: string) {

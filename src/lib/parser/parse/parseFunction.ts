@@ -404,6 +404,7 @@ function parseForeach(parser: UcParser, token: Token)
     case '{':
         parser.lastStatement.args.push(resolveExpression(parser.expressionTokens));
         parser.rootFn = parseStatement;
+        parser.lastStatement.bodyFirstToken = token;
         break;
     default:
         parser.expressionTokens.push(token);

@@ -230,6 +230,21 @@ test("function argument on new line indent", () => { linting([
     .hasResult({ line:2, fixedText:'\t' });
 });
 
+test('indent foreach statement block body', () => { linting([
+    /*0*/'function Timer(){',
+    /*1*/'local Projectile A;',
+    /*2*/'foreach AllActors( class \'Projectile\', A )',
+    /*3*/'{',
+    /*4*/'Log(A);',
+    /*5*/'}',
+    /*6*/'}'])
+    .hasResult({ line:1, fixedText:'\t' })
+    .hasResult({ line:2, fixedText:'\t' })
+    .hasResult({ line:3, fixedText:'\t' })
+    .hasResult({ line:4, fixedText:'\t\t' })
+    .hasResult({ line:5, fixedText:'\t' });
+});
+
 function linting(lines: string[]) {
     const parser = new UcParser();
     for (let i = 0; i < lines.length; i++) {
