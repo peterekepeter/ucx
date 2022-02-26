@@ -687,6 +687,24 @@ test("parse function with final modifier", () => { parsing(`
     .hasFunction(0, { name: 'Init', isFinal: true });
 });
 
+test("parse foreach", () =>{ parsing(`
+    function Timer(){
+        local Projectile A;
+
+        foreach AllActors( class 'Projectile', A )
+        {
+            Log(A);
+        }
+    }`)
+    .hasNoErrors()
+    .hasTokens(['foreach', C.Keyword])
+    .hasFunction(0, {
+        body: [
+            { op:'foreach', body: [ { op: 'Log' }]}
+        ]
+    })
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);

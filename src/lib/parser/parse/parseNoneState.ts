@@ -8,6 +8,7 @@ import { parseFnDeclaration } from "./parseFunction";
 import { UcParser } from "../UcParser";
 import { parseDefaultProperties } from "./parseDefaultProperties";
 import { parseExec } from "./parseExec";
+import { UnrealClassFunction } from "../ast/UnrealClassFunction";
 
 
 export function parseNoneState(parser: UcParser, token: Token) {
@@ -88,9 +89,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
             body: [],
             bodyFirstToken: null,
             bodyLastToken: null,
-            isStatic: parser.modifiers.findIndex(m => m.textLower === 'static') !== -1,
-            isSimulated: parser.modifiers.findIndex(m => m.textLower === 'simulated') !== -1,
-            isFinal: parser.modifiers.findIndex(m => m.textLower === 'final') !== -1,
+            ...resolveFunctionModifiers(parser.modifiers),
             returnType: null,
             fnArgs: [],
             fnArgsFirstToken: null,
@@ -118,3 +117,26 @@ function clearModifiers(parser: UcParser) {
     }
 }
 
+function resolveFunctionModifiers(modifiers: Token[]): Partial<UnrealClassFunction> {
+    let isStatic = false; 
+    let isSimulated = false; 
+    let isFinal = false; 
+    for (const modifier of modifiers) {
+        switch (modifier.textLower){
+        case "static":
+            isStatic = true;
+            break;
+        case "simulated":
+            isSimulated = true;
+            break;
+        case "final":
+            isFinal = true;
+            break;
+        }
+    }
+    return {
+        isStatic,
+        isSimulated,
+        isFinal
+    };
+}

@@ -110,6 +110,22 @@ function parseStatement(parser: UcParser, token: Token)
         parser.lastCodeBlock.push(statement);
         parser.codeBlockStack.push(statement);
         break;
+    case "foreach":
+        parser.rootFn = parseForeach;
+        parser.expressionTokens = [];
+        token.type = C.Keyword;
+        const foreach: UnrealClassStatement = {
+            op: token,
+            args: [],
+            body: [],
+            bodyFirstToken: null,
+            bodyLastToken: null,
+            argsFirstToken: null,
+            argsLastToken: null
+        };
+        parser.lastCodeBlock.push(foreach);
+        parser.codeBlockStack.push(foreach);
+        break;
     case "{":
         // codeblock
         const body = parser.lastCodeBlock;
@@ -379,4 +395,19 @@ function resolveFnArg(tokens: Token[]): UnrealClassFunctionArgument {
         }
     }
     return { name, type, isOut, isOptional, isCoerce };
+}
+
+function parseForeach(parser: UcParser, token: Token)
+{
+    switch (token.text)
+    {
+    case '{':
+        parser.lastStatement.args.push(resolveExpression(parser.expressionTokens));
+        parser.rootFn = parseStatement;
+        break;
+    default:
+        parser.expressionTokens.push(token);
+        break;
+    }
+    parser.expressionTokens.push(token);
 }
