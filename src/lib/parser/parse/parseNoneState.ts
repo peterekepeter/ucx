@@ -52,6 +52,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
             arrayCount: null,
             arrayCountToken: null,
             localized: false,
+            template: null,
         });
         token.type = C.Keyword;
         clearModifiers(parser);

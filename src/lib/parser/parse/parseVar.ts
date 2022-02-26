@@ -57,6 +57,9 @@ function parseVarGroupNext(parser: UcParser, token: Token) {
 function parseVarName(parser: UcParser, token: Token) {
     const variable = parser.lastVar;
     switch (token.text) {
+    case '<':
+        parser.rootFn = parseTemplateName;
+        break;
     case ';':
         const message = 'Expected variable name isntead of ";"';
         parser.result.errors.push({ token, message });
@@ -70,6 +73,46 @@ function parseVarName(parser: UcParser, token: Token) {
         break;
     }
 }
+
+function parseTemplateName(parser: UcParser, token: Token) {
+    const variable = parser.lastVar;
+    switch (token.text) {
+    case ';':
+        const message = 'Expected variable name isntead of ";"';
+        parser.result.errors.push({ token, message });
+        parser.rootFn = parseNoneState;
+        variable.lastToken = token;
+        break;
+    case '>':
+        parser.rootFn = parseVarName;
+        break;
+    default:
+        token.type = C.ClassReference;
+        variable.template = token;
+        parser.rootFn = parseAfterTemplateName;
+        break;
+    }
+}
+
+function parseAfterTemplateName(parser: UcParser, token: Token) {
+    const variable = parser.lastVar;
+    switch (token.text) {
+    case ';':
+        const message = 'Expected ">"';
+        parser.result.errors.push({ token, message });
+        parser.rootFn = parseNoneState;
+        variable.lastToken = token;
+        break;
+    case '>':
+        parser.rootFn = parseVarName;
+        break;
+    default:
+        parser.result.errors.push({ token, message: "Expected '>'"});
+        parser.rootFn = parseVarName;
+        break;
+    }
+}
+
 
 function parseVarNext(parser: UcParser, token: Token) {
     const variable = parser.lastVar;

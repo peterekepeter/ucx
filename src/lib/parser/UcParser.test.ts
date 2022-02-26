@@ -709,6 +709,15 @@ test("parse foreach", () =>{ parsing(`
     });
 });
 
+test("parse type variable", () => { parsing(`
+    var class<actor> EnterActor;
+    `)
+    .hasNoErrors()
+    .hasVariable(0, 'class', 'EnterActor', {
+        template: 'actor',
+    });
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
@@ -728,7 +737,7 @@ function parsing(input: string) {
         isAbstract: (flag: boolean) => checkEquals(flag, ast.isAbstract, "isAbstract should be " + flag),
         isNative: (flag: boolean) => checkEquals(flag, ast.isNative, "isNative should be " + flag),
         hasNativeReplication: (flag: boolean) => checkEquals(flag, ast.isNativeReplication, "hasNativeReplication should be " + flag),
-        hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean, array?:number, localized?:boolean }) => {
+        hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean, array?:number, localized?:boolean, template?:string }) => {
             checkEquals(ast.variables[index]?.type?.text, type);
             checkEquals(ast.variables[index]?.name?.text, name);
             if (props?.transient != null) {
@@ -748,6 +757,9 @@ function parsing(input: string) {
             }
             if (props?.localized != null){
                 checkEquals(ast.variables[index]?.localized, props.localized);
+            }
+            if (props?.template != null){
+                checkEquals(ast.variables[index]?.template?.text, props.template);
             }
             return checks;
         },
