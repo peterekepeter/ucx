@@ -245,6 +245,38 @@ test('indent foreach statement block body', () => { linting([
     .hasResult({ line:5, fixedText:'\t' });
 });
 
+test('lint empty line before function', () => {
+    linting([
+        'function A()',
+        '{',
+        '}',
+        'function B()',
+        '{',
+        '}',
+    ]).hasResult({ line: 2, position:1, fixedText: '\n' 
+    });
+});
+
+test('lint empty line before function', () => {
+    linting([
+        'function A()',
+        '{',
+        '}',
+        '',
+        'function B()',
+        '{',
+        '}',
+    ]).hasNoLintResults();
+});
+
+test('lint empty line before function not required if function on single line', () => {
+    linting([
+        'function A() {}',
+        'function B() {}',
+    ]).hasNoLintResults();
+});
+
+
 function linting(lines: string[]) {
     const parser = new UcParser();
     for (let i = 0; i < lines.length; i++) {
