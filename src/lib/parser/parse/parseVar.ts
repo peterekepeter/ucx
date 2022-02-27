@@ -40,6 +40,10 @@ export function parseVarDeclaration(parser: UcParser, token: Token) {
 }
 
 function parseVarGroup(parser: UcParser, token: Token) {
+    if (token.text === ')') {
+        parser.rootFn = parseVarDeclaration;
+        return;
+    }
     const variable = parser.lastVar;
     variable.group = token;
     parser.rootFn = parseVarGroupNext;

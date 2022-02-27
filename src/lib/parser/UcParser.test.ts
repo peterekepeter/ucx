@@ -726,6 +726,12 @@ test("parse globalconfig var", () => { parsing(`
     .hasVariable(0, 'int', 'FragLimit', { config: true });
 });
 
+test("parse var with empty group", () => { parsing(`
+    var () string	ListFactories[10];
+    `)
+    .hasNoErrors();
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
