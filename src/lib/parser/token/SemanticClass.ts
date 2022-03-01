@@ -22,5 +22,6 @@ export enum SemanticClass {
     VariableReference,
     ExecInstruction,
     LanguageConstant,
-    ObjectReferenceName
+    ObjectReferenceName,
+    StateDeclaration
 }

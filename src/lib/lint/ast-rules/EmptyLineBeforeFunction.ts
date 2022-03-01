@@ -20,7 +20,7 @@ export class EmptyLineBeforeFunction implements AstBasedLinter
             }
             const previousLine = firstLine - 1;
             const previousLineText = ast.textLines[previousLine] ?? '';
-            console.log(previousLineText);
+            
             if (!EMPTY_LINE_REGEX.test(previousLineText)){
                 result.push({
                     fixedText: '\n',

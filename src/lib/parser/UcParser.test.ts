@@ -732,6 +732,28 @@ test("parse var with empty group", () => { parsing(`
     .hasNoErrors();
 });
 
+test("parse empty state", () => { parsing(`
+    state MyState {}`)
+    .hasNoErrors()
+    .hasTokens(
+        ['state', C.Keyword],
+        ['MyState', C.StateDeclaration]
+    )
+    .hasState(0, { name:'MyState' });
+});
+
+test.skip("parse state with latent instructions", () => { parsing(`
+    auto state MyState
+    {
+    Begin:
+        Log( "MyState has just begun!" );
+        Sleep( 2.0 );
+        Log( "MyState has finished sleeping" );
+        goto('Begin');
+    }`)
+    .hasNoErrors();
+});
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
@@ -847,6 +869,11 @@ function parsing(input: string) {
             const actualSlice = actual.slice(startIndex, startIndex + expected.length);
             const expectedMapped = expected.map(t => [t[0], C[t[1]]]);
             expect(actualSlice).toMatchObject(expectedMapped);
+            return checks;
+        },
+        hasState(index: number, props: { name?:string }){
+            const obj = ast.states[index];
+            expect({ name: obj?.name?.text } as typeof props).toMatchObject(props);
             return checks;
         }
     };

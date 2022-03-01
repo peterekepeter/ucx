@@ -9,6 +9,7 @@ import { UcParser } from "../UcParser";
 import { parseDefaultProperties } from "./parseDefaultProperties";
 import { parseExec } from "./parseExec";
 import { UnrealClassFunction } from "../ast/UnrealClassFunction";
+import { parseState } from "./parseState";
 
 
 export function parseNoneState(parser: UcParser, token: Token) {
@@ -23,6 +24,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
     }
     switch (token.textLower) {
 
+    case 'auto':
     case 'final':
     case 'simulated':
     case 'static':
@@ -103,6 +105,15 @@ export function parseNoneState(parser: UcParser, token: Token) {
     case 'defaultproperties':
         parser.rootFn = parseDefaultProperties;
         token.type = C.Keyword;
+        break;
+
+    case 'state':
+        parser.result.states.push({
+            name: null
+        });
+        parser.rootFn = parseState;
+        token.type = C.Keyword;
+        clearModifiers(parser);
         break;
 
     default:

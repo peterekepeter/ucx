@@ -1,4 +1,4 @@
-import { UnrealClass, UnrealExecInstruction } from "./ast/UnrealClass";
+import { UnrealClass, UnrealClassState, UnrealExecInstruction } from "./ast/UnrealClass";
 import { UnrealClassFunction, UnrealClassFunctionLocal, UnrealClassStatement } from "./ast/UnrealClassFunction";
 import { UnrealClassConstant, UnrealDefaultProperty } from "./ast/UnrealClassConstant";
 import { UnrealClassEnum } from "./ast/UnrealClassEnum";
@@ -29,6 +29,7 @@ export class UcParser{
         functions: [],
         textLines: [],
         defaultProperties: [],
+        states:[],
     };
     
     expressionTokens: Token[] = [];
@@ -150,6 +151,11 @@ export class UcParser{
 
     get lastExec(): UnrealExecInstruction {
         const list = this.result.execInstructions;
+        return list[list.length - 1];
+    }
+
+    get lastState(): UnrealClassState {
+        const list = this.result.states;
         return list[list.length - 1];
     }
 

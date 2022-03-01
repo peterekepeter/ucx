@@ -28,10 +28,15 @@ export interface UnrealClass {
     defaultPropertiesFirstToken?: Token | null;
     defaultPropertiesLastToken?: Token | null;
     execInstructions: UnrealExecInstruction[];
+    states: UnrealClassState[];
 }
 
 
 export interface UnrealExecInstruction {
     firstToken?: Token | null;
     lastToken?: Token | null;
+}
+
+export interface UnrealClassState{
+    name: Token | null;
 }
