@@ -351,6 +351,24 @@ test('lint newline before {', () => { lintingStatements(
     '}'
 ).hasResult({ line: 0, position:12, fixedText:'\n\t' });});
 
+test('lint newline after {', () => { lintingStatements(
+    'if (bFirst)',
+    '{x = True;',
+    '}'
+).hasResult({ line: 1, position:1, fixedText:'\n\t\t' });});
+
+test('lint newline before }', () => { lintingStatements(
+    'if (bFirst)',
+    '{',
+    '\tx = False;}'
+).hasResult({ line: 2, position:11, fixedText:'\n\t' });});
+
+test('lint newline after }', () => { lintingStatements(
+    'if (bFirst)',
+    '{',
+    '}x = 4;'
+).hasResult({ line: 2, position:1, fixedText:'\n' });});
+
 test('lint string tab escape does not work', () => { lintingStatements(
     'x = "\\t";'
 ).hasResult({ line: 0, position:5, length:2 });});
@@ -358,7 +376,6 @@ test('lint string tab escape does not work', () => { lintingStatements(
 test('lint names cannot have space', () => { lintingStatements(
     "x = 'a cat';"
 ).hasResult({ line: 0, position:4, length:7, originalText:"'a cat'" });});
-
 
 function linting(lines: string[], lineOffset = 0, positionOffset = 0) {
     const parser = new UcParser();

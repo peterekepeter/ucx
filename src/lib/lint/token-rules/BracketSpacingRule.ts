@@ -5,18 +5,20 @@ import { getIndentLevel } from "../../indentation/getIndentLevel";
 import { toIndentString } from "../../indentation/toIndentString";
 import { ParserToken, SemanticClass } from "../../parser";
 
+const BRACKET_TOKEN = SemanticClass.None;
+
 export class BracketSpacingRule implements TokenBasedLinterV2
 {
     prevLine = -1;
     prevToken = '';
+    prevParserToken: ParserToken|null = null;
 
     nextToken(parserToken: ParserToken, textLines: string[]): LintResult[] | null 
     {
-        if (parserToken.type !== SemanticClass.None){
-            // asumming {} brakets always classified as None
-            return null;
+        if (parserToken.type != BRACKET_TOKEN && this.prevParserToken?.type != BRACKET_TOKEN){
+            this.prevToken = parserToken.text;
+            this.prevParserToken = parserToken;
         }
-
         let insertNewline = false;
         let message = '';
         let insertIndent = 0;
@@ -28,25 +30,25 @@ export class BracketSpacingRule implements TokenBasedLinterV2
         
         if (line === this.prevLine) 
         {
-            if (token === '{')
+            if (token === '{' && parserToken.type === BRACKET_TOKEN)
             {
                 insertNewline = true;
                 insertIndent = getIndentLevel(lineText);
                 message = "Add newline before '{'";
             }
-            else if (this.prevToken === '{')
+            else if (this.prevToken === '{' && this.prevParserToken?.type === BRACKET_TOKEN)
             {
                 insertNewline = true;
                 message = "Add newline after '{'";
                 insertIndent = getIndentLevel(lineText) + 1;
             }
-            if (token === '}')
+            if (token === '}' && parserToken.type === BRACKET_TOKEN)
             {
                 insertNewline = true;
                 message = "Add newline before '}'";
                 insertIndent = getIndentLevel(lineText) - 1;
             }
-            else if (this.prevToken === '}')
+            else if (this.prevToken === '}' && this.prevParserToken?.type === BRACKET_TOKEN)
             {
                 insertNewline = true;
                 message = "Add newline after '}'";
@@ -56,6 +58,7 @@ export class BracketSpacingRule implements TokenBasedLinterV2
 
         this.prevLine = line;
         this.prevToken = token;
+        this.prevParserToken = parserToken;
         
         if (insertNewline)
         {
