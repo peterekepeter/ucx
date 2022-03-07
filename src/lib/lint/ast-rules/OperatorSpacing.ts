@@ -1,0 +1,106 @@
+import { UnrealClass } from "../..";
+import { ParserToken, SemanticClass as C } from "../../parser";
+import { AstBasedLinter } from "../AstBasedLinter";
+import { LintResult } from "../LintResult";
+
+export class OperatorSpacing implements AstBasedLinter
+{
+    lint(ast: UnrealClass): LintResult[] | null {
+        const results: LintResult[] = [];
+        for (let i=0; i<ast.tokens.length; i++){
+            const token = ast.tokens[i];
+            if (token.type !== C.Operator){
+                continue;
+            }
+            const prev = ast.tokens[i-1];
+            const next = ast.tokens[i+1];
+            if (prev && prev.line === token.line)
+            {
+                const prevEnd = prev.position + prev.text.length;
+                const distance = token.position - prevEnd;
+                if (distance !== 1){
+                    const originalLine = ast.textLines[token.line];
+                    const originalText = originalLine.slice(prevEnd, token.position);
+                    results.push({
+                        fixedText: ' ',
+                        originalText,
+                        message: 'Expected 1 space before operator',
+                        line: token.line,
+                        position: prevEnd,
+                        length : originalText.length,
+                        severity: "warning"
+                    });
+                }
+            }
+            if (next && next.line === token.line)
+            {
+                const tokenEnd = token.position + token.text.length;
+                const distance = next.position - tokenEnd;
+                const expectedDistance = istPrefixOperator(prev, token, next) ? 0 : 1;
+                if (distance !== expectedDistance){
+                    const originalLine = ast.textLines[token.line];
+                    const originalText = originalLine.slice(tokenEnd, next.position);
+                    const message = expectedDistance === 0 
+                        ? 'Expected no space after operator' 
+                        : 'Expected 1 space after operator';
+                    const fixedText = expectedDistance === 0 ? '' : ' ';
+                    results.push({
+                        fixedText,
+                        originalText,
+                        message,
+                        line: token.line,
+                        position: tokenEnd,
+                        length: originalText.length,
+                        severity: "warning"
+                    });
+                }
+            }
+
+            
+        }   
+        return results;
+    }
+}
+
+function istPrefixOperator(prev: ParserToken, token: ParserToken, next: ParserToken): boolean 
+{
+    if (token.type !== C.Operator ||
+        !canBePrefixOperatorRegex.test(token.text))
+    {
+        return false;
+    }
+    if (!canOperatorBeAppliedTo(next)) 
+    {
+        return false;
+    }
+    if (canOperatorBeAppliedTo(prev))
+    {
+        return false;
+    }
+    return true;
+}
+
+function canOperatorBeAppliedTo(token: ParserToken)
+{
+    if (!token){
+        return false;
+    }
+    switch (token.type){
+    case C.ClassConstant:
+    case C.Identifier:
+    case C.LiteralNumber:
+    case C.LiteralString:
+    case C.LiteralName:
+    case C.LanguageConstant:
+    case C.ClassConstant:
+    case C.VariableReference:
+    case C.ClassVariable:
+    case C.LocalVariable:
+        return true;
+    case C.Operator:
+    default:
+        return false;
+    }
+}
+
+const canBePrefixOperatorRegex = /^(?:-)$/;

@@ -300,7 +300,32 @@ test('lint multiline comment with space is before function empty line is not req
     ]).hasNoLintResults();
 });
 
-function linting(lines: string[]) {
+test('lint operator not enough space before operator', () => { lintingStatements(
+    'count= 0;'
+).hasResult({ position: 5, originalText:'', fixedText:' ' });});
+
+test('lint operator too much space before operator', () => { lintingStatements(
+    'count   = 0;'
+).hasResult({ position: 5, originalText:'   ', fixedText:' ' });});
+
+test('lint operator not enough space after operator', () => { lintingStatements(
+    'count =0;'
+).hasResult({ position: 7, originalText:'', fixedText:' ' });});
+
+test('lint operator too much space after operator', () => { lintingStatements(
+    'count =   0;'
+).hasResult({ position: 7, originalText:'   ', fixedText:' ' });});
+
+test('lint operator space just right', () => { lintingStatements(
+    'count = 0;'
+).hasNoLintResults();});
+
+test('lint operator negation should not have space', () => { lintingStatements(
+    'x = - 1;'
+).hasResult({ position: 5, fixedText:'', originalText:' '});});
+
+
+function linting(lines: string[], lineOffset = 0, positionOffset = 0) {
     const parser = new UcParser();
     for (let i = 0; i < lines.length; i++) {
         for (const token of ucTokenizeLine(lines[i])) {
@@ -325,6 +350,17 @@ function linting(lines: string[]) {
             if (result != null){
                 results.push(...result);
             }
+        }
+    }
+    
+    for (const result of results){
+        if (result.line != null)
+        {
+            result.line += lineOffset;
+        }
+        if (result.position != null)
+        {
+            result.position += positionOffset;
         }
     }
 
@@ -355,4 +391,17 @@ function linting(lines: string[]) {
     };
 
     return checks;
+}
+
+function lintingStatements(...statementLines: string[]){
+    return linting(statementWrapper(...statementLines), -2, -1);
+}
+
+function statementWrapper(...statementLines: string[]){
+    return [
+        'function F()',
+        '{',
+        ...statementLines.map(l => `\t${l}`),
+        '}'
+    ];
 }
