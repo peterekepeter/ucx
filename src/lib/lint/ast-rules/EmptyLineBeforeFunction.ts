@@ -13,7 +13,7 @@ export class EmptyLineBeforeFunction implements AstBasedLinter
             if (!firstToken || firstToken.line === 0){
                 continue;
             }
-            const lastToken = fn.bodyLastToken;
+            const lastToken = fn.bodyLastToken ?? fn.fnArgsLastToken ?? fn.name;
             const firstLine = firstToken.line;
             if (lastToken?.line === firstLine){
                 continue;

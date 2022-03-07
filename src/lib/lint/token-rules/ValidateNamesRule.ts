@@ -1,12 +1,17 @@
+import { ParserToken, SemanticClass } from "../../parser";
 import { LintResult } from "../LintResult";
-import { TokenBasedLinter } from "../TokenBasedLinter";
+import { TokenBasedLinterV2 } from "../TokenBasedLinter";
 
 const validateRegex = /^'[a-z0-9_]*'$/i;
 
 
-export class ValidateNamesRule implements TokenBasedLinter 
+export class ValidateNamesRule implements TokenBasedLinterV2
 {
-    nextToken(line: number, position: number, tokenText: string): LintResult[] | null {
+    nextToken(parserToken: ParserToken): LintResult[] | null {
+        if (parserToken.type !== SemanticClass.LiteralName){
+            return null;
+        }
+        const tokenText = parserToken.text;
         if (!tokenText.startsWith("'") || !tokenText.endsWith("'")){
             return null;
         }
@@ -24,6 +29,8 @@ export class ValidateNamesRule implements TokenBasedLinter
         }
 
         if (error !== ''){
+            const line = parserToken.line;
+            const position = parserToken.position;
             return [{
                 line, position, originalText: tokenText, length: tokenText.length, 
                 message: error,

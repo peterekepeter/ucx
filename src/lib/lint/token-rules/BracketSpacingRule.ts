@@ -1,20 +1,31 @@
 import { LinkedEditingRanges } from "vscode";
 import { LintResult } from "../LintResult";
-import { TokenBasedLinter } from "../TokenBasedLinter";
+import { TokenBasedLinter, TokenBasedLinterV2 } from "../TokenBasedLinter";
 import { getIndentLevel } from "../../indentation/getIndentLevel";
 import { toIndentString } from "../../indentation/toIndentString";
+import { ParserToken, SemanticClass } from "../../parser";
 
-export class BracketSpacingRule implements TokenBasedLinter 
+export class BracketSpacingRule implements TokenBasedLinterV2
 {
     prevLine = -1;
     prevToken = '';
 
-    nextToken(line: number, position: number, token: string, lineText: string): LintResult[] | null 
+    nextToken(parserToken: ParserToken, textLines: string[]): LintResult[] | null 
     {
+        if (parserToken.type !== SemanticClass.None){
+            // asumming {} brakets always classified as None
+            return null;
+        }
+
         let insertNewline = false;
         let message = '';
         let insertIndent = 0;
 
+        const line = parserToken.line;
+        const token = parserToken.text;
+        const lineText = textLines[line];
+        const position = parserToken.position;
+        
         if (line === this.prevLine) 
         {
             if (token === '{')

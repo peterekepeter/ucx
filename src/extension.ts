@@ -1,8 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { ALL_RULES, ALL_V2_TOKEN_RULES } from './lib/lint/token-rules';
-import { KeywordFormatRule } from './lib/lint/token-rules/KeywordFormatRule';
+import { ALL_V2_TOKEN_RULES } from './lib/lint/token-rules';
 import { ucTokenizeLine } from './lib/tokenizer/ucTokenizeLine';
 import { TokenBasedLinter } from './lib/lint/TokenBasedLinter';
 import { ParserToken, SemanticClass, UcParser } from './lib/parser';
@@ -16,9 +15,6 @@ export function activate(context: vscode.ExtensionContext) {
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     // This line of code will only be executed once when your extension is activated
     console.log('Extension "uclint" is now active!');
-
-    const tokenRules = ALL_RULES;
-    const astRules = ALL_AST_RULES;
 
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with registerCommand
@@ -34,7 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerDocumentFormattingEditProvider('unrealscript', {
         provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.TextEdit[] {
             const edits = new Array<vscode.TextEdit>();
-            processFormattingRules(document, edits, tokenRules);
+            processFormattingRules(document, edits);
             // insertSemicolonEndOfLine(document, edits);
             return edits;
         }
@@ -266,7 +262,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.workspace.onDidChangeTextDocument(event => { 
         console.log('change!');
         if (event.document.languageId === 'unrealscript'){
-            const diagnositcs = [...getDiagnostics(event.document, tokenRules)];
+            const diagnositcs = [...getDiagnostics(event.document)];
             diagnosticCollection.set(event.document.uri, diagnositcs);
         }
     });
@@ -276,12 +272,12 @@ export function activate(context: vscode.ExtensionContext) {
 // this method is called when your extension is deactivated
 export function deactivate() {}
 
-function* getDiagnostics(document: vscode.TextDocument, tokenRules: TokenBasedLinter[]): Iterable<vscode.Diagnostic> {
+function* getDiagnostics(document: vscode.TextDocument): Iterable<vscode.Diagnostic> {
     
     const cfg = vscode.workspace.getConfiguration("uclint");
     let reportParserErrors = !!cfg.get('reportParserErrors') ?? false;
 
-    for (const lintResult of processLinterRules(document, tokenRules, { reportParserErrors })){
+    for (const lintResult of processLinterRules(document, { reportParserErrors })){
         if (lintResult.message != null && 
             lintResult.line != null &&
             lintResult.position != null &&
@@ -301,7 +297,7 @@ function* getDiagnostics(document: vscode.TextDocument, tokenRules: TokenBasedLi
     }
 }
 
-function* processLinterRules(document: vscode.TextDocument, tokenRules: TokenBasedLinter[], options?: { reportParserErrors?: boolean }): Iterable<LintResult> {
+function* processLinterRules(document: vscode.TextDocument, options?: { reportParserErrors?: boolean }): Iterable<LintResult> {
     const parser = new UcParser();
     const lines = new Array<string>(document.lineCount);
     for (let lineIndex=0; lineIndex < document.lineCount; lineIndex++){
@@ -309,15 +305,6 @@ function* processLinterRules(document: vscode.TextDocument, tokenRules: TokenBas
         lines[lineIndex] = line.text;
         const lineTokens = ucTokenizeLine(line.text);
         for (const token of lineTokens){
-            for (const rule of tokenRules){
-                const lintResults = rule.nextToken(lineIndex, token.position, token.text, line.text);
-                if (!lintResults){
-                    continue;
-                }
-                for (const result of lintResults){
-                    yield result;
-                }
-            }
             parser.parse(lineIndex, token.position, token.text);
         }
     }
@@ -346,7 +333,7 @@ function* processLinterRules(document: vscode.TextDocument, tokenRules: TokenBas
     }
     for (const token of ast.tokens){
         for (const rule of ALL_V2_TOKEN_RULES){
-            const result = rule.nextToken(token);
+            const result = rule.nextToken(token, ast.textLines);
             if (result != null){
                 for (const item of result){
                     yield item;
@@ -356,8 +343,8 @@ function* processLinterRules(document: vscode.TextDocument, tokenRules: TokenBas
     }
 }
 
-function processFormattingRules(document: vscode.TextDocument, edits: vscode.TextEdit[], tokenRules: TokenBasedLinter[]){
-    for (const result of processLinterRules(document,  tokenRules)){
+function processFormattingRules(document: vscode.TextDocument, edits: vscode.TextEdit[]){
+    for (const result of processLinterRules(document)){
         if (result.fixedText == null || result.position == null || result.line == null || result.length == null){
             continue;
         }

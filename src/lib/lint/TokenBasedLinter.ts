@@ -15,5 +15,5 @@ export interface TokenBasedLinter
 
 export interface TokenBasedLinterV2
 {
-    nextToken(token: ParserToken): LintResult[] | null;
+    nextToken(token: ParserToken, textLines: string[]): LintResult[] | null;
 }

@@ -1,18 +1,22 @@
+import { ParserToken, SemanticClass } from "../../parser";
 import { LintResult } from "../LintResult";
-import { TokenBasedLinter } from "../TokenBasedLinter";
+import { TokenBasedLinterV2 } from "../TokenBasedLinter";
 
 
-export class NoneFormatRule implements TokenBasedLinter 
+export class NoneFormatRule implements TokenBasedLinterV2
 {
-    nextToken(line: number, position: number, tokenText: string): LintResult[] | null {
-        const lowercase = tokenText.toLowerCase();
-        if (lowercase === "none" && tokenText !== "None"){
+    nextToken(token: ParserToken): LintResult[] | null {
+        if (token.type !== SemanticClass.LanguageConstant){
+            return null;
+        }
+        if (token.text !== "None" && token.textLower === "none"){
             return [{
-                line, position,
-                length: tokenText.length,
+                line: token.line, 
+                position: token.position,
+                length: token.text.length,
                 message: 'None should be in PascalCase',
                 fixedText: "None",
-                originalText: tokenText
+                originalText: token.text
             }];
         }
         return null;

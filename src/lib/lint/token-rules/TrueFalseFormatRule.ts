@@ -1,9 +1,14 @@
+import { ParserToken, SemanticClass } from "../../parser";
 import { LintResult } from "../LintResult";
-import { TokenBasedLinter } from "../TokenBasedLinter";
+import { TokenBasedLinter, TokenBasedLinterV2 } from "../TokenBasedLinter";
 
-export class TrueFalseFormatRule implements TokenBasedLinter 
+export class TrueFalseFormatRule implements TokenBasedLinterV2
 {
-    nextToken(line: number, position: number, tokenText: string): LintResult[] | null {
+    nextToken(token: ParserToken): LintResult[] | null {
+        if (token.type !== SemanticClass.LanguageConstant){
+            return null;
+        }
+        const tokenText = token.text;
         const lowercase = tokenText.toLowerCase();
         let fixedText = tokenText;
         {
@@ -21,6 +26,8 @@ export class TrueFalseFormatRule implements TokenBasedLinter
             }
         }
         if (fixedText !== tokenText){
+            const line = token.line;
+            const position = token.position;
             return [{
                 line, position,
                 length: tokenText.length,

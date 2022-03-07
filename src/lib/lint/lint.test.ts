@@ -213,7 +213,8 @@ test("lint indent ignores commented lines", () => {
 
 test("lint indent ignores empty lines", () => {
     linting([
-        'function Test() {',
+        'function Test()',
+        '{',
         '',
         '}'
     ]).hasNoLintResults();
@@ -271,8 +272,8 @@ test('lint empty line before function', () => {
 
 test('lint empty line before function not required if function on single line', () => {
     linting([
-        'function A() {}',
-        'function B() {}',
+        'function A();',
+        'function B();',
     ]).hasNoLintResults();
 });
 
@@ -324,6 +325,40 @@ test('lint operator negation should not have space', () => { lintingStatements(
     'x = - 1;'
 ).hasResult({ position: 5, fixedText:'', originalText:' '});});
 
+test('lint None formatting correction', () => { lintingStatements(
+    'x = none;'
+).hasResult({ position: 4, fixedText:'None', originalText:'none'});});
+
+test('lint None is correctly formatted', () => { lintingStatements(
+    'x = None;'
+).hasNoLintResults();});
+
+test('lint True/False is correctly formatted', () => { lintingStatements(
+    'x = True;',
+    'x = False;'
+).hasNoLintResults();});
+
+test('lint True/False formatting correction', () => { lintingStatements(
+    'x = true;',
+    'x = false;'
+)
+    .hasResult({ position: 4, fixedText:'True', originalText:'true'})
+    .hasResult({ position: 4, fixedText:'False', originalText:'false'});
+});
+
+test('lint newline before {', () => { lintingStatements(
+    'if (bFirst) {',
+    '}'
+).hasResult({ line: 0, position:12, fixedText:'\n\t' });});
+
+test('lint string tab escape does not work', () => { lintingStatements(
+    'x = "\\t";'
+).hasResult({ line: 0, position:5, length:2 });});
+
+test('lint names cannot have space', () => { lintingStatements(
+    "x = 'a cat';"
+).hasResult({ line: 0, position:4, length:7, originalText:"'a cat'" });});
+
 
 function linting(lines: string[], lineOffset = 0, positionOffset = 0) {
     const parser = new UcParser();
@@ -346,7 +381,7 @@ function linting(lines: string[], lineOffset = 0, positionOffset = 0) {
 
     for (const token of ast.tokens){
         for (const rule of ALL_V2_TOKEN_RULES) {
-            const result = rule.nextToken(token);
+            const result = rule.nextToken(token, ast.textLines);
             if (result != null){
                 results.push(...result);
             }
