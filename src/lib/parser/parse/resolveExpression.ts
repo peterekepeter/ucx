@@ -40,6 +40,14 @@ function resolveSubExpression(
     tokens: Token[], begin: number, end: number
 ): UnrealClassExpression | Token 
 {
+    for (let i=1; i<tokens.length; i++){
+        const prev = tokens[i-1];
+        const next = tokens[i];
+        if (next.type === SemanticClass.LiteralName && prev.type === SemanticClass.Identifier){
+            next.type = SemanticClass.ObjectReferenceName;
+            prev.type = SemanticClass.ClassReference;
+        }
+    }
     // TODO: implementation not complete
     const tokenCount = end - begin;
     if (tokenCount === 1){

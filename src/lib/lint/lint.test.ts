@@ -377,6 +377,28 @@ test('lint names cannot have space', () => { lintingStatements(
     "x = 'a cat';"
 ).hasResult({ line: 0, position:4, length:7, originalText:"'a cat'" });});
 
+test('lint operator spacing removes space in default properties', () => { linting([
+    'defaultproperties',
+    '{',
+    '\tDescription = "Your description here!"',
+    '}'
+])
+    .hasResult({ line: 2, position:12, length:1, fixedText: '' })
+    .hasResult({ line: 2, position:14, length:1, fixedText: '' });
+});
+
+test('lint operator spacing does not suggest adding space in defaultproperties', () => { linting([
+    'defaultproperties',
+    '{',
+    '\tDescription="Your description here!"',
+    '}'
+]).hasNoLintResults();});
+
+test('lint class name reference can contain dot', () => { lintingStatements(
+    "c = class'Engine.Weapon'"
+).hasNoLintResults();});
+
+
 function linting(lines: string[], lineOffset = 0, positionOffset = 0) {
     const parser = new UcParser();
     for (let i = 0; i < lines.length; i++) {
