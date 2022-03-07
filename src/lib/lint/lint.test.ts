@@ -276,6 +276,29 @@ test('lint empty line before function not required if function on single line', 
     ]).hasNoLintResults();
 });
 
+const FUNCTION_LINES = [ 'function F()', '{', '}' ];
+
+test('lint when commnet is before function empty line is not required', () => {
+    linting([
+        '// hello!',
+        ...FUNCTION_LINES
+    ]).hasNoLintResults();
+});
+
+test('lint when comment with space is before function empty line is not required', () => {
+    linting([
+        '  // hello!',
+        ...FUNCTION_LINES
+    ]).hasNoLintResults();
+});
+
+test('lint multiline comment with space is before function empty line is not required', () => {
+    linting([
+        '/*',
+        ' hello! */',
+        ...FUNCTION_LINES
+    ]).hasNoLintResults();
+});
 
 function linting(lines: string[]) {
     const parser = new UcParser();

@@ -2,7 +2,7 @@ import { UnrealClass } from "../..";
 import { AstBasedLinter } from "../AstBasedLinter";
 import { LintResult } from "../LintResult";
 
-const EMPTY_LINE_REGEX = /^[ \t]*$/;
+const EMPTY_LINE_OR_COMMENT = /(^[ \t]*$|^\s*\/\/|.*\*\/\s*$)/;
 
 export class EmptyLineBeforeFunction implements AstBasedLinter
 {
@@ -21,7 +21,7 @@ export class EmptyLineBeforeFunction implements AstBasedLinter
             const previousLine = firstLine - 1;
             const previousLineText = ast.textLines[previousLine] ?? '';
             
-            if (!EMPTY_LINE_REGEX.test(previousLineText)){
+            if (!EMPTY_LINE_OR_COMMENT.test(previousLineText)){
                 result.push({
                     fixedText: '\n',
                     line: previousLine,
