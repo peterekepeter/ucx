@@ -38,6 +38,11 @@ test("operators", () => {
     verify(">=", C.Operator);
     verify("++", C.Operator);
     verify("--", C.Operator);
+    verify("==", C.Operator);
+    verify("!=", C.Operator);
+    verify("&&", C.Operator);
+    verify("||", C.Operator);
+    verify("!", C.Operator);
 });
 
 test("language constants", () => {

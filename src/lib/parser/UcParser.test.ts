@@ -742,7 +742,7 @@ test("parse empty state", () => { parsing(`
     .hasState(0, { name:'MyState' });
 });
 
-test.skip("parse state with latent instructions", () => { parsing(`
+test("parse state with latent instructions", () => { parsing(`
     auto state MyState
     {
     Begin:
