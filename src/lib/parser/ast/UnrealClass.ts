@@ -39,4 +39,6 @@ export interface UnrealExecInstruction {
 
 export interface UnrealClassState{
     name: Token | null;
+    functions: UnrealClassFunction[];
+    
 }

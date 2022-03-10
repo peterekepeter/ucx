@@ -742,6 +742,16 @@ test("parse empty state", () => { parsing(`
     .hasState(0, { name:'MyState' });
 });
 
+test.skip("parse sate functions", () => { parsing(`
+    state Idle
+    {
+        function AnimEnd()
+        {
+            PlayIdleAnim();
+        }
+    }
+`).hasNoErrors();})
+
 test("parse state with latent instructions", () => { parsing(`
     auto state MyState
     {

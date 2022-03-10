@@ -8,11 +8,17 @@ import { parseFnDeclaration } from "./parseFunction";
 import { UcParser } from "../UcParser";
 import { parseDefaultProperties } from "./parseDefaultProperties";
 import { parseExec } from "./parseExec";
-import { UnrealClassFunction } from "../ast/UnrealClassFunction";
 import { parseState } from "./parseState";
+import { clearModifiers } from "./clearModifiers";
+import { resolveFunctionModifiers } from "./resolveFunctionModifiers";
 
 
 export function parseNoneState(parser: UcParser, token: Token) {
+    if (parser.currentClassState){
+        parser.rootFn = parseState;
+        parseState(parser, token);
+        return;
+    }
     if (token.textLower.startsWith('#exec')){
         parser.result.execInstructions.push({
             firstToken: token,
@@ -109,11 +115,13 @@ export function parseNoneState(parser: UcParser, token: Token) {
 
     case 'state':
         parser.result.states.push({
-            name: null
+            name: null,
+            functions: [],
         });
         parser.rootFn = parseState;
         token.type = C.Keyword;
         clearModifiers(parser);
+        parser.currentClassState = parser.lastState;
         break;
 
     default:
@@ -123,32 +131,3 @@ export function parseNoneState(parser: UcParser, token: Token) {
     }
 }
 
-function clearModifiers(parser: UcParser) {
-    if (parser.modifiers.length > 0){
-        parser.modifiers = [];
-    }
-}
-
-function resolveFunctionModifiers(modifiers: Token[]): Partial<UnrealClassFunction> {
-    let isStatic = false; 
-    let isSimulated = false; 
-    let isFinal = false; 
-    for (const modifier of modifiers) {
-        switch (modifier.textLower){
-        case "static":
-            isStatic = true;
-            break;
-        case "simulated":
-            isSimulated = true;
-            break;
-        case "final":
-            isFinal = true;
-            break;
-        }
-    }
-    return {
-        isStatic,
-        isSimulated,
-        isFinal
-    };
-}

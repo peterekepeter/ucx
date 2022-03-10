@@ -38,6 +38,7 @@ export class UcParser{
     modifiers: Token[] = [];
     fnArgTokens: Token[] = [];
     isMultilineComment = false;
+    currentClassState: UnrealClassState | null = null;
 
     getAst() {
         return this.result;
