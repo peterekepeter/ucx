@@ -750,7 +750,7 @@ test.skip("parse sate functions", () => { parsing(`
             PlayIdleAnim();
         }
     }
-`).hasNoErrors();})
+`).hasNoErrors();});
 
 test("parse state with latent instructions", () => { parsing(`
     auto state MyState
@@ -763,6 +763,32 @@ test("parse state with latent instructions", () => { parsing(`
     }`)
     .hasNoErrors();
 });
+
+
+test("parse new object syntax", () => { parsing(`
+    function F(){
+        r1 = new class'NodeReplacer';
+    }`)
+    .hasNoErrors()
+    .hasTokens(['r1', C.VariableReference], ['=', C.Operator], ['new', C.Keyword]);
+});
+
+test("parse super call", () => { parsing(`
+    function F(){
+        super.F();
+    }`)
+    .hasNoErrors()
+    .hasTokens(['super', C.Keyword], ['.', C.None], ['F', C.VariableReference]);
+});
+
+test("parse self call", () => { parsing(`
+    function F(){
+        self.G();
+    }`)
+    .hasNoErrors()
+    .hasTokens(['self', C.Keyword], ['.', C.None], ['G', C.VariableReference]);
+});
+
 
 function parsing(input: string) {
     const parser = new UcParser();

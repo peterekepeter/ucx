@@ -40,6 +40,9 @@ function resolveSubExpression(
     tokens: Token[], begin: number, end: number
 ): UnrealClassExpression | Token 
 {
+    for (let i=0; i<tokens.length; i++){
+        classifyExpressionToken(tokens[i]);
+    }
     for (let i=1; i<tokens.length; i++){
         const prev = tokens[i-1];
         const next = tokens[i];
@@ -103,6 +106,16 @@ function resolveSubExpression(
         argsFirstToken: tokens[begin],
         argsLastToken: tokens[end - 1],
     };
+}
+
+function classifyExpressionToken(token: Token){
+    switch (token.textLower){
+    case "super":
+    case "self":
+    case "new":
+        token.type = SemanticClass.Keyword;
+        break;
+    }
 }
 
 function resolveCallArgs(
