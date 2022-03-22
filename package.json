@@ -47,7 +47,8 @@
 					".uc",
 					".uci"
 				],
-				"firstLine": "^\\s*class\\s*[a-zA-Z0-9_]+\\s*(?:extends|expands)\\s*[a-zA-Z0-9_]+"
+				"firstLine": "^\\s*class\\s*[a-zA-Z0-9_]+\\s*(?:extends|expands)\\s*[a-zA-Z0-9_]+",
+				"configuration": "./uc.language-configuration.json"
 			}
 		]
 	},
