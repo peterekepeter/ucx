@@ -28,6 +28,10 @@
 					"type": "boolean",
 					"default": "false",
 					"description": "Reports parser errors. (useful for parser development)"
+				},
+				"uclint.uccPath": {
+					"type": "string",
+					"description": "Path to UCC"
 				}
 			}
 		},
@@ -63,6 +67,7 @@
 		"unittest:watch": "jest --watch",
 		"pack": "npx vsce package",
 		"esbuild-base": "npx esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
+		"esbuild-ucx": "npx esbuild ./src/ucx.ts --bundle --outfile=out/ucx.js --platform=node",
 		"esbuild": "npm run esbuild-base -- --sourcemap"
 	},
 	"devDependencies": {
