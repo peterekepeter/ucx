@@ -398,6 +398,11 @@ test('lint class name reference can contain dot', () => { lintingStatements(
     "c = class'Engine.Weapon'"
 ).hasNoLintResults();});
 
+test.skip('lint multiline boolean condition', () => { lintingStatements(
+    "return WeaponIndex >= 0",
+    "	&& PlayerPawn.Weapon != None",
+    "&& PlayerPawn.Weapon.Class == Weapons.GetWeaponClass(WeaponIndex)" // missing indent
+).hasResult({ line: 2, fixedText: '\t'});});
 
 function linting(lines: string[], lineOffset = 0, positionOffset = 0) {
     const parser = new UcParser();
