@@ -51,3 +51,10 @@ test('can have ucx args before command', () => {
         files: ['help', '--ini=test.ini'],
     } as Partial<UcxCommand>);
 });
+
+test('parse pass command to ut', () => {
+    expect(parse(['','','ut','help','--ini=test.ini'])).toMatchObject({
+        command: 'ut',
+        files: ['help', '--ini=test.ini'],
+    } as Partial<UcxCommand>);
+});
