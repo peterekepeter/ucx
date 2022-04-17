@@ -10,11 +10,8 @@ export function parseCliArgs(argv: string[]): Partial<UcxCommand>{
     if (argv[1]) {
         result.ucxScript = argv[1];
     }
-    if (argv[2]) {
-        result.command = argv[2];
-    }
     let expectUccPath = false;
-    for (let i=3; i<argv.length; i++){
+    for (let i=2; i<argv.length; i++){
         const arg = argv[i];
         if (expectUccPath){
             result.uccPath = arg;
@@ -27,6 +24,14 @@ export function parseCliArgs(argv: string[]): Partial<UcxCommand>{
                 break;
             default:    
                 errors.push(`Uknown argument "${arg}"`);
+            }
+        }
+        else if (!result.command){
+            result.command = arg;
+            if (arg === 'ucc') {
+                // bypass parsing
+                result.files = argv.slice(i+1);
+                return result;
             }
         }
         else {

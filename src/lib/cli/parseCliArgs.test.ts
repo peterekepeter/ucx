@@ -13,7 +13,7 @@ test('parsed interpreter and script', () => {
 });
 
 test('parsed files', () => {
-    expect(parse(['','','','../Project'])).toMatchObject({
+    expect(parse(['','','build','../Project'])).toMatchObject({
         files: ['../Project']
     } as Partial<UcxCommand>);
 });
@@ -24,8 +24,8 @@ test('parsed command', () => {
     } as Partial<UcxCommand>);
 });
 
-test('parsed ucc directory', () => {
-    expect(parse(['','','', '--ucc', '../System/ucc.exe','../Project'])).toMatchObject({
+test('parsed ucc path', () => {
+    expect(parse(['','','build', '--ucc', '../System/ucc.exe','../Project'])).toMatchObject({
         uccPath:'../System/ucc.exe',
         files: ['../Project']
     } as Partial<UcxCommand>);
@@ -34,5 +34,20 @@ test('parsed ucc directory', () => {
 test('unsupported args reported as errors', () => {
     expect(parse(['','','','--unknown'])).toMatchObject({
         errors: ['Uknown argument "--unknown"']
+    } as Partial<UcxCommand>);
+});
+
+test('parse pass command to ucc', () => {
+    expect(parse(['','','ucc','help','--ini=test.ini'])).toMatchObject({
+        command: 'ucc',
+        files: ['help', '--ini=test.ini'],
+    } as Partial<UcxCommand>);
+});
+
+test('can have ucx args before command', () => {
+    expect(parse(['','', '--ucc', '../System/ucc.exe', 'ucc','help','--ini=test.ini'])).toMatchObject({
+        command: 'ucc',
+        uccPath: '../System/ucc.exe',
+        files: ['help', '--ini=test.ini'],
     } as Partial<UcxCommand>);
 });
