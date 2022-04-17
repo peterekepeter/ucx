@@ -12,10 +12,8 @@ export async function execUcc(cmd: UcxCommand): Promise<void> {
     console.log('to execute', line);
 
     return new Promise((resolve, reject) => {
-        exec(line, {
+        const child = exec(line, {
         }, (error, stdout, stderr) => {
-            console.log(stdout);
-            // console.error(stderr);
             if (error){
                 reject(error);
             }
@@ -23,5 +21,11 @@ export async function execUcc(cmd: UcxCommand): Promise<void> {
                 resolve();
             }
         });
+        if (child.stdout){
+            child.stdout.pipe(process.stdout);
+        }
+        if (child.stderr){
+            child.stderr.pipe(process.stderr);
+        }
     });
 }
