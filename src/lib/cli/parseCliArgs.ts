@@ -1,16 +1,7 @@
+import { UcxCommand } from "./UcxCommand";
 
-export interface CliCommand
-{
-    jsInterpreter: string;
-    ucxScript: string;
-    files: string[];
-    command: string;
-    errors: string[];
-    uccPath: string;
-}
-
-export function parseCliArgs(argv: string[]): Partial<CliCommand>{
-    const result : Partial<CliCommand> = {};
+export function parseCliArgs(argv: string[]): Partial<UcxCommand>{
+    const result : Partial<UcxCommand> = {};
     const errors = [];
     const files = [];
     if (argv[0]) {
