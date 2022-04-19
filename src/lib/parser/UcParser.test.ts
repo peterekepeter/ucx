@@ -791,10 +791,54 @@ test("parse self call", () => { parsing(`
 
 test.skip("parse native function declaration", () => { parsing(`
     native(1718) final function bool AddToPackageMap( optional string PkgName);
-`).hasNoErrors()})
+`).hasNoErrors();});
 
+test.skip("struct parsing", () => { parsing(`
+    struct PointRegion
+    {
+        var zoneinfo Zone;       // Zone.
+        var int      iLeaf;      // Bsp leaf.
+        var byte     ZoneNumber; // Zone number.
+    };
+`).hasNoErrors();});
 
-function parsing(input: string) {
+interface ParserTestChecks
+{
+    hasClassName(name: string): ParserTestChecks
+    hasParentClassName(name: string): ParserTestChecks
+    hasClassConfig(name: string): ParserTestChecks
+    hasNoErrors(): ParserTestChecks
+    isAbstract(flag: boolean): ParserTestChecks
+    isNative(flag: boolean): ParserTestChecks
+    hasNativeReplication(flag: boolean): ParserTestChecks
+    hasVariable(index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean, array?:number, localized?:boolean, template?:string }): ParserTestChecks
+    hasEnum(index: number, name: string, enumIndex: number, enumName: string): ParserTestChecks
+    hasConstant(index: number, props: { name?:string, value?:string }): ParserTestChecks
+    hasFunction(index: number, props: { 
+        name?:string,
+        locals?:{
+           name?:string,
+           type?:string 
+        }[],
+        body?:StatementCheckObj[],
+        isStatic?: boolean,
+        isSimulated?: boolean,
+        isFinal?: boolean
+        returnType?: string,
+        fnArgs?: { 
+            type?: string,
+            name?: string,
+            isOut?: boolean,
+            isOptional?: boolean,
+            isCoerce?: boolean,
+        }[]
+    }): ParserTestChecks,
+    hasDefaultProperty(index: number, props: { name?: string, value?: ExpressionCheckObj | string, arrayIndex?: string }): ParserTestChecks
+    hasTokens(...expected: [string, C][]): ParserTestChecks
+    hasState(index: number, props: { name?:string }): ParserTestChecks
+}
+
+function parsing(input: string): ParserTestChecks {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
     for (let i = 0; i < lines.length; i++) {
