@@ -35,7 +35,7 @@ export class AstIndentRule implements AstBasedLinter
         for (const fn of ast.functions){
             this.paintScope(fn.fnArgsFirstToken, fn.fnArgsLastToken);
             this.paintScope(fn.bodyFirstToken, fn.bodyLastToken);
-            this.recursivePaintStatementScopes(fn.body);
+            this.recursivePaintStatementScopes(ast, fn.body);
         }
         
         this.paintScope(
@@ -115,9 +115,20 @@ export class AstIndentRule implements AstBasedLinter
         return results;
     }
 
-    recursivePaintStatementScopes(body: UnrealClassStatement[]): void {
+    recursivePaintStatementScopes(ast: UnrealClass, body: UnrealClassStatement[]): void {
         for (const st of body) {
-            this.paintScope(st.argsFirstToken, st.argsLastToken);
+            const first = st.argsFirstToken;
+            let last = st.argsLastToken;
+            if (first && last) {
+                while (first.index < last.index - 2
+                    && last.text === ';' 
+                    && ast.tokens[last.index-1].text === ')'
+                    && ast.tokens[last.index-2].line !== ast.tokens[last.index-1].line) {
+                    last = ast.tokens[last.index-1];
+                }
+            }
+
+            this.paintScope(first, last);
             this.recursivePaintArgsScope(st.args);
 
             if (st.bodyFirstToken?.text !== '{'){
@@ -125,7 +136,7 @@ export class AstIndentRule implements AstBasedLinter
             } else {
                 this.paintScope(st.bodyFirstToken, st.bodyLastToken);
             }
-            this.recursivePaintStatementScopes(st.body);
+            this.recursivePaintStatementScopes(ast, st.body);
         }
     }
 

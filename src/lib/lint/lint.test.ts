@@ -106,7 +106,8 @@ test('expression closing paranthesis is not indented', () => {
         '        3 + 4',
         '    );',
         '}'
-    ]).hasResult({ line: 2, fixedText: '\t\t' 
+    ]).hasResult({ line: 1, fixedText: '\t' 
+    }).hasResult({ line: 2, fixedText: '\t\t' 
     }).hasResult({ line: 3, fixedText: '\t' });
 });
 
@@ -398,11 +399,11 @@ test('lint class name reference can contain dot', () => { lintingStatements(
     "c = class'Engine.Weapon'"
 ).hasNoLintResults();});
 
-test.skip('lint multiline boolean condition', () => { lintingStatements(
+test('lint multiline boolean condition', () => { lintingStatements(
     "return WeaponIndex >= 0",
     "	&& PlayerPawn.Weapon != None",
-    "&& PlayerPawn.Weapon.Class == Weapons.GetWeaponClass(WeaponIndex)" // missing indent
-).hasResult({ line: 2, fixedText: '\t'});});
+    "	&& PlayerPawn.Weapon.Class == Weapons.GetWeaponClass(WeaponIndex);" // missing indent
+).hasNoLintResults();});
 
 function linting(lines: string[], lineOffset = 0, positionOffset = 0) {
     const parser = new UcParser();

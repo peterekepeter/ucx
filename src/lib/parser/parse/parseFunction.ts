@@ -195,7 +195,9 @@ function parseExpression(parser: UcParser, token: Token)
         parser.result.errors.push({ token, message: "Function ended unexpectedly."});
         break;
     case ";":
-        parser.lastCodeBlock.push(resolveStatementExpression(parser.expressionTokens));
+        const statement = resolveStatementExpression(parser.expressionTokens);
+        statement.argsLastToken = token;
+        parser.lastCodeBlock.push(statement);
         parser.expressionTokens = [];
         parser.rootFn = parseStatement;
         break;
