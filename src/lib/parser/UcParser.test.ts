@@ -802,6 +802,16 @@ test.skip("struct parsing", () => { parsing(`
     };
 `).hasNoErrors();});
 
+test('parse array declaration with parse array count expression', () => { parsing(`
+    var string GameModeName[ArrayCount(RuleList)];
+`).hasNoErrors()
+    .hasVariable(0, 'string', 'GameModeName', {
+        arrayExpression: {
+            op: 'ArrayCount',
+            args: ['RuleList']
+        }
+    });});
+
 interface ParserTestChecks
 {
     hasClassName(name: string): ParserTestChecks
@@ -811,7 +821,16 @@ interface ParserTestChecks
     isAbstract(flag: boolean): ParserTestChecks
     isNative(flag: boolean): ParserTestChecks
     hasNativeReplication(flag: boolean): ParserTestChecks
-    hasVariable(index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean, array?:number, localized?:boolean, template?:string }): ParserTestChecks
+    hasVariable(index: number, type: string, name: string, props?: { 
+        transient?: boolean, 
+        const?: boolean, 
+        group?: string, 
+        config?: boolean, 
+        array?:number, 
+        localized?:boolean,
+        template?:string,
+        arrayExpression?:ExpressionCheckObj
+    }): ParserTestChecks
     hasEnum(index: number, name: string, enumIndex: number, enumName: string): ParserTestChecks
     hasConstant(index: number, props: { name?:string, value?:string }): ParserTestChecks
     hasFunction(index: number, props: { 
@@ -857,7 +876,7 @@ function parsing(input: string): ParserTestChecks {
         isAbstract: (flag: boolean) => checkEquals(flag, ast.isAbstract, "isAbstract should be " + flag),
         isNative: (flag: boolean) => checkEquals(flag, ast.isNative, "isNative should be " + flag),
         hasNativeReplication: (flag: boolean) => checkEquals(flag, ast.isNativeReplication, "hasNativeReplication should be " + flag),
-        hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean, array?:number, localized?:boolean, template?:string }) => {
+        hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean, array?:number, localized?:boolean, template?:string, arrayExpression?:ExpressionCheckObj }) => {
             checkEquals(ast.variables[index]?.type?.text, type);
             checkEquals(ast.variables[index]?.name?.text, name);
             if (props?.transient != null) {
@@ -880,6 +899,11 @@ function parsing(input: string): ParserTestChecks {
             }
             if (props?.template != null){
                 checkEquals(ast.variables[index]?.template?.text, props.template);
+            }
+            if (props?.arrayExpression != null){
+                const expr = ast.variables[index]?.arrayCountExpression;
+                const actual = expr && 'op' in expr ? mapExpressionToCheck(expr) : {};
+                checkMatches(actual, props.arrayExpression);
             }
             return checks;
         },

@@ -1,8 +1,8 @@
-import { parse } from "path";
 import { ParserToken as Token } from "../";
 import { SemanticClass as C } from "../token/SemanticClass";
 import { UcParser } from "../UcParser";
 import { parseNoneState } from "./parseNoneState";
+import { resolveExpression } from "./resolveExpression";
 
 
 export function parseVarDeclaration(parser: UcParser, token: Token) {
@@ -129,6 +129,7 @@ function parseVarNext(parser: UcParser, token: Token) {
     switch (token.text) {
     case '[':
         parser.rootFn = parseArrayCount;
+        parser.expressionTokens = [];
         break;
     case ',':
         parser.rootFn = parseExtraVariable;
@@ -162,10 +163,20 @@ function parseExtraVariable(parser: UcParser, token: Token) {
 function parseArrayCount(parser: UcParser, token:Token){
     const variable = parser.lastVar;
     switch (token.text){
+    case ';':
+    case ']':
+        variable.arrayCountExpression = resolveExpression(parser.expressionTokens);
+        if ('text' in variable.arrayCountExpression)
+        {
+            const token = variable.arrayCountExpression;
+            variable.arrayCountToken = token;
+            variable.arrayCount = parseInt(token.text);
+        }
+        parseAfterArrayCount(parser, token);
+        break;
+    
     default:
-        variable.arrayCountToken = token;
-        variable.arrayCount = parseInt(token.text);
-        parser.rootFn = parseAfterArrayCount;
+        parser.expressionTokens.push(token);
         break;
     }
 }

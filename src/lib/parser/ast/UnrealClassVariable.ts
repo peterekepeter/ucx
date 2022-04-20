@@ -1,4 +1,5 @@
 import { ParserToken as Token } from "..";
+import { UnrealClassExpression } from "./UnrealClassFunction";
 
 export interface UnrealClassVariable {
     type: Token | null;
@@ -10,6 +11,7 @@ export interface UnrealClassVariable {
     firstToken: Token;
     lastToken: Token;
     arrayCountToken: Token | null;
+    arrayCountExpression: Token | UnrealClassExpression | null;
     arrayCount: number | null;
     localized: boolean;
     template: Token | null;
