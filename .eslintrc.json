@@ -41,7 +41,7 @@
                 ]
             }
         ],
-        "@typescript-eslint/semi": "warn",
+        "@typescript-eslint/semi": ["always", { "omitLastInOneLineBlock": true }],
         "curly": "warn",
         "eqeqeq": [
             "warn",

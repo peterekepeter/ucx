@@ -8,6 +8,7 @@ import { isParsingClassFn } from "./parse/parseClass";
 import { ParserFn, Token } from "./types";
 import { LazyParserToken, ParserToken, SemanticClass } from "./token";
 import { parseNoneState } from "./parse/parseNoneState";
+import { resolveArrayCountExpressions } from "./parse/resolveArrayCountExpressions";
 
 
 export class UcParser{
@@ -57,6 +58,7 @@ export class UcParser{
             this.result.classLastToken = token;
         }
         this.result.tokens.push(token);
+        resolveArrayCountExpressions(this.result);
     }
 
     eofErrorMessageFrom(fn: ParserFn): string {

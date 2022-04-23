@@ -812,6 +812,16 @@ test('parse array declaration with parse array count expression', () => { parsin
         }
     });});
 
+test('parse resolves array count expression', () => { parsing(`
+        var string RuleList[512];
+        var string GameModeName[ArrayCount(RuleList)];
+    `)
+    .hasNoErrors()
+    .hasVariable(0, 'string', 'RuleList', { array: 512 })
+    .hasVariable(1, 'string', 'GameModeName', { array: 512 })
+});
+    
+
 interface ParserTestChecks
 {
     hasClassName(name: string): ParserTestChecks
