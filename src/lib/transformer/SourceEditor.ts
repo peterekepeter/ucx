@@ -5,11 +5,11 @@
  */
 export class SourceEditor
 {   
-    sourceLines: string[];
-    edits: { position: number, length: number, text: string }[][];
+    private sourceLines: string[];
+    private edits: { position: number, length: number, text: string }[][];
 
-    constructor(source: string){
-        this.sourceLines = source.split('\n');
+    constructor(source: string|string[]){
+        this.sourceLines = source instanceof Array ? source : source.split('\n');
         this.edits = this.sourceLines.map(line => []);
     }
 
