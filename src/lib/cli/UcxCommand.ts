@@ -5,6 +5,7 @@ export interface UcxCommand {
     command: string;
     errors: string[];
     uccPath: string;
+    noClean: boolean;
 }
 
 export const DEFAULT_UCX_COMMAND = {
@@ -14,4 +15,5 @@ export const DEFAULT_UCX_COMMAND = {
     uccPath: '',
     ucxScript: '',
     command: '',
+    noClean: false,
 } as UcxCommand;

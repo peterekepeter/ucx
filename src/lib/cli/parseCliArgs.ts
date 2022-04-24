@@ -19,6 +19,9 @@ export function parseCliArgs(argv: string[]): Partial<UcxCommand>{
         }
         else if (arg.startsWith('--')){
             switch (arg){
+            case '--no-clean':
+                result.noClean = true;
+                break;
             case '--ucc':
                 expectUccPath = true;
                 break;

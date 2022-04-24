@@ -2,11 +2,14 @@ import { UcxCommand } from "../cli";
 import * as os from "os";
 import { promises as fs, constants } from "fs";
 import { exec, spawn } from "child_process";
+import { SourceEditor, transformFor436 } from "../transformer";
+import { UcParser, UnrealClass } from "../parser";
+import { ucTokenizeLine } from "../tokenizer";
 
 export async function execBuild(cmd: UcxCommand){
     const projectFolders = await getBuildProjects(cmd.files);
     for (const project of projectFolders){
-        const context = await getBuildContext(project, cmd.uccPath);
+        const context = await getBuildContext(project, cmd);
         await buildProject(context);
     }
 }
@@ -15,16 +18,19 @@ async function buildProject(context: BuildContext) {
     await visitSourceFolder(context, context.projectDir);
     await runUccBuildCommand(context);
     await copyOutput(context);
-    await deleteTemporaryFiles(context);
+    if (context.performCleanup){   
+        await deleteTemporaryFiles(context);
+    }
 }
 
-async function getBuildContext(projectDir: string, uccPath: string): Promise<BuildContext> {
-    const resolvedPaths = await getUccPath(uccPath);
+async function getBuildContext(projectDir: string, cmd: UcxCommand): Promise<BuildContext> {
+    const resolvedPaths = await getUccPath(cmd.uccPath);
     const projectName = await getProjectNameFromPath(projectDir);
     const context: BuildContext = {
         tempToCleanup: [],
         projectName,
         projectDir,
+        performCleanup: !cmd.noClean,
         pathSeparator: detectPathSeparator(projectDir),
         ... resolvedPaths,
         ... await generateBuildNameAndDir(resolvedPaths.gameDir),
@@ -87,6 +93,7 @@ interface BuildContext
     buildDir: string
     buildName: string;
     buildIniFile?: string
+    performCleanup: boolean,
     tempToCleanup: { fullPath: string, isDir: boolean }[];
 }
 
@@ -129,6 +136,10 @@ async function visitSourceFile(context: BuildContext, srcPath: string) {
             return;
         };
     } 
+    if (srcPath.endsWith('.uc')){
+        await tempTransformSource(context, srcPath, destPath);
+        return;
+    }
     
     await tempCopy(context, srcPath, destPath);
 }
@@ -227,4 +238,30 @@ async function copyOutput(c: BuildContext) {
     const uccOutput = `${c.systemDir}${c.pathSeparator}${c.buildName}.u`;
     const requiredOutput = `${c.systemDir}${c.pathSeparator}${c.projectName}.u`;
     await fs.rename(uccOutput, requiredOutput);
+}
+
+async function tempTransformSource(context: BuildContext, srcPath: string, destPath: string) {
+    const originalSource = await fs.readFile(srcPath, 'utf-8');
+    const result = transform(originalSource);
+    await fs.writeFile(destPath, result, 'utf-8');
+    context.tempToCleanup.push({ fullPath: destPath, isDir: false });
+}
+
+function transform(input: string): string {
+    const editor = new SourceEditor(input);
+    const uc = parse(input);
+    transformFor436(editor, uc);
+    return editor.result;
+}
+
+function parse(input: string) : UnrealClass {
+    const parser = new UcParser();
+    const lines = input.split(/\r?\n/);
+    for (let i = 0; i < lines.length; i++) {
+        for (const token of ucTokenizeLine(lines[i])) {
+            parser.parse(i, token.position, token.text);
+        }
+    }
+    parser.endOfFile(input.length, 0);
+    return parser.result;
 }

@@ -58,3 +58,10 @@ test('parse pass command to ut', () => {
         files: ['help', '--ini=test.ini'],
     } as Partial<UcxCommand>);
 });
+
+test('parsed build command with --no-clean', () => {
+    expect(parse(['','','build', '--no-clean', '../Project'])).toMatchObject({
+        files: ['../Project'],
+        noClean: true
+    } as Partial<UcxCommand>);
+});
