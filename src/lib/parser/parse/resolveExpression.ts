@@ -33,13 +33,6 @@ export function resolveExpression(
     tokens: Token[]
 ): UnrealClassExpression | Token
 {
-    return resolveSubExpression(tokens, 0, tokens.length);
-}
-
-function resolveSubExpression(
-    tokens: Token[], begin: number, end: number
-): UnrealClassExpression | Token 
-{
     for (let i=0; i<tokens.length; i++){
         classifyExpressionToken(tokens[i]);
     }
@@ -51,11 +44,70 @@ function resolveSubExpression(
             prev.type = SemanticClass.ClassReference;
         }
     }
+    return resolveSubExpression(tokens, 0, tokens.length);
+}
+
+function resolveSubExpression(
+    tokens: Token[], begin: number, end: number
+): UnrealClassExpression | Token 
+{
     // TODO: implementation not complete
     const tokenCount = end - begin;
     if (tokenCount === 1){
-        return tokens[0];
+        return tokens[begin];
     }
+    // detect return
+    if (tokenCount >= 2 && 
+        tokens[begin].textLower === 'return')
+    {
+        return {
+            op: tokens[begin],
+            argsFirstToken: tokens[begin + 1],
+            argsLastToken: tokens[end - 1],
+            args: [resolveSubExpression(tokens, begin + 1, end)]
+        };
+    }
+
+    // detect 2 arg operators
+    let level = 0;
+    let bestRating = 0;
+    let bestIndex = -1;
+    for (let i=begin; i<end; i+=1){
+        if (tokens[i].text === '('){
+            level += 1;
+        }
+        else if (tokens[i].text === ')')
+        {
+            level -= 1;
+        }
+        if (level === 0){
+            switch (tokens[i].text){
+            case '<':
+            case '>':
+            case '<=':
+            case '>=':
+                if (bestRating < 100){
+                    bestRating = 100;
+                    bestIndex = i;
+                }
+                break;
+            }
+            
+        }
+    }
+    if (bestIndex !== -1){
+        return {
+            op: tokens[bestIndex],
+            argsFirstToken: tokens[begin],
+            argsLastToken: tokens[end],
+            args: [
+                resolveSubExpression(tokens, begin, bestIndex),
+                resolveSubExpression(tokens, bestIndex + 1, end)
+            ]
+        };
+    }
+
+    // detect function call
     if (tokenCount >= 3 &&
         tokens[begin].type === SemanticClass.Identifier &&
         tokens[begin + 1].text === '(' && 
@@ -100,6 +152,8 @@ function resolveSubExpression(
             };
         }
     }
+
+    // dumb default
     return {
         args: tokens.slice(begin+1, end),
         op:tokens[begin],

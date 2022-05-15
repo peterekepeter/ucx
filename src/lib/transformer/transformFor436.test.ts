@@ -12,6 +12,26 @@ test("replaces array count expression with resolved count", () => expect(transfo
 `));
 
 
+test("replaces array count expression with resolved count", () => expect(transform(`
+    var string RuleList[512];
+
+    function Initialize() {
+        local int i;
+        for (i = 0; i < ArrayCount(RuleList); i++) {
+            RuleList[i] = "";
+        }
+    }
+`)).toBe(`
+    var string RuleList[512];
+
+    function Initialize() {
+        local int i;
+        for (i = 0; i < 512; i++) {
+            RuleList[i] = "";
+        }
+    }
+`));
+
 function transform(input: string): string {
     const editor = new SourceEditor(input);
     const uc = parse(input);

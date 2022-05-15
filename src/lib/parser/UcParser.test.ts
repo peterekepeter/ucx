@@ -818,9 +818,107 @@ test('parse resolves array count expression', () => { parsing(`
     `)
     .hasNoErrors()
     .hasVariable(0, 'string', 'RuleList', { array: 512 })
-    .hasVariable(1, 'string', 'GameModeName', { array: 512 })
+    .hasVariable(1, 'string', 'GameModeName', { array: 512 });
 });
     
+
+
+test('parse return expression result', () => { parsing(`
+function bool Test() {
+    return i < j;
+}
+`).hasNoErrors()
+    .hasFunction(0, {
+        body: [
+            {
+                op: 'return',
+                args: [
+                    {
+                        op: '<',
+                        args: [
+                            'i',
+                            'j',
+                        ]
+                    }
+                ]
+            }
+        ]
+    });
+});
+
+
+test('parse return array count', () => { parsing(`
+function bool Test() {
+    return ArrayCount(TestArray);
+}
+`).hasNoErrors()
+    .hasFunction(0, {
+        body: [
+            {
+                op: 'return',
+                args: [
+                    {
+                        op: 'ArrayCount',
+                        args: [
+                            'TestArray',
+                        ]
+                    }
+                ]
+            }
+        ]
+    });
+});
+
+
+    
+test('parse complex return complex expression parsed correctly', () => { parsing(`
+function bool Test() {
+    return i < ArrayCount(RuleList);
+}
+`).hasNoErrors()
+    .hasFunction(0, {
+        body: [
+            {
+                op: 'return',
+                args: [
+                    {
+                        op: '<',
+                        args: [
+                            'i',
+                            { 
+                                op: 'ArrayCount',
+                                args:['RuleList']
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    });
+});
+
+
+test('parse function return call result', () => { parsing(`
+function bool Test() {
+    return OtherTest(42);
+}
+`).hasNoErrors()
+    .hasFunction(0, {
+        body: [
+            {
+                op: 'return',
+                args: [
+                    {
+                        op: 'OtherTest',
+                        args: [
+                            '42'
+                        ]
+                    }
+                ]
+            }
+        ]
+    });});
+
 
 interface ParserTestChecks
 {
