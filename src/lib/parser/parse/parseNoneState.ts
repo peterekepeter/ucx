@@ -30,6 +30,12 @@ export function parseNoneState(parser: UcParser, token: Token) {
     }
     switch (token.textLower) {
 
+    case 'native':
+        token.type = C.Keyword;
+        parser.modifiers.push(token);
+        parser.rootFn = parseNativeModifier;
+        break;
+
     case 'auto':
     case 'final':
     case 'simulated':
@@ -132,3 +138,33 @@ export function parseNoneState(parser: UcParser, token: Token) {
     }
 }
 
+
+function parseNativeModifier(parser: UcParser, token: Token) {
+    switch (token.textLower){
+    case '(':
+        parser.rootFn = parseNativeModifierContent;
+        break;
+    default:
+        parser.rootFn = parseNoneState;
+        parseNoneState(parser, token);
+        break;
+    }
+
+}
+
+function parseNativeModifierContent(parser: UcParser, token: Token) {
+    parser.rootFn = parseNetiveModifierEnd;
+    const parsedInt = parseInt(token.text);
+    if (isNaN(parsedInt)){
+        parser.result.errors.push({ 
+            token, message: "Expected number." });
+    }
+}
+
+function parseNetiveModifierEnd(parser: UcParser, token: Token) {
+    if (token.text !== ')'){
+        parser.result.errors.push({ 
+            token, message: "Expected closing parenthesis for native modifier." });
+    }
+    parser.rootFn = parseNoneState;
+}

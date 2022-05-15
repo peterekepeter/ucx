@@ -789,7 +789,7 @@ test("parse self call", () => { parsing(`
     .hasTokens(['self', C.Keyword], ['.', C.None], ['G', C.VariableReference]);
 });
 
-test.skip("parse native function declaration", () => { parsing(`
+test("parse native function declaration", () => { parsing(`
     native(1718) final function bool AddToPackageMap( optional string PkgName);
 `).hasNoErrors();});
 
