@@ -242,7 +242,16 @@ async function copyOutput(c: BuildContext) {
 
 async function tempTransformSource(context: BuildContext, srcPath: string, destPath: string) {
     const originalSource = await fs.readFile(srcPath, 'utf-8');
-    const result = transform(originalSource);
+    let result = originalSource;
+    try 
+    {
+        result = transform(originalSource);
+    }
+    catch (error){
+        console.error("failed to transform", srcPath);
+        console.error("skipping transformation, copying source directly");
+        console.error(error);
+    }
     await fs.writeFile(destPath, result, 'utf-8');
     context.tempToCleanup.push({ fullPath: destPath, isDir: false });
 }
@@ -259,7 +268,18 @@ function parse(input: string) : UnrealClass {
     const lines = input.split(/\r?\n/);
     for (let i = 0; i < lines.length; i++) {
         for (const token of ucTokenizeLine(lines[i])) {
-            parser.parse(i, token.position, token.text);
+            try 
+            {
+                parser.parse(i, token.position, token.text);
+            }
+            catch (error)
+            {
+                // print parsing issue
+                console.error('parsing failed at line', i, 
+                    'position', token.position);
+                console.error('at token', token.text, 'line:', lines[i]);
+                throw error; // rethrow
+            }
         }
     }
     parser.endOfFile(input.length, 0);

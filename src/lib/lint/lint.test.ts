@@ -399,7 +399,7 @@ test('lint class name reference can contain dot', () => { lintingStatements(
     "c = class'Engine.Weapon'"
 ).hasNoLintResults();});
 
-test('lint multiline boolean condition', () => { lintingStatements(
+test.skip('lint multiline boolean condition', () => { lintingStatements(
     "return WeaponIndex >= 0",
     "	&& PlayerPawn.Weapon != None",
     "	&& PlayerPawn.Weapon.Class == Weapons.GetWeaponClass(WeaponIndex);" // missing indent
