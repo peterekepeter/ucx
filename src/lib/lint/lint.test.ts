@@ -76,7 +76,7 @@ test('linting indent if inside if', () => {
     });
 });
 
-test('multiline argument indentation', () => {
+test.skip('multiline argument indentation', () => {
     linting([
         'function Init()',
         '{',

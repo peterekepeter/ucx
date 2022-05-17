@@ -1,1 +1,1 @@
-export * from './replaceArrayCountExpressionWithLiteral';
+export * from './contantFolding';

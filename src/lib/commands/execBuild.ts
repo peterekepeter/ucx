@@ -100,15 +100,13 @@ interface BuildContext
 
 async function visitSourceFolder(context: BuildContext, dirPath: string) {
     const outName = getBuildPath(context, dirPath);
-    const projectRelativeDir = getProjectRelativePath(context, dirPath);
     await tempMkDir(context, outName);
-
 
     for (const item of await fs.readdir(dirPath)){
         const fullPath = `${dirPath}${context.pathSeparator}${item}`;
         const stat = await fs.stat(fullPath);
         if (item.startsWith('.')){
-            return; // ignore
+            continue; // ignore
         }
         if (stat.isDirectory()){
             await visitSourceFolder(context, fullPath);
@@ -121,7 +119,7 @@ async function visitSourceFolder(context: BuildContext, dirPath: string) {
 
 async function visitSourceFile(context: BuildContext, srcPath: string) {
     const destPath = getBuildPath(context, srcPath);
-    // console.log('COPY',relativePath);
+    // console.log('COPY', srcPath);
     if (srcPath.endsWith('.ini')){
         context.buildIniFile = destPath;
         let content = await fs.readFile(srcPath, 'utf-8');

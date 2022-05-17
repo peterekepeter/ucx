@@ -4,7 +4,7 @@ import { SourceEditor } from "../SourceEditor";
 import { SourceTransformer } from "../SourceTransformer";
 
 
-export const replaceArrayCountExpressionWithLiteral: SourceTransformer = (editor, uc) => {
+export const foldConstants: SourceTransformer = (editor, uc) => {
     foldVariableDeclarations(editor, uc);
     foldFunctions(editor, uc);
 };

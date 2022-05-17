@@ -68,6 +68,7 @@ function resolveSubExpression(
         };
     }
 
+
     // detect 2 arg operators
     let level = 0;
     let bestRating = 0;
@@ -82,6 +83,13 @@ function resolveSubExpression(
         }
         if (level === 0){
             switch (tokens[i].text){
+            case '&&':
+            case '||':
+                if (bestRating < 200){
+                    bestRating = 200;
+                    bestIndex = i;
+                }
+                break;
             case '<':
             case '>':
             case '<=':
@@ -105,6 +113,14 @@ function resolveSubExpression(
                 resolveSubExpression(tokens, bestIndex + 1, end)
             ]
         };
+    }
+
+    // unwrap extra parenthesis
+    if (tokenCount >= 2 &&
+        tokens[begin].text === '(' &&
+        tokens[end-1].text === ')')
+    {
+        return resolveSubExpression(tokens, begin+1, end-1);
     }
 
     // detect function call

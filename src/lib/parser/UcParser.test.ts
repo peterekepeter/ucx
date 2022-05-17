@@ -846,6 +846,40 @@ function bool Test() {
     });
 });
 
+test('parse complex boolean && expression', () => { parsing(`
+function bool Test() {
+    return (i < j) && (i < ArrayCount(Items));
+}
+`).hasNoErrors()
+    .hasFunction(0, {
+        body: [
+            {
+                op: 'return',
+                args: [
+                    {
+                        op: '&&',
+                        args: [
+                            {
+                                op: '<',
+                                args: [ 'i', 'j' ]
+                            },
+                            {
+                                op: '<',
+                                args: [
+                                    'i',
+                                    {
+                                        op: 'ArrayCount',
+                                        args: [ 'Items' ]
+                                    },
+                                ]
+                            },
+                        ]
+                    }
+                ]
+            }
+        ]
+    });
+});
 
 test('parse return array count', () => { parsing(`
 function bool Test() {
