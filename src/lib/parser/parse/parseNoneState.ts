@@ -8,15 +8,15 @@ import { parseFnDeclaration } from "./parseFunction";
 import { UcParser } from "../UcParser";
 import { parseDefaultProperties } from "./parseDefaultProperties";
 import { parseExec } from "./parseExec";
-import { parseState } from "./parseState";
+import { parseState, parseStateBody } from "./parseState";
 import { clearModifiers } from "./clearModifiers";
 import { resolveFunctionModifiers } from "./resolveFunctionModifiers";
 
 
 export function parseNoneState(parser: UcParser, token: Token) {
     if (parser.currentClassState){
-        parser.rootFn = parseState;
-        parseState(parser, token);
+        parser.rootFn = parseStateBody;
+        parseStateBody(parser, token);
         return;
     }
     if (token.textLower.startsWith('#exec')){

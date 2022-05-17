@@ -19,7 +19,7 @@ function parseStateOpenBody(parser: UcParser, token: Token) {
     parser.rootFn = parseStateBody;
 }
 
-function parseStateBody(parser: UcParser, token: Token) {
+export function parseStateBody(parser: UcParser, token: Token) {
     switch (token.textLower){
 
     case 'event':

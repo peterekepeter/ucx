@@ -121,7 +121,10 @@ export class UcParser{
     }
 
     get lastFn() : UnrealClassFunction {
-        return this.result.functions[this.result.functions.length - 1];
+        const functions = this.currentClassState 
+            ? this.currentClassState.functions
+            : this.result.functions;
+        return functions[functions.length - 1];
     }
 
     get lastFnLocal(): UnrealClassFunctionLocal {

@@ -742,7 +742,7 @@ test("parse empty state", () => { parsing(`
     .hasState(0, { name:'MyState' });
 });
 
-test.skip("parse sate functions", () => { parsing(`
+test("parse state functions does not crash", () => { parsing(`
     state Idle
     {
         function AnimEnd()
