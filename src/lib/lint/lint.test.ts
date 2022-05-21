@@ -76,6 +76,19 @@ test('linting indent if inside if', () => {
     });
 });
 
+test('linting indent if inside if but first if has no brackets', () => {
+    linting([
+        'function Init()',
+        '{',
+        '\tif (bVerify)',
+        '\t\tif (bEnabled)',
+        '\t\t{',
+        '\t\t\tCount = 0;',
+        '\t\t}',
+        '}'
+    ]).hasNoLintResults();
+});
+
 test.skip('multiline argument indentation', () => {
     linting([
         'function Init()',

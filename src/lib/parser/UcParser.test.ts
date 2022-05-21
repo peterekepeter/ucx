@@ -1048,6 +1048,56 @@ test('parse for inside if without brackets', () => {parsing(`
 });
 
 
+test('parse goto loop has correct tokens', () => {parsing(`
+    function Test(){
+        LOOP:
+        Log("hello");
+        goto LOOP;
+    }`)
+    .hasTokens(['LOOP', C.StatementLabel], [':', C.None])
+    .hasTokens(['goto', C.Keyword], ['LOOP', C.StatementLabel], [';', C.None])
+;});
+
+
+test('parse while, break and continue has correct tokens', () => {parsing(`
+    function Test(){
+        while (true) {
+            if (i > 10) {
+                i--;
+                continue;
+            }
+            else {
+                break;
+            }
+        }
+    }`)
+    .hasTokens(['while', C.Keyword], ['(', C.None])
+    .hasTokens(['break', C.Keyword], [';', C.None])
+    .hasTokens(['continue', C.Keyword], [';', C.None])
+;});
+
+
+test('parse block statement termination also terminates single statement block', () => {parsing(`
+    function Test(){
+        while (true)
+            if (bActive){
+                DoStuff();
+            }
+        if (bOther)
+            DoOtherStuff();
+    }`)
+    .hasFunction(0, { body: [
+        { op: 'while', args: ['true'], body: [
+            { op: 'if', args: ['bActive'], body: [
+                { op: 'DoStuff' }
+            ]}
+        ]},
+        { op: 'if', args: ['bOther'], body: [
+            { op: 'DoOtherStuff' }
+        ]}
+    ]})
+;});
+
 
 interface ParserTestChecks
 {

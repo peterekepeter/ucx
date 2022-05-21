@@ -5,6 +5,9 @@ export function resolveStatementExpression(
     tokens: Token[]
 ): UnrealClassStatement
 {
+    if (tokens.length === 2 && tokens[0].textLower === 'goto'){
+        tokens[1].type = SemanticClass.StatementLabel;
+    }
     const expression = resolveExpression(tokens);
     if ("text" in expression){
         return {

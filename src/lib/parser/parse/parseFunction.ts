@@ -153,8 +153,8 @@ function parseStatement(parser: UcParser, token: Token)
     case "}":
         endCurrentStatementOrFunctionBlock(parser, token);
         break;
-    // case "goto":
-    // case "continue":
+    case "goto":
+    case "continue":
     case "break":
     case "return":
         token.type = SemanticClass.Keyword;
@@ -214,7 +214,7 @@ function parseExpression(parser: UcParser, token: Token)
         const fn = parser.lastFn;
         parser.lastCodeBlock.push(resolveStatementExpressionAndApplyLabel(parser));
         fn.bodyLastToken = token;
-        popSingleStatementCodeBlock(parser, token);
+        popSingleStatementCodeBlocks(parser, token);
         parser.rootFn = parseNoneState;
         parser.result.errors.push({ token, message: "Function ended unexpectedly."});
         break;
@@ -222,7 +222,7 @@ function parseExpression(parser: UcParser, token: Token)
         const statement = resolveStatementExpressionAndApplyLabel(parser);
         statement.argsLastToken = token;
         parser.lastCodeBlock.push(statement);
-        popSingleStatementCodeBlock(parser, token);
+        popSingleStatementCodeBlocks(parser, token);
         parser.rootFn = parseStatement;
         break;
     default:
@@ -341,17 +341,20 @@ function parseSingleStatementBody(parser: UcParser, token: Token)
     parseStatement(parser, token);
 }
 
-function popSingleStatementCodeBlock(parser: UcParser, token: Token){
+function popSingleStatementCodeBlocks(parser: UcParser, token: Token){
     while (parser.codeBlockStack.length > 0)
     {
         const lastBlock = parser.codeBlockStack[parser.codeBlockStack.length - 1];
+        if (!lastBlock.singleStatementBody){
+            return; 
+        }
         if (lastBlock.body.length > 1){
             parser.result.errors.push({
-                message: 'Did not parse correctly',
+                message: 'Single statement block did not parse correctly',
                 token: lastBlock.bodyLastToken ?? lastBlock.bodyFirstToken ?? token
             });
         }
-        if (lastBlock.singleStatementBody && lastBlock.body.length >= 1){
+        if (lastBlock.body.length >= 1){
             lastBlock.bodyLastToken = token;
             parser.codeBlockStack.pop();
         }
@@ -375,6 +378,7 @@ function endCurrentStatementOrFunctionBlock(parser: UcParser, endingToken: Token
 {   
     if (parser.codeBlockStack.length > 0) {
         endCurrentStatementBlock(parser, endingToken);
+        popSingleStatementCodeBlocks(parser, endingToken);
         parser.rootFn = parseStatement;
     }
     else {

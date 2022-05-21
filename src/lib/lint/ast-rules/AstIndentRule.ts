@@ -132,7 +132,7 @@ export class AstIndentRule implements AstBasedLinter
             this.recursivePaintArgsScope(st.args);
 
             if (st.bodyFirstToken?.text !== '{'){
-                this.paintScope(st.op, st.bodyLastToken);
+                this.paintScope(st.op, st.bodyLastToken, st.singleStatementBody);
             } else {
                 this.paintScope(st.bodyFirstToken, st.bodyLastToken);
             }
@@ -151,14 +151,15 @@ export class AstIndentRule implements AstBasedLinter
 
     paintScope(
         first?: ParserToken | null,
-        last?: ParserToken | null
+        last?: ParserToken | null,
+        isSingleStatementBody?: boolean,
     ) {
         if (!first || !last){
             return;
         }
         const from = first.line + 1;
         let to = last.line;
-        if (last.text !== '}' && last.text !== ')') {
+        if (isSingleStatementBody || last.text !== '}' && last.text !== ')') {
             // declaration scope
         } else { 
             to -= 1; // block scope
