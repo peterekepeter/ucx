@@ -16,6 +16,7 @@ export async function execBuild(cmd: UcxCommand){
 
 async function buildProject(context: BuildContext) {
     await visitSourceFolder(context, context.projectDir);
+    await generateBuildIniIfNotExists(context);
     await runUccBuildCommand(context);
     await copyOutput(context);
     if (context.performCleanup){   
@@ -140,6 +141,44 @@ async function visitSourceFile(context: BuildContext, srcPath: string) {
     }
     
     await tempCopy(context, srcPath, destPath);
+}
+
+async function generateBuildIniIfNotExists(context: BuildContext){
+    if (context.buildIniFile){
+        return; // already exists;
+    }
+    const content = `[Engine.Engine]
+EditorEngine=Editor.EditorEngine
+
+[Editor.EditorEngine]
+CacheSizeMegs=32
+EditPackages=Core
+EditPackages=Engine
+EditPackages=Editor
+EditPackages=UWindow
+EditPackages=Fire
+EditPackages=IpDrv
+EditPackages=UWeb
+EditPackages=UBrowser
+EditPackages=UnrealShare
+EditPackages=UnrealI
+EditPackages=UMenu
+EditPackages=IpServer
+EditPackages=Botpack
+EditPackages=UTServerAdmin
+EditPackages=UTMenu
+EditPackages=UTBrowser
+EditPackages=${context.buildName}
+
+[Core.System]
+Paths=*.u
+Paths=../Maps/*.unr
+Paths=../Textures/*.utx
+Paths=../Sounds/*.uax
+Paths=../Music/*.umx`;
+    const iniPath = `${context.buildDir}/auto-generated-make.ini`;
+    context.buildIniFile = iniPath;
+    await fs.writeFile(iniPath, content, 'utf-8');
 }
 
 function detectPathSeparator(path: string): string {
