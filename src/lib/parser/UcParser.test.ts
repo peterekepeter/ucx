@@ -1006,8 +1006,9 @@ test('parse labelled control statements', () => { parsing(`
 function Test() {
     RESET:
     while(true) { L001: break; }
-}
-`).hasNoErrors()
+}`)
+    .hasNoErrors()
+    .hasTokens(['while', C.Keyword])
     .hasFunction(0, {
         body: [{
             label: 'RESET',
@@ -1018,6 +1019,31 @@ function Test() {
                 op: 'break'
             }]
         }]
+    });
+});
+
+test('parse for inside if without brackets', () => {parsing(`
+    function Test(){
+        position="before";
+        if(bActive)
+            while(true)
+                break;
+        position="after";
+         
+    }`)
+    .hasTokens(['if', C.Keyword])
+    .hasTokens(['while', C.Keyword])
+    .hasTokens(['break', C.Keyword])
+    .hasFunction(0, {
+        body:[
+            { op:'=', args:['position', '"before"'] },
+            { op:'if', args:['bActive'], body: [
+                { op:'while', args:['true'], body: [
+                    { op: 'break' }
+                ]}
+            ]},
+            { op:'=', args:['position', '"after"'] },
+        ]
     });
 });
 

@@ -33,6 +33,7 @@ export interface UnrealClassStatement extends UnrealClassExpression {
     bodyFirstToken: Token | null;
     bodyLastToken: Token | null;
     label: Token | null;
+    singleStatementBody: boolean;
 }
 
 export interface UnrealClassFunctionArgument {

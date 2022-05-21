@@ -15,7 +15,8 @@ export function resolveStatementExpression(
             bodyFirstToken: null,
             bodyLastToken: null,
             argsFirstToken: tokens[0],
-            argsLastToken: tokens[tokens.length-1]
+            argsLastToken: tokens[tokens.length-1],
+            singleStatementBody: false,
         };
     } else {
         return {
@@ -25,7 +26,8 @@ export function resolveStatementExpression(
             bodyFirstToken: null,
             bodyLastToken: null,
             argsFirstToken: tokens[0],
-            argsLastToken: tokens[tokens.length-1]
+            argsLastToken: tokens[tokens.length-1],
+            singleStatementBody: false,
         };
     }
 }
