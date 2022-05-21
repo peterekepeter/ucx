@@ -104,6 +104,12 @@ test("tokenzie positions", () => {
     ]);
 });
 
+test("tokenize labels", () => verifyTokens(`
+    LOOP_BEGIN: i=0;
+`, [
+    'LOOP_BEGIN', ':', 'i', '=', '0', ';'
+]));
+
 function verifyTokens(input: string, output: string[]){
     expect(tokenize(input)).toEqual(output);
 }

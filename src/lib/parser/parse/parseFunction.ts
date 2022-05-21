@@ -102,11 +102,13 @@ function parseStatement(parser: UcParser, token: Token)
             op: token,
             args: [],
             body: [],
+            label: parser.label,
             bodyFirstToken: null,
             bodyLastToken: null,
             argsFirstToken: null,
             argsLastToken: null
         };
+        parser.label = null;
         parser.lastCodeBlock.push(statement);
         parser.codeBlockStack.push(statement);
         break;
@@ -118,11 +120,13 @@ function parseStatement(parser: UcParser, token: Token)
             op: token,
             args: [],
             body: [],
+            label: parser.label,
             bodyFirstToken: null,
             bodyLastToken: null,
             argsFirstToken: null,
             argsLastToken: null
         };
+        parser.label = null;
         parser.lastCodeBlock.push(foreach);
         parser.codeBlockStack.push(foreach);
         break;
@@ -133,11 +137,13 @@ function parseStatement(parser: UcParser, token: Token)
             op: token,
             args: [],
             body: [],
+            label: parser.label,
             bodyFirstToken: token,
             bodyLastToken: token,
             argsFirstToken: null,
             argsLastToken: null
         };
+        parser.label = null;
         body.push(codeBlock);
         parser.codeBlockStack.push(codeBlock);
         break;
@@ -186,19 +192,29 @@ function parseExpression(parser: UcParser, token: Token)
 {
     switch (token.text)
     {
+    case ":":
+        if (parser.expressionTokens.length === 1){
+            const labelToken = parser.expressionTokens[0];
+            labelToken.type = SemanticClass.StatementLabel;
+            parser.expressionTokens = [];
+            parser.label = labelToken;
+            parser.rootFn = parseStatement;
+        }
+        else {
+            parser.expressionTokens.push(token);
+        }
+        break;
     case "}":
         const fn = parser.lastFn;
-        parser.lastCodeBlock.push(resolveStatementExpression(parser.expressionTokens));
-        parser.expressionTokens = [];
+        parser.lastCodeBlock.push(resolveStatementExpressionAndApplyLabel(parser));
         fn.bodyLastToken = token;
         parser.rootFn = parseNoneState;
         parser.result.errors.push({ token, message: "Function ended unexpectedly."});
         break;
     case ";":
-        const statement = resolveStatementExpression(parser.expressionTokens);
+        const statement = resolveStatementExpressionAndApplyLabel(parser);
         statement.argsLastToken = token;
         parser.lastCodeBlock.push(statement);
-        parser.expressionTokens = [];
         parser.rootFn = parseStatement;
         break;
     default:
@@ -316,16 +332,14 @@ function parseSingleStatementBody(parser: UcParser, token: Token)
 {
     switch (token.text){
     case ";":
-        parser.lastStatement.body.push(resolveStatementExpression(parser.expressionTokens));
+        parser.lastStatement.body.push(resolveStatementExpressionAndApplyLabel(parser));
         parser.lastStatement.bodyLastToken = token;
-        parser.expressionTokens = [];
         endCurrentStatementBlock(parser, token);
         parser.rootFn = parseStatement;
         break;
     case "}":
-        parser.lastStatement.body.push(resolveStatementExpression(parser.expressionTokens));
+        parser.lastStatement.body.push(resolveStatementExpressionAndApplyLabel(parser));
         parser.lastStatement.bodyLastToken = token;
-        parser.expressionTokens = [];
         endCurrentStatementBlock(parser, token);
         // } will also close enclosing scope
         endCurrentStatementOrFunctionBlock(parser, token);
@@ -334,6 +348,16 @@ function parseSingleStatementBody(parser: UcParser, token: Token)
         parser.expressionTokens.push(token);
         break;
     }
+}
+
+function resolveStatementExpressionAndApplyLabel(parser: UcParser): UnrealClassStatement {
+    const result = resolveStatementExpression(parser.expressionTokens);
+    parser.expressionTokens = [];
+    if (parser.label){
+        result.label = parser.label;
+        parser.label = null;
+    }
+    return result;
 }
 
 function endCurrentStatementOrFunctionBlock(parser: UcParser, endingToken: Token)

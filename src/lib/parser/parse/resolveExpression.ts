@@ -8,6 +8,7 @@ export function resolveStatementExpression(
     const expression = resolveExpression(tokens);
     if ("text" in expression){
         return {
+            label: null,
             op: expression,
             args: [],
             body:[],
@@ -19,6 +20,7 @@ export function resolveStatementExpression(
     } else {
         return {
             ...expression, 
+            label: null,
             body: [],
             bodyFirstToken: null,
             bodyLastToken: null,

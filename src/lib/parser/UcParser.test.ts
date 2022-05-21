@@ -156,6 +156,7 @@ test("parse function with log", () => { parsing(`
     .hasNoErrors();
 });
 
+
 test("parse expression recovery", () => { parsing(`
     function Fn1(){ Log( } 
     function Fn2(){ Log(42 }
@@ -167,6 +168,7 @@ test("parse expression recovery", () => { parsing(`
     .hasFunction(2, { name: "Fn3" })
     .hasFunction(3, { name: "Fn4" });
 });
+
 
 test("parse block statement", () => { parsing(`
     function PreBeginPlay(){
@@ -184,6 +186,7 @@ test("parse block statement", () => { parsing(`
         }] 
     });
 });
+
 
 test("parse if statement", () => { parsing(`
     function PreBeginPlay(){
@@ -207,6 +210,7 @@ test("parse if statement", () => { parsing(`
     });
 });
 
+
 test("parse if statement with nonstadard casing", () => { parsing(`
     function PreBeginPlay(){
         If (bFirstRun)
@@ -229,6 +233,7 @@ test("parse if statement with nonstadard casing", () => { parsing(`
     });
 });
 
+
 test("parse two sequential if statements", () => { parsing(`
     function Timer(){
         if (bFeatureA) {}
@@ -247,6 +252,7 @@ test("parse two sequential if statements", () => { parsing(`
         }] 
     });
 });
+
 
 test("parse if inside if", () => { parsing(`
     function Timer(){
@@ -298,6 +304,7 @@ test("parse if with else", () => { parsing(`
     .hasNoErrors();
 });
 
+
 test("parse while loop", () => { parsing(`
     function Main(){
         while (True)
@@ -318,6 +325,7 @@ test("parse while loop", () => { parsing(`
         }] 
     });
 });
+
 
 test("parse basic assignment", () => { parsing(`
     function Init(){
@@ -367,6 +375,7 @@ test("parse for loop", () => { parsing(`
     });
 });
 
+
 test("parse recovers from bad control statement", () => { parsing(`
     function F0() { if }
     function F1() { if; }
@@ -382,6 +391,7 @@ test("parse recovers from bad control statement", () => { parsing(`
     .hasFunction(4, { name: 'F4' })
     .hasFunction(5, { name: 'ModifyPlayer' });
 });
+
 
 test("parse if statement without brackets", () => { parsing(`
     function PreBeginPlay(){
@@ -403,6 +413,7 @@ test("parse if statement without brackets", () => { parsing(`
         }] 
     });
 });
+
 
 test("parse if else without brackets", () => { parsing(`
     function PreBeginPlay(){
@@ -430,6 +441,7 @@ test("parse if else without brackets", () => { parsing(`
     });
 });
 
+
 test("parse if statement with function call in condition", () => { parsing(`
     function Init(){
         if (CheckSomething()){
@@ -453,6 +465,7 @@ test("parse if statement with function call in condition", () => { parsing(`
     .hasNoErrors();
 });
 
+
 test("parse else if statement", () => { parsing(`
     function Init(){
         if (OptionA) { Log("A"); }
@@ -465,6 +478,7 @@ test("parse else if statement", () => { parsing(`
     .hasNoErrors();
 });
 
+
 test("parse static function", () => { parsing(`
     static function Hello(){
         Log("Hello World!");
@@ -475,6 +489,7 @@ test("parse static function", () => { parsing(`
 ;
 });
 
+
 test("parse function return type", () => { parsing(`
     function bool IsAlive() {}
     `)
@@ -483,6 +498,7 @@ test("parse function return type", () => { parsing(`
         returnType: 'bool',
     });
 });
+
 
 test("parse function return", () => { parsing(`
     function int GetNumber(){
@@ -495,6 +511,7 @@ test("parse function return", () => { parsing(`
         }]
     });
 });
+
 
 test("parse function argument", () => { parsing(`
     function int DoubleIt(int num){
@@ -510,6 +527,7 @@ test("parse function argument", () => { parsing(`
         }]
     });
 });
+
 
 test("parse function argument out", () => { parsing(`
     function DoubleIt(int num, out int result) {
@@ -527,6 +545,7 @@ test("parse function argument out", () => { parsing(`
     });
 });
 
+
 test("parse variable with array", () => { parsing(`
     var string Items[32];
     `)
@@ -534,6 +553,7 @@ test("parse variable with array", () => { parsing(`
         array: 32,
     });
 });
+
 
 test("parse default properties section", () => { parsing(`
     defaultproperties {
@@ -546,6 +566,7 @@ test("parse default properties section", () => { parsing(`
     .hasDefaultProperty(1, { name: "DamageModifier", value: "1.0" });
 });
 
+
 test("parse event as function", () => { parsing(`
     event ActorEntered( actor Other )
     {
@@ -554,6 +575,7 @@ test("parse event as function", () => { parsing(`
     .hasNoErrors()
     .hasFunction(0, { name:"ActorEntered" });
 });
+
 
 test("parse multiline comment", () => { parsing(`
     function Update(){
@@ -569,6 +591,7 @@ test("parse multiline comment", () => { parsing(`
     .hasNoErrors();
 });
 
+
 test("parse class custom config", () => { parsing(`
     class CustomZone expands ZoneInfo config(MyConfig);
     `)
@@ -576,12 +599,14 @@ test("parse class custom config", () => { parsing(`
     .hasClassConfig('MyConfig');
 });
 
+
 test("parse exec instruction", () => { parsing(`
     #exec Texture Import File=Textures\NuRaRulesBG.pcx Name=NuRaRulesBG Group=Windows Mips=On Flags=2
     class XClass;
     `)
     .hasNoErrors();
 });
+
 
 test("parse localized string", () => { parsing(`
         var localized string TimeMessage[16];
@@ -594,6 +619,7 @@ test("parse localized string", () => { parsing(`
     .hasTokens(['var', C.Keyword], ['localized', C.Keyword]);
 });
 
+
 test("parse simulated function", () => { parsing(`
     static simulated function ClientReceive() { }
     `)
@@ -602,6 +628,7 @@ test("parse simulated function", () => { parsing(`
     .hasTokens(['static', C.Keyword], ['simulated', C.Keyword], ['function', C.Keyword]);
 });
 
+
 test("parse optional function parameter", () => { parsing(`
     function PrintError(optional string message){}
     `)
@@ -609,12 +636,14 @@ test("parse optional function parameter", () => { parsing(`
     .hasFunction(0, { name: "PrintError", fnArgs: [ {name: 'message', type:'string', isOptional: true }] });
 });
 
+
 test("parse coerce function parameter", () => { parsing(`
     function PrintError(coerce string message){}
     `)
     .hasNoErrors()
     .hasFunction(0, { name: "PrintError", fnArgs: [ {name: 'message', type:'string', isCoerce: true }] });
 });
+
 
 test("parse default property for array type", () => { parsing(`
     defaultproperties
@@ -624,6 +653,7 @@ test("parse default property for array type", () => { parsing(`
     .hasNoErrors()
     .hasDefaultProperty(0, { name: "TimeMessage", arrayIndex: "14" });
 });
+
 
 test("parse default property for array type", () => { parsing(`
     defaultproperties
@@ -638,6 +668,7 @@ test("parse default property for array type", () => { parsing(`
     });
 });
 
+
 test("parse default property boolean value", () => { parsing(`
     defaultproperties
     {
@@ -649,6 +680,7 @@ test("parse default property boolean value", () => { parsing(`
         value: "True"
     });
 });
+
 
 test("parse default property with struct is not error", () => { parsing(`
     defaultproperties
@@ -663,6 +695,7 @@ test("parse default property with struct is not error", () => { parsing(`
         }
     });
 });
+
 
 test("parse multiple class variables", () => { parsing(`
     var int First, Second, Third;
@@ -680,12 +713,14 @@ test("parse multiple class variables", () => { parsing(`
     );
 });
 
+
 test("parse function with final modifier", () => { parsing(`
     final function float Init() { }
     `)
     .hasNoErrors()
     .hasFunction(0, { name: 'Init', isFinal: true });
 });
+
 
 test("parse foreach", () =>{ parsing(`
     function Timer(){
@@ -709,6 +744,7 @@ test("parse foreach", () =>{ parsing(`
     });
 });
 
+
 test("parse type variable", () => { parsing(`
     var class<actor> EnterActor;
     `)
@@ -719,6 +755,7 @@ test("parse type variable", () => { parsing(`
     .hasTokens(['var',C.Keyword], ['class', C.TypeReference], ['<', C.None], ['actor', C.ClassReference], ['>', C.None]);
 });
 
+
 test("parse globalconfig var", () => { parsing(`
     var globalconfig int FragLimit;
     `)
@@ -726,11 +763,20 @@ test("parse globalconfig var", () => { parsing(`
     .hasVariable(0, 'int', 'FragLimit', { config: true });
 });
 
+
 test("parse var with empty group", () => { parsing(`
     var () string	ListFactories[10];
     `)
     .hasNoErrors();
 });
+
+
+test.skip("parse localized var", () => { parsing(`
+    var Localized String ColorCol[11];
+    `)
+    .hasNoErrors();
+});
+
 
 test("parse empty state", () => { parsing(`
     state MyState {}`)
@@ -742,6 +788,7 @@ test("parse empty state", () => { parsing(`
     .hasState(0, { name:'MyState' });
 });
 
+
 test("parse state functions does not crash", () => { parsing(`
     state Idle
     {
@@ -751,6 +798,7 @@ test("parse state functions does not crash", () => { parsing(`
         }
     }
 `).hasNoErrors();});
+
 
 test("parse state with latent instructions", () => { parsing(`
     auto state MyState
@@ -773,6 +821,7 @@ test("parse new object syntax", () => { parsing(`
     .hasTokens(['r1', C.VariableReference], ['=', C.Operator], ['new', C.Keyword]);
 });
 
+
 test("parse super call", () => { parsing(`
     function F(){
         super.F();
@@ -780,6 +829,7 @@ test("parse super call", () => { parsing(`
     .hasNoErrors()
     .hasTokens(['super', C.Keyword], ['.', C.None], ['F', C.VariableReference]);
 });
+
 
 test("parse self call", () => { parsing(`
     function F(){
@@ -789,9 +839,11 @@ test("parse self call", () => { parsing(`
     .hasTokens(['self', C.Keyword], ['.', C.None], ['G', C.VariableReference]);
 });
 
+
 test("parse native function declaration", () => { parsing(`
     native(1718) final function bool AddToPackageMap( optional string PkgName);
 `).hasNoErrors();});
+
 
 test.skip("struct parsing", () => { parsing(`
     struct PointRegion
@@ -801,6 +853,7 @@ test.skip("struct parsing", () => { parsing(`
         var byte     ZoneNumber; // Zone number.
     };
 `).hasNoErrors();});
+
 
 test('parse array declaration with parse array count expression', () => { parsing(`
     var string GameModeName[ArrayCount(RuleList)];
@@ -812,6 +865,7 @@ test('parse array declaration with parse array count expression', () => { parsin
         }
     });});
 
+
 test('parse resolves array count expression', () => { parsing(`
         var string RuleList[512];
         var string GameModeName[ArrayCount(RuleList)];
@@ -822,29 +876,25 @@ test('parse resolves array count expression', () => { parsing(`
 });
     
 
-
 test('parse return expression result', () => { parsing(`
 function bool Test() {
     return i < j;
 }
 `).hasNoErrors()
     .hasFunction(0, {
-        body: [
-            {
-                op: 'return',
+        body: [{
+            op: 'return',
+            args: [{
+                op: '<',
                 args: [
-                    {
-                        op: '<',
-                        args: [
-                            'i',
-                            'j',
-                        ]
-                    }
+                    'i',
+                    'j',
                 ]
-            }
-        ]
+            }]
+        }]
     });
 });
+
 
 test('parse complex boolean && expression', () => { parsing(`
 function bool Test() {
@@ -852,32 +902,26 @@ function bool Test() {
 }
 `).hasNoErrors()
     .hasFunction(0, {
-        body: [
-            {
-                op: 'return',
-                args: [
-                    {
-                        op: '&&',
-                        args: [
-                            {
-                                op: '<',
-                                args: [ 'i', 'j' ]
-                            },
-                            {
-                                op: '<',
-                                args: [
-                                    'i',
-                                    {
-                                        op: 'ArrayCount',
-                                        args: [ 'Items' ]
-                                    },
-                                ]
-                            },
-                        ]
-                    }
-                ]
-            }
-        ]
+        body: [{
+            op: 'return',
+            args: [{
+                op: '&&',
+                args: [{
+                    op: '<',
+                    args: [ 'i', 'j' ]
+                },
+                {
+                    op: '<',
+                    args: [
+                        'i',
+                        {
+                            op: 'ArrayCount',
+                            args: [ 'Items' ]
+                        },
+                    ]
+                },]
+            }]
+        }]
     });
 });
 
@@ -887,47 +931,38 @@ function bool Test() {
 }
 `).hasNoErrors()
     .hasFunction(0, {
-        body: [
-            {
-                op: 'return',
+        body: [{
+            op: 'return',
+            args: [{
+                op: 'ArrayCount',
                 args: [
-                    {
-                        op: 'ArrayCount',
-                        args: [
-                            'TestArray',
-                        ]
-                    }
+                    'TestArray',
                 ]
-            }
-        ]
+            }]
+        }]
     });
 });
 
 
-    
 test('parse complex return complex expression parsed correctly', () => { parsing(`
 function bool Test() {
     return i < ArrayCount(RuleList);
 }
 `).hasNoErrors()
     .hasFunction(0, {
-        body: [
-            {
-                op: 'return',
+        body: [{
+            op: 'return',
+            args: [{
+                op: '<',
                 args: [
-                    {
-                        op: '<',
-                        args: [
-                            'i',
-                            { 
-                                op: 'ArrayCount',
-                                args:['RuleList']
-                            }
-                        ]
+                    'i',
+                    { 
+                        op: 'ArrayCount',
+                        args:['RuleList']
                     }
                 ]
-            }
-        ]
+            }]
+        }]
     });
 });
 
@@ -938,20 +973,54 @@ function bool Test() {
 }
 `).hasNoErrors()
     .hasFunction(0, {
-        body: [
-            {
-                op: 'return',
+        body: [{
+            op: 'return',
+            args: [{
+                op: 'OtherTest',
                 args: [
-                    {
-                        op: 'OtherTest',
-                        args: [
-                            '42'
-                        ]
-                    }
+                    '42'
                 ]
-            }
-        ]
-    });});
+            }]
+        }]
+    });
+});
+
+
+test('parse labels in function body', () => { parsing(`
+function Test() {
+    RESET:
+    Value=0;
+}
+`).hasNoErrors()
+    .hasFunction(0, {
+        body: [{
+            op: '=',
+            label: 'RESET',
+            args: ['Value', '0']
+        }]
+    })
+    .hasTokens(['RESET', C.StatementLabel]);
+});
+
+test('parse labelled control statements', () => { parsing(`
+function Test() {
+    RESET:
+    while(true) { L001: break; }
+}
+`).hasNoErrors()
+    .hasFunction(0, {
+        body: [{
+            label: 'RESET',
+            op: 'while',
+            args: ['true'],
+            body: [{
+                label: 'L001',
+                op: 'break'
+            }]
+        }]
+    });
+});
+
 
 
 interface ParserTestChecks
@@ -1158,6 +1227,7 @@ interface StatementCheckObj extends ExpressionCheckObj
 {
     bodyFirst?: string,
     bodyLast?: string,
+    label?: string,
     body?: StatementCheckObj[]
 }
 
@@ -1165,6 +1235,7 @@ function mapStatementToCheck(e: UnrealClassStatement): StatementCheckObj {
     return ({
         ...mapExpressionToCheck(e),
         body: mapBodyToCheck(e.body),
+        label: e.label?.text,
         bodyFirst: e.bodyFirstToken?.text,
         bodyLast: e.bodyLastToken?.text
     });

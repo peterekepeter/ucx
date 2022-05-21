@@ -89,6 +89,7 @@ export function activate(context: vscode.ExtensionContext) {
     const TOKEN_TYPE_NUMBER = standardTokenTypes.indexOf('number');
     const TOKEN_TYPE_FUNCTION = standardTokenTypes.indexOf('method');
     const TOKEN_TYPE_MACRO = standardTokenTypes.indexOf('macro');
+    const TOKEN_TYPE_LABEL = standardTokenTypes.indexOf('label');
 
     const TOKEN_MODIFIER_DECLARATION = standardModifiers.indexOf('declaration');
     const TOKEN_MODIFIER_READONLY = standardModifiers.indexOf('readonly');
@@ -162,6 +163,9 @@ export function activate(context: vscode.ExtensionContext) {
                     break;
                 case SemanticClass.LanguageConstant:
                     type = TOKEN_TYPE_KEYWORD;
+                    break;
+                case SemanticClass.StatementLabel:
+                    type = TOKEN_TYPE_LABEL;
                     break;
                 }
                 if (type !== undefined){
