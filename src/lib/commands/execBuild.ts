@@ -203,7 +203,7 @@ function getBuildPath(context: BuildContext, fullPath: string){
 }
 
 async function generateBuildNameAndDir(gameDir: string): Promise<{ buildName: string, buildDir: string }> {
-    const number = Math.floor(Math.random()*80000+10000);
+    const number = Date.now();
     let error: unknown;
     for (let i=0; i<1000; i++){
         let buildName = `ucx-build-${number + i}`;
