@@ -1098,6 +1098,28 @@ test('parse block statement termination also terminates single statement block',
     ]})
 ;});
 
+test('parse private function', () => {parsing(`
+    function private DoSomething(string arg){}
+    private function AnotherOne() {}
+    function NotPrivateFunction() {}`)
+    .hasTokens(
+        ['function', C.Keyword], 
+        ['private', C.Keyword], 
+        ['DoSomething', C.FunctionDeclaration])
+    .hasFunction(0, {
+        name: 'DoSomething',
+        isPrivate: true,
+    })
+    .hasFunction(1, {
+        name: 'AnotherOne',
+        isPrivate: true,
+    })
+    .hasFunction(2, {
+        name: 'NotPrivateFunction',
+        isPrivate: false,
+    });
+});
+
 
 interface ParserTestChecks
 {
@@ -1130,6 +1152,7 @@ interface ParserTestChecks
         isStatic?: boolean,
         isSimulated?: boolean,
         isFinal?: boolean
+        isPrivate?: boolean,
         returnType?: string,
         fnArgs?: { 
             type?: string,
@@ -1237,6 +1260,7 @@ function parsing(input: string): ParserTestChecks {
                 isStatic: obj.isStatic,
                 isFinal: obj.isFinal,
                 isSimulated: obj.isSimulated,
+                isPrivate: obj.isPrivate,
                 returnType: obj.returnType?.text,
                 fnArgs: obj.fnArgs.map(a => ({ 
                     name:a.name?.text,

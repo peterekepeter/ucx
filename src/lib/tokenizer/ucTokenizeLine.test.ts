@@ -110,6 +110,13 @@ test("tokenize labels", () => verifyTokens(`
     'LOOP_BEGIN', ':', 'i', '=', '0', ';'
 ]));
 
+test("tokenize operators", () => verifyTokens(`
+    ~=
+`, [
+    '~='
+]));
+
+
 function verifyTokens(input: string, output: string[]){
     expect(tokenize(input)).toEqual(output);
 }

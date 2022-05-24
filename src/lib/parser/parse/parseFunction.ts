@@ -7,6 +7,11 @@ import { resolveExpression, resolveStatementExpression } from "./resolveExpressi
 
 export function parseFnDeclaration(parser: UcParser, token: Token){
     const fn = parser.lastFn;
+    if (token.textLower === 'private'){
+        token.type = C.Keyword;
+        fn.isPrivate = true;
+        return;
+    }
     fn.name = token;
     token.type = C.FunctionDeclaration;
     parser.rootFn = parseFnParamBeginOrName;

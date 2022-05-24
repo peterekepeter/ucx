@@ -27,7 +27,7 @@ export function getExpressionTokenType(token: Token): DetectedExpressionTypes {
     else if (/^[a-z_]/i.test(text)) {
         return SemanticClass.Identifier;
     }
-    else if (/^[-+=*/<>!]|[<>=!]=|\+\+|--|\&\&|\|\|$/.test(text)){
+    else if (/^[-+=*/<>!]|[<>=!~]=|\+\+|--|\&\&|\|\|$/.test(text)){
         return SemanticClass.Operator;
     }
     else {

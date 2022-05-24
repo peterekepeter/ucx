@@ -10,6 +10,7 @@ export interface UnrealClassFunction {
     isStatic?: boolean;
     isSimulated?: boolean;
     isFinal?: boolean;
+    isPrivate?: boolean;
     returnType: Token | null;
     fnArgs: UnrealClassFunctionArgument[];
     fnArgsLastToken: Token | null;
