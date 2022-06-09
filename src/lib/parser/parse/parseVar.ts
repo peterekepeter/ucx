@@ -7,7 +7,7 @@ import { resolveExpression } from "./resolveExpression";
 
 export function parseVarDeclaration(parser: UcParser, token: Token) {
     const variable = parser.lastVar;
-    switch (token.text){
+    switch (token.textLower){
     case 'transient': 
         variable.isTransient = true;
         token.type = C.Keyword;

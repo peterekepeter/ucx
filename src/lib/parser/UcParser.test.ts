@@ -771,7 +771,7 @@ test("parse var with empty group", () => { parsing(`
 });
 
 
-test.skip("parse localized var", () => { parsing(`
+test("parse localized var", () => { parsing(`
     var Localized String ColorCol[11];
     `)
     .hasNoErrors();
@@ -800,7 +800,7 @@ test("parse state functions does not crash", () => { parsing(`
 `).hasNoErrors();});
 
 
-test("parse state with latent instructions", () => { parsing(`
+test.skip("parse state with latent instructions", () => { parsing(`
     auto state MyState
     {
     Begin:
@@ -809,7 +809,9 @@ test("parse state with latent instructions", () => { parsing(`
         Log( "MyState has finished sleeping" );
         goto('Begin');
     }`)
-    .hasNoErrors();
+    .hasNoErrors()
+    .hasTokens(['Log', C.FunctionReference], ['(', C.None], ['"MyState has just begun!"', C.LiteralString])
+    ;
 });
 
 
