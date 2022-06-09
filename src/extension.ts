@@ -251,6 +251,44 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
+    vscode.languages.registerDefinitionProvider('unrealscript', {
+        provideDefinition(document, position, cancellation) {
+            const ast = getAst(document, cancellation);
+            const line = position.line;
+            const character = position.character;
+            var target: ParserToken | null = null;
+            for (const token of ast.tokens){
+                if (token.line === line && 
+                    token.position <= character && 
+                    character <= token.position + token.text.length)
+                {
+                    target = token;
+                    break;
+                }
+            }
+            if (!target) {
+                return null;
+            }
+            for (const variable of ast.variables){
+                if (variable.name?.textLower === target.textLower){
+                    return { 
+                        range: rangeFromToken(variable.name),
+                        uri: document.uri
+                    };
+                }
+            }
+            for (const fn of ast.functions) {
+                if (fn.name?.textLower === target.textLower) {
+                    return {
+                        range: rangeFromToken(fn.name),
+                        uri: document.uri
+                    };
+                }
+            }
+            return null;
+        },
+    });
+
     function rangeFromToken(a: ParserToken): vscode.Range {
         return rangeFromTokens(a,a);
     }
