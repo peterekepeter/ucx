@@ -25,4 +25,7 @@ export enum SemanticClass {
     ObjectReferenceName,
     StateDeclaration,
     StatementLabel,
+    StructDeclaration,
+    StructMember,
+    StructMemberDeclaration,
 }

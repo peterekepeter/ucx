@@ -9,6 +9,7 @@ import { ParserFn, Token } from "./types";
 import { LazyParserToken, ParserToken, SemanticClass } from "./token";
 import { parseNoneState } from "./parse/parseNoneState";
 import { resolveArrayCountExpressions } from "./parse/resolveArrayCountExpressions";
+import { UnrealClassStruct } from "./ast/UnrealClassStruct";
 
 
 export class UcParser{
@@ -29,6 +30,7 @@ export class UcParser{
         constants: [],
         functions: [],
         textLines: [],
+        structs: [],
         defaultProperties: [],
         states:[],
     };
@@ -163,6 +165,16 @@ export class UcParser{
 
     get lastState(): UnrealClassState {
         const list = this.result.states;
+        return list[list.length - 1];
+    }
+
+    get lastStruct(): UnrealClassStruct {
+        const list = this.result.structs;
+        return list[list.length - 1];
+    }
+
+    get lastStructMember(): UnrealClassVariable {
+        const list = this.lastStruct.members;
         return list[list.length - 1];
     }
 

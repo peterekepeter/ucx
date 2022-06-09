@@ -11,6 +11,7 @@ import { parseExec } from "./parseExec";
 import { parseState, parseStateBody } from "./parseState";
 import { clearModifiers } from "./clearModifiers";
 import { resolveFunctionModifiers } from "./resolveFunctionModifiers";
+import { parseStructDeclaration } from "./parseStruct";
 
 
 export function parseNoneState(parser: UcParser, token: Token) {
@@ -69,6 +70,18 @@ export function parseNoneState(parser: UcParser, token: Token) {
             localized: false,
             template: null,
             arrayCountExpression: null,
+        });
+        token.type = C.Keyword;
+        clearModifiers(parser);
+        break;
+
+    case 'struct':
+        parser.rootFn = parseStructDeclaration;
+        parser.result.structs.push({
+            name: null,
+            firstToken: token,
+            lastToken: token,
+            members: [],
         });
         token.type = C.Keyword;
         clearModifiers(parser);

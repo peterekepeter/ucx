@@ -2,7 +2,7 @@
 	"name": "uclint",
 	"displayName": "uclint",
 	"description": "UnrealScript linter&formatter",
-	"version": "0.3.0",
+	"version": "0.3.2",
 	"repository": "https://github.com/peterekepeter/uclint",
 	"engines": {
 		"vscode": "^1.63.0"

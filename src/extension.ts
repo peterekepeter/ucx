@@ -83,6 +83,7 @@ export function activate(context: vscode.ExtensionContext) {
     const TOKEN_TYPE_ENUM_MEMBER = standardTokenTypes.indexOf('enumMember');
     const TOKEN_TYPE_ENUM = standardTokenTypes.indexOf('enum');
     const TOKEN_TYPE_CLASS = standardTokenTypes.indexOf('class');
+    const TOKEN_TYPE_STRUCT = standardTokenTypes.indexOf('struct');
     const TOKEN_TYPE_TYPE = standardTokenTypes.indexOf('type');
     const TOKEN_TYPE_OPERATOR = standardTokenTypes.indexOf('operator');
     const TOKEN_TYPE_STRING = standardTokenTypes.indexOf('string');
@@ -111,6 +112,11 @@ export function activate(context: vscode.ExtensionContext) {
                 case SemanticClass.Keyword: 
                     type = TOKEN_TYPE_KEYWORD; 
                     break;
+                case SemanticClass.StructMember:
+                case SemanticClass.StructMemberDeclaration:
+                    type = TOKEN_TYPE_PROPERTY;
+                    modifier = TOKEN_MODIFIER_DECLARATION;
+                    break;
                 case SemanticClass.ClassVariable: 
                     type = TOKEN_TYPE_PROPERTY; 
                     break;
@@ -119,6 +125,10 @@ export function activate(context: vscode.ExtensionContext) {
                     break;
                 case SemanticClass.EnumDeclaration: 
                     type = TOKEN_TYPE_ENUM; 
+                    modifier = TOKEN_MODIFIER_DECLARATION;
+                    break;
+                case SemanticClass.StructDeclaration:
+                    type = TOKEN_TYPE_STRUCT; 
                     modifier = TOKEN_MODIFIER_DECLARATION;
                     break;
                 case SemanticClass.ClassDeclaration: 

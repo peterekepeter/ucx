@@ -845,14 +845,30 @@ test("parse native function declaration", () => { parsing(`
 `).hasNoErrors();});
 
 
-test.skip("struct parsing", () => { parsing(`
+test("struct parsing", () => { parsing(`
     struct PointRegion
     {
         var zoneinfo Zone;       // Zone.
         var int      iLeaf;      // Bsp leaf.
         var byte     ZoneNumber; // Zone number.
-    };
-`).hasNoErrors();});
+    };`)
+    .hasNoErrors()
+    .hasStruct(0, {
+        name: 'PointRegion',
+        members: [{
+            name: 'Zone',
+            type: 'zoneinfo',
+        },{
+            name: 'iLeaf',
+            type: 'int',
+        },{
+            name: 'ZoneNumber',
+            type: 'byte',
+        }]
+    })
+    .hasTokens(['struct', C.Keyword], ['PointRegion', C.StructDeclaration])
+    .hasTokens(['var', C.Keyword], ['zoneinfo', C.TypeReference], ['Zone', C.StructMemberDeclaration])
+;});
 
 
 test('parse array declaration with parse array count expression', () => { parsing(`
@@ -1165,6 +1181,13 @@ interface ParserTestChecks
     hasDefaultProperty(index: number, props: { name?: string, value?: ExpressionCheckObj | string, arrayIndex?: string }): ParserTestChecks
     hasTokens(...expected: [string, C][]): ParserTestChecks
     hasState(index: number, props: { name?:string }): ParserTestChecks
+    hasStruct(index: number, props: {
+        name?: string,
+        members?: {
+            name?: string,
+            type?: string,
+        }[],
+    }): ParserTestChecks
 }
 
 function parsing(input: string): ParserTestChecks {
@@ -1293,6 +1316,23 @@ function parsing(input: string): ParserTestChecks {
         hasState(index: number, props: { name?:string }){
             const obj = ast.states[index];
             expect({ name: obj?.name?.text } as typeof props).toMatchObject(props);
+            return checks;
+        },
+        hasStruct(index: number, props: { 
+            name?: string,
+            members?: {
+                name?: string,
+                type?: string,
+            }[],
+         }){
+            const obj = ast.structs[index];
+            expect({ 
+                name: obj?.name?.text,
+                members: obj?.members.map(m => ({
+                    name: m.name?.text,
+                    type: m.type?.text,
+                }))
+            } as typeof props).toMatchObject(props);
             return checks;
         }
     };

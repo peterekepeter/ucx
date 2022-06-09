@@ -3,6 +3,7 @@ import { ParserError } from "../types";
 import { UnrealClassConstant, UnrealDefaultProperty } from "./UnrealClassConstant";
 import { UnrealClassEnum } from "./UnrealClassEnum";
 import { UnrealClassFunction } from "./UnrealClassFunction";
+import { UnrealClassStruct } from "./UnrealClassStruct";
 import { UnrealClassVariable } from "./UnrealClassVariable";
 
 
@@ -20,6 +21,7 @@ export interface UnrealClass {
     errors: ParserError[];
     constants: UnrealClassConstant[];
     variables: UnrealClassVariable[];
+    structs: UnrealClassStruct[];
     enums: UnrealClassEnum[];
     tokens: Token[];
     functions: UnrealClassFunction[];
