@@ -800,7 +800,7 @@ test("parse state functions does not crash", () => { parsing(`
 `).hasNoErrors();});
 
 
-test.skip("parse state with latent instructions", () => { parsing(`
+test("parse state with latent instructions", () => { parsing(`
     auto state MyState
     {
     Begin:

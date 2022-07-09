@@ -3,8 +3,10 @@ import { ParserError } from "../types";
 import { UnrealClassConstant, UnrealDefaultProperty } from "./UnrealClassConstant";
 import { UnrealClassEnum } from "./UnrealClassEnum";
 import { UnrealClassFunction } from "./UnrealClassFunction";
+import { UnrealClassState } from "./UnrealClassState";
 import { UnrealClassStruct } from "./UnrealClassStruct";
 import { UnrealClassVariable } from "./UnrealClassVariable";
+import { UnrealExecInstruction } from "./UnrealExecInstruction";
 
 
 export interface UnrealClass {
@@ -34,13 +36,4 @@ export interface UnrealClass {
 }
 
 
-export interface UnrealExecInstruction {
-    firstToken?: Token | null;
-    lastToken?: Token | null;
-}
 
-export interface UnrealClassState{
-    name: Token | null;
-    functions: UnrealClassFunction[];
-    
-}

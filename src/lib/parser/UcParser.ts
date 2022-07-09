@@ -1,4 +1,6 @@
-import { UnrealClass, UnrealClassState, UnrealExecInstruction } from "./ast/UnrealClass";
+import { UnrealClass } from "./ast/UnrealClass";
+import { UnrealExecInstruction } from "./ast/UnrealExecInstruction";
+import { UnrealClassState } from "./ast/UnrealClassState";
 import { UnrealClassFunction, UnrealClassFunctionLocal, UnrealClassStatement } from "./ast/UnrealClassFunction";
 import { UnrealClassConstant, UnrealDefaultProperty } from "./ast/UnrealClassConstant";
 import { UnrealClassEnum } from "./ast/UnrealClassEnum";
@@ -43,6 +45,7 @@ export class UcParser{
     isMultilineComment = false;
     currentClassState: UnrealClassState | null = null;
     label: Token | null = null;
+    currentlyInStateFunction: boolean = false;
 
     getAst() {
         return this.result;
@@ -139,6 +142,9 @@ export class UcParser{
         if (this.codeBlockStack.length > 0){
             const last = this.codeBlockStack.length - 1;
             return this.codeBlockStack[last].body;
+        }
+        if (this.currentClassState){
+            return this.currentClassState.body;
         }
         const fn = this.lastFn;
         return fn.body;

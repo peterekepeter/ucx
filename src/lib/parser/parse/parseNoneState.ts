@@ -138,6 +138,9 @@ export function parseNoneState(parser: UcParser, token: Token) {
         parser.result.states.push({
             name: null,
             functions: [],
+            body: [],
+            bodyFirstToken: null,
+            bodyLastToken: null,
         });
         parser.rootFn = parseState;
         token.type = C.Keyword;
