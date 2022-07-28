@@ -12,6 +12,7 @@ import { parseState, parseStateBody } from "./parseState";
 import { clearModifiers } from "./clearModifiers";
 import { resolveFunctionModifiers } from "./resolveFunctionModifiers";
 import { parseStructDeclaration } from "./parseStruct";
+import { parseReplication } from "./parseReplication";
 
 
 export function parseNoneState(parser: UcParser, token: Token) {
@@ -147,6 +148,13 @@ export function parseNoneState(parser: UcParser, token: Token) {
         clearModifiers(parser);
         parser.currentClassState = parser.lastState;
         break;
+
+    case 'replication':
+        parser.rootFn = parseReplication;
+        token.type = C.Keyword;
+        clearModifiers(parser);
+        break;
+
 
     default:
         parser.result.errors.push({ 

@@ -1138,6 +1138,20 @@ test('parse private function', () => {parsing(`
     });
 });
 
+test('parse replication statement', () => { parsing(`
+    replication
+    {
+        unreliable if( Role==ROLE_Authority )
+		    bHidden, bOnlyOwnerSee;
+
+        reliable if( Role<ROLE_Authority )
+            BroadcastMessage, BroadcastLocalizedMessage;
+    }`)
+    .hasTokens(['replication', C.Keyword])
+    .hasTokens(['reliable', C.Keyword], ['if', C.Keyword])
+    .hasTokens(['unreliable', C.Keyword], ['if', C.Keyword])
+    .hasNoErrors();
+});
 
 interface ParserTestChecks
 {
