@@ -1,11 +1,13 @@
-# uclint README
+# ucx README
 
-UnrealScript linter + formatter. Work in progress.
+UnrealScript Extensions, Linter + Formatter. Work in progress.
 
 ## Features
 
 > Many features are still experimental, for now use at your own risk!
 
+ - semantic syntax highlighting
+ - partial goto definition
  - partially working automatic indentation
  - partially working automatic semicolon completion
 
@@ -30,9 +32,5 @@ code.
 ## Release Notes
 
 Users appreciate release notes as you update your extension.
-
-### 0.0.1
-
-Experimental extension
 
 **Enjoy!**

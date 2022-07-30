@@ -1,6 +1,7 @@
+#!/usr/bin/env node
+
 import { DEFAULT_UCX_COMMAND, parseCliArgs, parseEnvArgs,  } from "./lib/cli";
 import { dispatchCommand } from "./lib/commands/dispatchCommand";
-
 
 
 setTimeout(async function main(){

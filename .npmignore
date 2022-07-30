@@ -12,4 +12,4 @@ vsc-extension-quickstart.md
 **/*.ts
 **/*.vsix
 
-out/ucx.js
+out/extension.js

@@ -14,15 +14,15 @@ export function activate(context: vscode.ExtensionContext) {
 	
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     // This line of code will only be executed once when your extension is activated
-    console.log('Extension "uclint" is now active!');
+    console.log('Extension "ucx" is now active!');
 
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with registerCommand
     // The commandId parameter must match the command field in package.json
-    let disposable = vscode.commands.registerCommand('uclint.helloWorld', () => {
+    let disposable = vscode.commands.registerCommand('ucx.helloWorld', () => {
         // The code you place here will be executed every time your command is executed
         // Display a message box to the user
-        vscode.window.showInformationMessage('Hello World from uclint!');
+        vscode.window.showInformationMessage('Hello World from ucx!');
     });
     context.subscriptions.push(disposable);
 
@@ -308,7 +308,7 @@ export function activate(context: vscode.ExtensionContext) {
         return new vscode.Position(a.line, a.position + a.text.length);
     }
 
-    const diagnosticCollection = vscode.languages.createDiagnosticCollection('uclint');
+    const diagnosticCollection = vscode.languages.createDiagnosticCollection('ucx');
     context.subscriptions.push(diagnosticCollection);
 
     vscode.workspace.onDidChangeTextDocument(event => { 
@@ -326,7 +326,7 @@ export function deactivate() {}
 
 function* getDiagnostics(document: vscode.TextDocument): Iterable<vscode.Diagnostic> {
     
-    const cfg = vscode.workspace.getConfiguration("uclint");
+    const cfg = vscode.workspace.getConfiguration("ucx");
     let reportParserErrors = !!cfg.get('reportParserErrors') ?? false;
 
     for (const lintResult of processLinterRules(document, { reportParserErrors })){
@@ -343,7 +343,7 @@ function* getDiagnostics(document: vscode.TextDocument): Iterable<vscode.Diagnos
                 severity: lintResult.severity === 'error' 
                     ? vscode.DiagnosticSeverity.Error
                     : vscode.DiagnosticSeverity.Warning,
-                source: 'uclint'
+                source: 'ucx'
             };
         }
     }
