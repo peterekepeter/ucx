@@ -142,6 +142,9 @@ function tryResolveDefaultExpression(tokens: Token[]): UnrealClassExpression | T
         case C.LiteralNumber:
         case C.LiteralString:
         case C.LanguageConstant:
+        case C.EnumMember: 
+        case C.ClassConstant: 
+        case C.Identifier: // can reference a n enum or constant
             return token;
         }
     }

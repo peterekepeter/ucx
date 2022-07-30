@@ -655,7 +655,7 @@ test("parse default property for array type", () => { parsing(`
 });
 
 
-test("parse default property for array type", () => { parsing(`
+test("parse default property for array type with sound reference", () => { parsing(`
     defaultproperties
     {
         TimeSound(4)=Sound'Announcer.(All).cd1min'
@@ -693,6 +693,23 @@ test("parse default property with struct is not error", () => { parsing(`
         value: {
             op: '('
         }
+    });
+});
+
+test("parse default property with enum value", () => { parsing(`
+    defaultproperties
+    {
+        Role=ROLE_Authority
+        RemoteRole=ROLE_DumbProxy
+    }`)
+    .hasNoErrors()
+    .hasDefaultProperty(0, { 
+        name: "Role", 
+        value: 'ROLE_Authority',
+    })
+    .hasDefaultProperty(1, { 
+        name: "RemoteRole", 
+        value: 'ROLE_DumbProxy',
     });
 });
 
