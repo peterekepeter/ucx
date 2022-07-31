@@ -31,7 +31,7 @@ export function parseCliArgs(argv: string[]): Partial<UcxCommand>{
         }
         else if (!result.command){
             result.command = arg;
-            if (arg === 'ucc' || arg === 'ut') {
+            if (arg === 'ucc' || arg === 'ut' || arg === "ue") {
                 // bypass parsing
                 result.files = argv.slice(i+1);
                 return result;

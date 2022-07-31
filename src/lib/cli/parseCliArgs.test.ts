@@ -59,6 +59,13 @@ test('parse pass command to ut', () => {
     } as Partial<UcxCommand>);
 });
 
+test('parse pass command to ue (unrealed)', () => {
+    expect(parse(['','','ue','help', '--ini=test.ini'])).toMatchObject({
+        command: 'ue',
+        files: ['help', '--ini=test.ini'],
+    } as Partial<UcxCommand>);
+});
+
 test('parsed build command with --no-clean', () => {
     expect(parse(['','','build', '--no-clean', '../Project'])).toMatchObject({
         files: ['../Project'],
