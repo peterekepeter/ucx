@@ -260,6 +260,27 @@ test('indent foreach statement block body', () => { linting([
     .hasResult({ line:5, fixedText:'\t' });
 });
 
+test.skip('indent replication block body', () => { linting([
+    /*0*/'replication',
+    /*1*/'{',
+    /*2*/'reliable if(Role == ROLE_Authority)',
+    /*3*/'Pauser, TimeDilation, bNoCheating, bAllowFOV;',
+    /*4*/'}',
+    /*5*/])
+    .hasResult({ line:2, fixedText:'\t' })
+    .hasResult({ line:3, fixedText:'\t\t' });
+});
+
+test.skip('indent replication block body', () => { linting([
+    /*0*/'replication',
+    /*1*/'{',
+    /*2*/'\treliable if(Role == ROLE_Authority)',
+    /*3*/'\t\tPauser, TimeDilation, bNoCheating, bAllowFOV;',
+    /*4*/'}',
+    /*5*/])
+    .hasNoLintResults();
+});
+
 test('lint empty line before function', () => {
     linting([
         'function A()',
