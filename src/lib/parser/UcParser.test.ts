@@ -1155,7 +1155,7 @@ test('parse private function', () => {parsing(`
     });
 });
 
-test('parse replication statement', () => { parsing(`
+test.skip('parse replication statement', () => { parsing(`
     replication
     {
         unreliable if( Role==ROLE_Authority )
@@ -1167,6 +1167,22 @@ test('parse replication statement', () => { parsing(`
     .hasTokens(['replication', C.Keyword])
     .hasTokens(['reliable', C.Keyword], ['if', C.Keyword])
     .hasTokens(['unreliable', C.Keyword], ['if', C.Keyword])
+    .hasReplication(0, {
+        isReliable: false, 
+        condition: {
+            op: '==',
+            args: ['Role', 'ROLE_Authority']
+        },
+        targets: ['bHidden', 'bOnlyOwnerSee'],
+    })
+    .hasReplication(1, {
+        isReliable: true, 
+        condition: {
+            op: '<',
+            args: ['Role', 'ROLE_Authority']
+        },
+        targets: ['BroadcastMessage', 'BroadcastLocalizedMessage'],
+    })
     .hasNoErrors();
 });
 
@@ -1212,7 +1228,8 @@ interface ParserTestChecks
         }[]
     }): ParserTestChecks,
     hasDefaultProperty(index: number, props: { name?: string, value?: ExpressionCheckObj | string, arrayIndex?: string }): ParserTestChecks
-    hasTokens(...expected: [string, C][]): ParserTestChecks
+    hasTokens(...expected: [string, C][]): ParserTestChecks,
+    hasReplication(index: number, props: { isReliable?: boolean, condition?: ExpressionCheckObj, targets?: string[] }): ParserTestChecks,
     hasState(index: number, props: { name?:string }): ParserTestChecks
     hasStruct(index: number, props: {
         name?: string,
@@ -1344,6 +1361,10 @@ function parsing(input: string): ParserTestChecks {
             const actualSlice = actual.slice(startIndex, startIndex + expected.length);
             const expectedMapped = expected.map(t => [t[0], C[t[1]]]);
             expect(actualSlice).toMatchObject(expectedMapped);
+            return checks;
+        },
+        hasReplication(index: number, props: { isReliable?: boolean, condition?: ExpressionCheckObj, targets?: string[] }){
+            // TODO
             return checks;
         },
         hasState(index: number, props: { name?:string }){
