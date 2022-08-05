@@ -1155,7 +1155,7 @@ test('parse private function', () => {parsing(`
     });
 });
 
-test.skip('parse replication statement', () => { parsing(`
+test('parse replication statement', () => { parsing(`
     replication
     {
         unreliable if( Role==ROLE_Authority )
@@ -1164,10 +1164,11 @@ test.skip('parse replication statement', () => { parsing(`
         reliable if( Role<ROLE_Authority )
             BroadcastMessage, BroadcastLocalizedMessage;
     }`)
+    .hasNoErrors()
     .hasTokens(['replication', C.Keyword])
     .hasTokens(['reliable', C.Keyword], ['if', C.Keyword])
     .hasTokens(['unreliable', C.Keyword], ['if', C.Keyword])
-    .hasReplication(0, {
+    .hasReplication(0, 0, {
         isReliable: false, 
         condition: {
             op: '==',
@@ -1175,15 +1176,14 @@ test.skip('parse replication statement', () => { parsing(`
         },
         targets: ['bHidden', 'bOnlyOwnerSee'],
     })
-    .hasReplication(1, {
+    .hasReplication(0, 1, {
         isReliable: true, 
         condition: {
             op: '<',
             args: ['Role', 'ROLE_Authority']
         },
         targets: ['BroadcastMessage', 'BroadcastLocalizedMessage'],
-    })
-    .hasNoErrors();
+    });
 });
 
 interface ParserTestChecks
@@ -1229,7 +1229,7 @@ interface ParserTestChecks
     }): ParserTestChecks,
     hasDefaultProperty(index: number, props: { name?: string, value?: ExpressionCheckObj | string, arrayIndex?: string }): ParserTestChecks
     hasTokens(...expected: [string, C][]): ParserTestChecks,
-    hasReplication(index: number, props: { isReliable?: boolean, condition?: ExpressionCheckObj, targets?: string[] }): ParserTestChecks,
+    hasReplication(bodyIndex: number, statementIndex: number, props: { isReliable?: boolean, condition?: ExpressionCheckObj, targets?: string[] }): ParserTestChecks,
     hasState(index: number, props: { name?:string }): ParserTestChecks
     hasStruct(index: number, props: {
         name?: string,
@@ -1363,8 +1363,16 @@ function parsing(input: string): ParserTestChecks {
             expect(actualSlice).toMatchObject(expectedMapped);
             return checks;
         },
-        hasReplication(index: number, props: { isReliable?: boolean, condition?: ExpressionCheckObj, targets?: string[] }){
+        hasReplication(blockIndex: number, statementIndex: number, props: { isReliable?: boolean, condition?: ExpressionCheckObj, targets?: string[] }){
             // TODO
+            const statement = ast.replicationBlocks[blockIndex]?.statements[statementIndex];
+            const condition = statement?.condition;
+            const actual = {
+                isReliable: statement?.isReliable,
+                targets: statement?.targets.map(t => t.text),
+                condition: condition == null ? null : 'op' in condition ? mapExpressionToCheck(condition) : condition
+            }
+            expect(actual).toMatchObject(props);
             return checks;
         },
         hasState(index: number, props: { name?:string }){

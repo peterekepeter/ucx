@@ -12,7 +12,7 @@ import { parseState, parseStateBody } from "./parseState";
 import { clearModifiers } from "./clearModifiers";
 import { resolveFunctionModifiers } from "./resolveFunctionModifiers";
 import { parseStructDeclaration } from "./parseStruct";
-import { parseReplication } from "./parseReplication";
+import { parseReplicationBlockBegin } from "./parseReplication";
 
 
 export function parseNoneState(parser: UcParser, token: Token) {
@@ -150,9 +150,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
         break;
 
     case 'replication':
-        parser.rootFn = parseReplication;
-        token.type = C.Keyword;
-        clearModifiers(parser);
+        parseReplicationBlockBegin(parser, token);
         break;
 
 

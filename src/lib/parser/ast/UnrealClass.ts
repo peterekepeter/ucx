@@ -3,6 +3,7 @@ import { ParserError } from "../types";
 import { UnrealClassConstant, UnrealDefaultProperty } from "./UnrealClassConstant";
 import { UnrealClassEnum } from "./UnrealClassEnum";
 import { UnrealClassFunction } from "./UnrealClassFunction";
+import { UnrealClassReplicationBlock } from "./UnrealClassReplication";
 import { UnrealClassState } from "./UnrealClassState";
 import { UnrealClassStruct } from "./UnrealClassStruct";
 import { UnrealClassVariable } from "./UnrealClassVariable";
@@ -33,6 +34,7 @@ export interface UnrealClass {
     defaultPropertiesLastToken?: Token | null;
     execInstructions: UnrealExecInstruction[];
     states: UnrealClassState[];
+    replicationBlocks: UnrealClassReplicationBlock[];
 }
 
 

@@ -12,6 +12,7 @@ import { LazyParserToken, ParserToken, SemanticClass } from "./token";
 import { parseNoneState } from "./parse/parseNoneState";
 import { resolveArrayCountExpressions } from "./parse/resolveArrayCountExpressions";
 import { UnrealClassStruct } from "./ast/UnrealClassStruct";
+import { UnrealClassReplicationBlock, UnrealClassReplicationStatement } from "./ast/UnrealClassReplication";
 
 
 export class UcParser{
@@ -35,6 +36,7 @@ export class UcParser{
         structs: [],
         defaultProperties: [],
         states:[],
+        replicationBlocks: [],
     };
     
     expressionTokens: Token[] = [];
@@ -184,6 +186,15 @@ export class UcParser{
         return list[list.length - 1];
     }
 
+    get lastReplicationBlock(): UnrealClassReplicationBlock {
+        const list = this.result.replicationBlocks;
+        return list[list.length - 1];
+    }
+
+    get lastReplicationStatement(): UnrealClassReplicationStatement {
+        const list = this.lastReplicationBlock.statements;
+        return list[list.length - 1];
+    }
 }
 
 
