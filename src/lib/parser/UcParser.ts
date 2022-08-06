@@ -13,6 +13,7 @@ import { parseNoneState } from "./parse/parseNoneState";
 import { resolveArrayCountExpressions } from "./parse/resolveArrayCountExpressions";
 import { UnrealClassStruct } from "./ast/UnrealClassStruct";
 import { UnrealClassReplicationBlock, UnrealClassReplicationStatement } from "./ast/UnrealClassReplication";
+import { ExpressionSplitter } from "./parse/ExpressionSplitter";
 
 
 export class UcParser{
@@ -40,6 +41,7 @@ export class UcParser{
     };
     
     expressionTokens: Token[] = [];
+    expressionSplitter = new ExpressionSplitter();
     codeBlockStack: UnrealClassStatement[] = [];
     parenOpenCount = 0;
     modifiers: Token[] = [];

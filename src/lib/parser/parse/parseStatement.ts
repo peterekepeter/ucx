@@ -35,8 +35,8 @@ export function parseStatement(parser: UcParser, token: Token)
         parser.codeBlockStack.push(statement);
         break;
     case "foreach":
-        parser.rootFn = parseForeach;
-        parser.expressionTokens = [];
+        parser.rootFn = parseForeachStatement;
+        parser.expressionSplitter.clear();
         token.type = C.Keyword;
         const foreach: UnrealClassStatement = {
             op: token,
@@ -330,18 +330,25 @@ function endCurrentStatementBlock(parser: UcParser, endingToken: Token){
     }
 }
 
-function parseForeach(parser: UcParser, token: Token)
+function parseForeachStatement(parser: UcParser, token: Token)
 {
     switch (token.text)
     {
     case '{':
-        parser.lastStatement.args.push(resolveExpression(parser.expressionTokens));
+        parser.lastStatement.args.push(resolveExpression(parser.expressionSplitter.getTokens()));
         parser.rootFn = parseStatement;
         parser.lastStatement.bodyFirstToken = token;
         break;
     default:
-        parser.expressionTokens.push(token);
+        if (parser.expressionSplitter.canContinueWithToken(token)){
+            parser.expressionSplitter.addToken(token);
+        }
+        else {
+            parser.lastStatement.args.push(resolveExpression(parser.expressionSplitter.getTokens()));
+            parser.rootFn = parseSingleStatementBody;
+            parser.lastStatement.bodyFirstToken = token;
+            parser.rootFn(parser, token);
+        }
         break;
     }
-    parser.expressionTokens.push(token);
 }

@@ -805,6 +805,27 @@ test("parse foreach", () =>{ parsing(`
     });
 });
 
+test("parse single statement foreach", () =>{ parsing(`
+    function Timer(){
+        local Projectile A;
+
+        foreach AllActors( class 'Projectile', A )
+            Log(A);
+    }`)
+    .hasNoErrors()
+    .hasTokens(['foreach', C.Keyword])
+    .hasFunction(0, {
+        body: [
+            {
+                bodyFirst: 'Log',
+                bodyLast: ';',
+                op:'foreach', body: [ { op: 'Log' }],
+                args: [{ op:'AllActors' }]
+            }
+        ]
+    });
+});
+
 
 test("parse type variable", () => { parsing(`
     var class<actor> EnterActor;
