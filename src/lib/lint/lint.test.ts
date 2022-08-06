@@ -260,7 +260,7 @@ test('indent foreach statement block body', () => { linting([
     .hasResult({ line:5, fixedText:'\t' });
 });
 
-test.skip('indent replication block body', () => { linting([
+test('indent replication block body', () => { linting([
     /*0*/'replication',
     /*1*/'{',
     /*2*/'reliable if(Role == ROLE_Authority)',

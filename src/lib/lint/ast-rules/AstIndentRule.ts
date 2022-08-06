@@ -40,6 +40,14 @@ export class AstIndentRule implements AstBasedLinter
         
         this.paintScope(
             ast.defaultPropertiesFirstToken, ast.defaultPropertiesLastToken);
+
+        for (const block of ast.replicationBlocks){
+            this.paintScope(block.bodyFirstToken, block.bodyLastToken);
+            for (const statement of block.statements) {
+                const tokens = statement.targets;
+                this.paintScope(tokens[0], tokens[tokens.length-1], true, true);
+            }
+        }
     }
 
     collapseDeepIndent(ast: UnrealClass){
@@ -153,11 +161,12 @@ export class AstIndentRule implements AstBasedLinter
         first?: ParserToken | null,
         last?: ParserToken | null,
         isSingleStatementBody?: boolean,
+        dontSkipFirstLine?: boolean,
     ) {
         if (!first || !last){
             return;
         }
-        const from = first.line + 1;
+        const from = dontSkipFirstLine ? first.line : first.line + 1;
         let to = last.line;
         if (isSingleStatementBody || last.text !== '}' && last.text !== ')') {
             // declaration scope
