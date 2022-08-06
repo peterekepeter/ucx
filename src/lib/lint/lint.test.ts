@@ -271,13 +271,61 @@ test('indent replication block body', () => { linting([
     .hasResult({ line:3, fixedText:'\t\t' });
 });
 
-test.skip('indent replication block body', () => { linting([
+test('indent replication block body', () => { linting([
     /*0*/'replication',
     /*1*/'{',
     /*2*/'\treliable if(Role == ROLE_Authority)',
     /*3*/'\t\tPauser, TimeDilation, bNoCheating, bAllowFOV;',
     /*4*/'}',
     /*5*/])
+    .hasNoLintResults();
+});
+
+test.skip('indent replication block body where condition has parenthesis inside', () => { linting([
+    /*0*/'replication',
+    /*1*/'{',
+    /*2*/'\tunreliable if( (Role == ROLE_Authority) && (bNetOwner == bSomething) )',
+    /*3*/'\t\tAmbientSound;',
+    /*4*/'}',
+    /*5*/])
+    .hasNoLintResults();
+});
+
+test.skip('correctly indented struct members', () => { linting([
+    /*0*/'struct PointRegion',
+    /*1*/'{',
+    /*2*/'\tvar zoneinfo Zone;       // Zone.',
+    /*3*/'\tvar int      iLeaf;      // Bsp leaf.',
+    /*4*/'\tvar byte     ZoneNumber; // Zone number.',
+    /*5*/'};'
+    /*6*/])
+    .hasNoLintResults();
+});
+
+test.skip('incorrectly indented struct', () => { linting([
+    /*0*/'struct PointRegion',
+    /*1*/'{',
+    /*2*/'var zoneinfo Zone;       // Zone.',
+    /*3*/'var int      iLeaf;      // Bsp leaf.',
+    /*4*/'var byte     ZoneNumber; // Zone number.',
+    /*5*/'};'
+    /*6*/])
+    .hasResult({ line:2, fixedText:'\t' })
+    .hasResult({ line:3, fixedText:'\t' })
+    .hasResult({ line:4, fixedText:'\t' });
+});
+
+test.skip('correctly formatted enum has no linter errors', () => { linting([
+    'enum ESoundSlot',
+    '{',
+    '\tSLOT_None,',
+    '\tSLOT_Misc,',
+    '\tSLOT_Pain,',
+    '\tSLOT_Interact,',
+    '\tSLOT_Ambient,',
+    '\tSLOT_Talk,',
+    '\tSLOT_Interface,',
+    '};',])
     .hasNoLintResults();
 });
 
@@ -438,6 +486,28 @@ test.skip('lint multiline boolean condition', () => { lintingStatements(
     "	&& PlayerPawn.Weapon != None",
     "	&& PlayerPawn.Weapon.Class == Weapons.GetWeaponClass(WeaponIndex);" // missing indent
 ).hasNoLintResults();});
+
+test.skip('linting multiline variable declaration', () => { 
+    linting([
+        /*0*/'// Light properties.',
+        /*1*/'var(Lighting) byte',
+        /*2*/'LightRadius,',
+        /*3*/'LightPeriod,',
+        /*4*/'LightPhase,',
+        /*5*/'LightCone,',
+        /*6*/'VolumeBrightness,',
+        /*7*/'VolumeRadius,',
+        /*8*/'VolumeFog;',
+    ])
+        .hasResult({ line: 2, position: 0, originalText: '', fixedText: '\t' })
+        .hasResult({ line: 3, position: 0, originalText: '', fixedText: '\t' })
+        .hasResult({ line: 4, position: 0, originalText: '', fixedText: '\t' })
+        .hasResult({ line: 5, position: 0, originalText: '', fixedText: '\t' })
+        .hasResult({ line: 6, position: 0, originalText: '', fixedText: '\t' })
+        .hasResult({ line: 7, position: 0, originalText: '', fixedText: '\t' })
+        .hasResult({ line: 8, position: 0, originalText: '', fixedText: '\t' })
+    ;
+});
 
 function linting(lines: string[], lineOffset = 0, positionOffset = 0) {
     const parser = new UcParser();

@@ -28,6 +28,15 @@ test("parse class declaration with extra decorators", () => { parsing(`
     .hasNoErrors();
 });
 
+
+test.skip("parse class declaration with noexport", () => { 
+    parsing(`class Object native noexport;`)
+        .hasNoErrors()
+        .hasClassName('Object')
+        .isNative(true);
+    //todo assert noexport
+});
+
 test("parse variable declaration", () => { parsing(`
     var bool bDynamicLight;
     `)
@@ -95,6 +104,34 @@ test("parse variable declaration with group", () => { parsing(`
     })
     .hasNoErrors();
 });
+
+test.skip("parse variable declaration with exotic modifiers", () => { parsing(`
+    var native private const int ObjectInternal[6];
+    var native const object Outer;
+    var native const int ObjectFlags;
+    var(Object) native const editconst name Name;
+    var(Object) native const editconst class Class;
+    `)
+    .hasTokens(['var', C.Keyword], ['native', C.Keyword], ['private', C.Keyword], ['const', C.Keyword])
+    .hasTokens(['native', C.Keyword], ['const', C.Keyword], ['editconst', C.Keyword])
+    .hasVariable(0, 'int', 'ObjectInternal')
+    .hasVariable(1, 'object', 'Outer')
+    .hasVariable(2, 'int', 'ObjectFlags')
+    .hasVariable(3, 'name', 'Name')
+    .hasVariable(4, 'class', 'Class')
+    .hasNoErrors();
+});
+
+test.skip("parse operator declarations", () => { parsing(`
+    native(161) static final operator(34) int  += ( out int A, int B );
+    native(162) static final operator(34) int  -= ( out int A, int B );
+    native(163) static final preoperator  int  ++ ( out int A );
+    native(164) static final preoperator  int  -- ( out int A );
+    native(165) static final postoperator int  ++ ( out int A );
+    native(166) static final postoperator int  -- ( out int A );
+    `)
+    .hasNoErrors();}
+);
 
 test("parse empty function", () => { parsing(`
     function PostBeginPlay(){
@@ -489,6 +526,13 @@ test("parse static function", () => { parsing(`
 ;
 });
 
+test.skip('parse latent function declaration', () => { parsing(`
+    native(256) final latent function Sleep( float Seconds );
+    `)
+    .hasNoErrors()
+    .hasFunction(0, { name: "Sleep", /*isLatent: true*/ }); //todo assert latent
+});
+
 
 test("parse function return type", () => { parsing(`
     function bool IsAlive() {}
@@ -828,7 +872,7 @@ test("parse state with latent instructions", () => { parsing(`
     }`)
     .hasNoErrors()
     .hasTokens(['Log', C.FunctionReference], ['(', C.None], ['"MyState has just begun!"', C.LiteralString])
-    ;
+;
 });
 
 
@@ -888,6 +932,17 @@ test("struct parsing", () => { parsing(`
     .hasTokens(['struct', C.Keyword], ['PointRegion', C.StructDeclaration])
     .hasTokens(['var', C.Keyword], ['zoneinfo', C.TypeReference], ['Zone', C.StructMemberDeclaration])
 ;});
+
+
+test.skip('parse struct extending another struct', () => { parsing(`
+    // A plane definition in 3d space.
+    struct Plane extends Vector
+    {
+        var() config float W;
+    };
+    `).hasNoErrors();
+    // todo assert parsed var and enum
+});
 
 
 test('parse array declaration with parse array count expression', () => { parsing(`
@@ -1155,6 +1210,26 @@ test('parse private function', () => {parsing(`
     });
 });
 
+test.skip('parse variable declaration combined with enum', () => { parsing(`
+    var(Display) enum ERenderStyle
+    {
+        STY_None,
+        STY_Normal,
+        STY_Masked,
+        STY_Translucent,
+        STY_Modulated,
+    } Style;
+    `).hasNoErrors();
+    // todo assert parsed var and enum
+});
+
+test.skip('parse variable declaration with export modifier', () => { parsing(`
+    var const export model  Brush;
+    `).hasNoErrors()
+    .hasVariable(0, 'model', 'Brush'); 
+    // todo assert modifiers
+});
+
 test('parse replication statement', () => { parsing(`
     replication
     {
@@ -1183,6 +1258,19 @@ test('parse replication statement', () => { parsing(`
             args: ['Role', 'ROLE_Authority']
         },
         targets: ['BroadcastMessage', 'BroadcastLocalizedMessage'],
+    });
+});
+
+test.skip('parse replication statement with extra parenthesis in condition', () => { parsing(`
+    replication
+    {
+        unreliable if( (Role==ROLE_Authority) && bSomething )
+		    bHidden, bOnlyOwnerSee;
+    }`)
+    .hasNoErrors()
+    .hasReplication(0, 0, {
+        isReliable: false, 
+        targets: ['bHidden', 'bOnlyOwnerSee'],
     });
 });
 
@@ -1371,7 +1459,7 @@ function parsing(input: string): ParserTestChecks {
                 isReliable: statement?.isReliable,
                 targets: statement?.targets.map(t => t.text),
                 condition: condition == null ? null : 'op' in condition ? mapExpressionToCheck(condition) : condition
-            }
+            };
             expect(actual).toMatchObject(props);
             return checks;
         },
