@@ -291,7 +291,7 @@ test('indent replication block body where condition has parenthesis inside', () 
     .hasNoLintResults();
 });
 
-test.skip('correctly indented struct members', () => { linting([
+test('correctly indented struct members', () => { linting([
     /*0*/'struct PointRegion',
     /*1*/'{',
     /*2*/'\tvar zoneinfo Zone;       // Zone.',
@@ -302,7 +302,7 @@ test.skip('correctly indented struct members', () => { linting([
     .hasNoLintResults();
 });
 
-test.skip('incorrectly indented struct', () => { linting([
+test('incorrectly indented struct', () => { linting([
     /*0*/'struct PointRegion',
     /*1*/'{',
     /*2*/'var zoneinfo Zone;       // Zone.',

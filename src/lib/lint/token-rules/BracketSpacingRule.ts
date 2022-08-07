@@ -48,7 +48,7 @@ export class BracketSpacingRule implements TokenBasedLinterV2
                 message = "Add newline before '}'";
                 insertIndent = getIndentLevel(lineText) - 1;
             }
-            else if (this.prevToken === '}' && this.prevParserToken?.type === BRACKET_TOKEN)
+            else if (this.prevToken === '}' && this.prevParserToken?.type === BRACKET_TOKEN && parserToken.text !== ';')
             {
                 insertNewline = true;
                 message = "Add newline after '}'";

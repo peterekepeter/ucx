@@ -48,6 +48,10 @@ export class AstIndentRule implements AstBasedLinter
                 this.paintScope(tokens[0], tokens[tokens.length-1], true, true);
             }
         }
+
+        for (const struct of ast.structs){
+            this.paintScope(struct.bodyFirstToken, struct.bodyLastToken);
+        }
     }
 
     collapseDeepIndent(ast: UnrealClass){

@@ -17,6 +17,8 @@ function parseStructBodyBegin(parser: UcParser, token: Token) {
             message: 'Expected { after struct name', token
         });
     }
+    parser.lastStruct.bodyFirstToken = token;
+    parser.lastStruct.bodyLastToken = token;
     parser.rootFn = parseStructBody;
 }
 
@@ -45,6 +47,7 @@ function parseStructBody(parser: UcParser, token: Token) {
     case '}': 
         parser.rootFn = parseStructBodyClosed;
         parser.lastStruct.lastToken = token;
+        parser.lastStruct.bodyLastToken = token;
         break;
     }
 }
