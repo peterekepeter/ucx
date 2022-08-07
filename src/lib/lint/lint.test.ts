@@ -281,7 +281,7 @@ test('indent replication block body', () => { linting([
     .hasNoLintResults();
 });
 
-test.skip('indent replication block body where condition has parenthesis inside', () => { linting([
+test('indent replication block body where condition has parenthesis inside', () => { linting([
     /*0*/'replication',
     /*1*/'{',
     /*2*/'\tunreliable if( (Role == ROLE_Authority) && (bNetOwner == bSomething) )',

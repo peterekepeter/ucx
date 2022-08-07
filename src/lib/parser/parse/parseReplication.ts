@@ -92,6 +92,7 @@ function parseReplicationIfOpener(parser: UcParser, token: Token)
     case '(': 
         parser.expressionTokens = [];
         parser.rootFn = parseReplicaitonIfExpression;
+        parser.parenOpenCount = 1;
         break;
     }
 }
@@ -102,7 +103,16 @@ function parseReplicaitonIfExpression(parser: UcParser, token: Token)
     default:
         parser.expressionTokens.push(token);
         break;
+    case '(':
+        parser.expressionTokens.push(token);
+        parser.parenOpenCount += 1;
+        break;
     case ')':  
+        parser.parenOpenCount -= 1;
+        if (parser.parenOpenCount > 0){
+            parser.expressionTokens.push(token);
+            break;
+        }
         parser.lastReplicationStatement.condition = resolveExpression(parser.expressionTokens);
         parser.rootFn = parseReplicationTarget;
         break;
