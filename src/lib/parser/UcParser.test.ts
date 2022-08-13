@@ -10,6 +10,8 @@ test("parse basic class declration", () => {
         .hasParentClassName('Info')
         .isAbstract(false)
         .isNative(false)
+        .isNoExport(false)
+        .isSafeReplace(false)
         .hasNativeReplication(false)
         .hasNoErrors();
 });
@@ -29,12 +31,22 @@ test("parse class declaration with extra decorators", () => { parsing(`
 });
 
 
-test.skip("parse class declaration with noexport", () => { 
+test("parse class declaration with noexport", () => { 
     parsing(`class Object native noexport;`)
         .hasNoErrors()
         .hasClassName('Object')
+        .hasParentClassName(null)
+        .isNoExport(true)
         .isNative(true);
-    //todo assert noexport
+});
+
+test("parse class declaration with safereplace", () => { 
+    parsing(`class Texture extends Bitmap safereplace native noexport;`)
+        .hasNoErrors()
+        .hasClassName('Texture')
+        .hasParentClassName('Bitmap')
+        .isSafeReplace(true)
+        .isNative(true);
 });
 
 test("parse variable declaration", () => { parsing(`
@@ -1298,11 +1310,13 @@ test.skip('parse replication statement with extra parenthesis in condition', () 
 interface ParserTestChecks
 {
     hasClassName(name: string): ParserTestChecks
-    hasParentClassName(name: string): ParserTestChecks
+    hasParentClassName(name: string | null): ParserTestChecks
     hasClassConfig(name: string): ParserTestChecks
     hasNoErrors(): ParserTestChecks
     isAbstract(flag: boolean): ParserTestChecks
     isNative(flag: boolean): ParserTestChecks
+    isSafeReplace(flag: boolean): ParserTestChecks
+    isNoExport(flag: boolean): ParserTestChecks
     hasNativeReplication(flag: boolean): ParserTestChecks
     hasVariable(index: number, type: string, name: string, props?: { 
         transient?: boolean, 
@@ -1362,11 +1376,13 @@ function parsing(input: string): ParserTestChecks {
 
     const checks = {
         hasClassName: (name: string) => checkEquals(name, ast.name?.text),
-        hasParentClassName: (name: string) => checkEquals(name, ast.parentName?.text),
+        hasParentClassName: (name: string) => checkEquals(name, ast.parentName?.text ?? null),
         hasClassConfig: (name: string) => checkEquals(name, ast.configName?.text),
         hasNoErrors: () => checkEmpty(ast.errors),
         isAbstract: (flag: boolean) => checkEquals(flag, ast.isAbstract, "isAbstract should be " + flag),
         isNative: (flag: boolean) => checkEquals(flag, ast.isNative, "isNative should be " + flag),
+        isNoExport: (flag: boolean) => checkEquals(flag, ast.isNoExport, "isNoExport should be " + flag),
+        isSafeReplace: (flag: boolean) => checkEquals(flag, ast.isSafeReplace, "isSafeReplace should be " + flag),
         hasNativeReplication: (flag: boolean) => checkEquals(flag, ast.isNativeReplication, "hasNativeReplication should be " + flag),
         hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean, array?:number, localized?:boolean, template?:string, arrayExpression?:ExpressionCheckObj }) => {
             checkEquals(ast.variables[index]?.type?.text, type);

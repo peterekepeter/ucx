@@ -20,6 +20,8 @@ export interface UnrealClass {
     parentName: Token | null;
     isAbstract: boolean;
     isNative: boolean;
+    isNoExport: boolean;
+    isSafeReplace: boolean;
     isNativeReplication: boolean;
     errors: ParserError[];
     constants: UnrealClassConstant[];

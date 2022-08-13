@@ -39,6 +39,18 @@ function parseClassDecorators(parser: UcParser, token: Token) {
         token.type = SemanticClass.Keyword;
         break;
 
+    case 'safereplace':
+        parser.result.classDeclarationLastToken = token;
+        parser.result.isSafeReplace = true;
+        token.type = SemanticClass.Keyword;
+        break;
+
+    case 'noexport':
+        parser.result.classDeclarationLastToken = token;
+        parser.result.isNoExport = true;
+        token.type = SemanticClass.Keyword;
+        break;
+
     case 'nativereplication':
         parser.result.classDeclarationLastToken = token;
         parser.result.isNativeReplication = true;

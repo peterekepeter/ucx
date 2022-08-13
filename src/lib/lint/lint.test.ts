@@ -315,7 +315,7 @@ test('incorrectly indented struct', () => { linting([
     .hasResult({ line:4, fixedText:'\t' });
 });
 
-test.skip('correctly formatted enum has no linter errors', () => { linting([
+test('correctly formatted enum has no linter errors', () => { linting([
     'enum ESoundSlot',
     '{',
     '\tSLOT_None,',

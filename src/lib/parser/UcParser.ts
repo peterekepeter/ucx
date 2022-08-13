@@ -24,6 +24,8 @@ export class UcParser{
         name: null,
         parentName: null, 
         isAbstract: false,
+        isNoExport: false,
+        isSafeReplace: false,
         isNative: false,
         isNativeReplication: false,
         errors: [],
