@@ -1,4 +1,3 @@
-import { parseVarDeclaration } from "./parseVar";
 import { parseEnumDeclaration } from "./parseEnum";
 import { parseConstDeclaration } from "./parseConst";
 import { parseClassName } from "./parseClass";
@@ -13,6 +12,7 @@ import { clearModifiers } from "./clearModifiers";
 import { resolveFunctionModifiers } from "./resolveFunctionModifiers";
 import { parseStructDeclaration } from "./parseStruct";
 import { parseReplicationBlockBegin } from "./parseReplication";
+import { parseVarBegin } from "./parseVar";
 
 
 export function parseNoneState(parser: UcParser, token: Token) {
@@ -56,24 +56,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
         break;
 
     case 'var':
-        parser.rootFn = parseVarDeclaration;
-        parser.result.variables.push({
-            name: null,
-            type: null,
-            isConst: false,
-            isTransient: false,
-            group: null,
-            isConfig: false,
-            firstToken: token,
-            lastToken: token,
-            arrayCount: null,
-            arrayCountToken: null,
-            localized: false,
-            template: null,
-            arrayCountExpression: null,
-        });
-        token.type = C.Keyword;
-        clearModifiers(parser);
+        parseVarBegin(parser, token);
         break;
 
     case 'struct':

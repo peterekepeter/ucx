@@ -117,15 +117,15 @@ test("parse variable declaration with group", () => { parsing(`
     .hasNoErrors();
 });
 
-test.skip("parse variable declaration with exotic modifiers", () => { parsing(`
+test("parse variable declaration with private/const/editconst modifiers", () => { parsing(`
     var native private const int ObjectInternal[6];
     var native const object Outer;
     var native const int ObjectFlags;
     var(Object) native const editconst name Name;
     var(Object) native const editconst class Class;
     `)
-    .hasTokens(['var', C.Keyword], ['native', C.Keyword], ['private', C.Keyword], ['const', C.Keyword])
-    .hasTokens(['native', C.Keyword], ['const', C.Keyword], ['editconst', C.Keyword])
+    .hasTokens(['var', C.Keyword], ['native', C.ModifierKeyword], ['private', C.ModifierKeyword], ['const', C.ModifierKeyword], ['int', C.TypeReference], ['ObjectInternal', C.ClassVariable])
+    .hasTokens(['editconst', C.ModifierKeyword], ['name', C.TypeReference], ['Name', C.ClassVariable])
     .hasVariable(0, 'int', 'ObjectInternal')
     .hasVariable(1, 'object', 'Outer')
     .hasVariable(2, 'int', 'ObjectFlags')
@@ -672,7 +672,7 @@ test("parse localized string", () => { parsing(`
         array: 16,
         localized: true
     })
-    .hasTokens(['var', C.Keyword], ['localized', C.Keyword]);
+    .hasTokens(['var', C.Keyword], ['localized', C.ModifierKeyword]);
 });
 
 

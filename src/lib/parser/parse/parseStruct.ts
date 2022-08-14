@@ -1,4 +1,5 @@
 import { UcParser } from "..";
+import { createEmptyUnrealClassVariable } from "../ast/UnrealClassVariable";
 import { SemanticClass as C } from "../token";
 import { Token } from "../types";
 import { parseNoneState } from "./parseNoneState";
@@ -25,21 +26,10 @@ function parseStructBodyBegin(parser: UcParser, token: Token) {
 function parseStructBody(parser: UcParser, token: Token) {
     switch (token.textLower){
     case 'var':
-        parser.lastStruct.members.push({
-            name: null,
-            type: null,
-            isConst: false,
-            isTransient: false,
-            group: null,
-            isConfig: false,
-            firstToken: token,
-            lastToken: token,
-            arrayCount: null,
-            arrayCountToken: null,
-            localized: false,
-            template: null,
-            arrayCountExpression: null,
-        });
+        const variable = createEmptyUnrealClassVariable();
+        variable.firstToken = token;
+        variable.lastToken = token;
+        parser.lastStruct.members.push(variable);
         token.type = C.Keyword;
         parser.lastStruct.lastToken = token;
         parser.rootFn = parseStructVar;

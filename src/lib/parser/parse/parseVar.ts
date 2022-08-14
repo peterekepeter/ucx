@@ -1,37 +1,48 @@
 import { ParserToken as Token } from "../";
+import { createEmptyUnrealClassVariable, UnrealClassVariable } from "../ast/UnrealClassVariable";
 import { SemanticClass as C } from "../token/SemanticClass";
 import { UcParser } from "../UcParser";
+import { clearModifiers } from "./clearModifiers";
 import { parseNoneState } from "./parseNoneState";
 import { resolveExpression } from "./resolveExpression";
 
+export function parseVarBegin(parser: UcParser, token: Token)
+{
+    if (token.textLower === 'var')
+    {
+        const variable = createEmptyUnrealClassVariable();
+        variable.firstToken = token;
+        variable.lastToken = token;
+        parser.rootFn = parseVarDeclaration;
+        parser.result.variables.push(variable);
+        token.type = C.Keyword;
+        clearModifiers(parser);
+    }
+    else {
+        parser.result.errors.push({ message: 'Not variable declaration', token });
+        parser.rootFn = parseNoneState;
+    }
+}
 
-export function parseVarDeclaration(parser: UcParser, token: Token) {
+function parseVarDeclaration(parser: UcParser, token: Token) {
     const variable = parser.lastVar;
     switch (token.textLower){
     case 'transient': 
-        variable.isTransient = true;
-        token.type = C.Keyword;
-        break;
     case 'localized':
-        variable.localized = true;
-        token.type = C.Keyword;
-        break;
+    case 'editconst':
     case 'const':
-        variable.isConst = true;
-        token.type = C.Keyword;
-        break;
     case 'globalconfig':
-        variable.isConfig = true;
-        token.type = C.Keyword;
-        break;
     case 'config':
-        variable.isConfig = true;
-        token.type = C.Keyword;
+    case 'native':
+    case 'private':
+        parser.modifiers.push(token);
+        token.type = C.ModifierKeyword;
         break;
     case '(':
         parser.rootFn = parseVarGroup;
         break;
     default:
+        consumeAndProcessVariableModifiers(parser, variable);
         variable.type = token;
         token.type = C.TypeReference;
         parser.rootFn = parseVarName;
@@ -198,3 +209,29 @@ function parseAfterArrayCount(parser: UcParser, token:Token){
         break;
     }
 }
+
+function consumeAndProcessVariableModifiers(parser: UcParser, variable: UnrealClassVariable) {
+    const modifiers = parser.modifiers;
+    const v = variable;
+    for (const token of modifiers){
+        switch(token.textLower)
+        {
+        case 'transient': v.isTransient = true; break;
+        case 'localized': v.localized = true; break;
+        case 'editconst': v.isEditConst = true; break;
+        case 'const': v.isConst = true; break;
+        case 'globalconfig': v.isConfig = true; break;
+        case 'config': v.isConfig = true; break;
+        case 'native': v.isNative = true; break;
+        case 'private': v.isPrivate = true; break;
+        default:
+            parser.result.errors.push({
+                message: 'Uknown variable modifier',
+                token
+            });
+            break;
+        }
+    }
+    clearModifiers(parser);
+}
+

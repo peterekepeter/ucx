@@ -109,6 +109,7 @@ export function activate(context: vscode.ExtensionContext) {
                 case SemanticClass.Comment: 
                     type = TOKEN_TYPE_COMMENT; 
                     break;
+                case SemanticClass.ModifierKeyword:
                 case SemanticClass.Keyword: 
                     type = TOKEN_TYPE_KEYWORD; 
                     break;

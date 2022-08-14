@@ -2,6 +2,7 @@
 export enum SemanticClass {
     None,
     Keyword,
+    ModifierKeyword,
     Comment,
     ClassDeclaration,
     EnumDeclaration,
