@@ -58,6 +58,7 @@ export class AstIndentRule implements AstBasedLinter
             {
                 this.paintFunctionScopes(ast, fn);
             }
+            this.recursivePaintStatementScopes(ast, state.body);
         }
     }
 

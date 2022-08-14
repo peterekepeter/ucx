@@ -315,7 +315,7 @@ test('incorrectly indented struct', () => { linting([
     .hasResult({ line:4, fixedText:'\t' });
 });
 
-test('lint incorrectly indented state', () => { linting([
+test('incorrectly indented state with function', () => { linting([
     /*0*/`state Voting`,
     /*1*/`{`,
     /*2*/`event BeginState()`,
@@ -332,6 +332,21 @@ test('lint incorrectly indented state', () => { linting([
     .hasResult({ line:5, fixedText:'\t\t'})
     .hasResult({ line:6, fixedText:'\t\t'})
     .hasResult({ line:7, fixedText:'\t'})
+;});
+
+test('incorrectly indented state with control statements', () => { linting([
+    /*0*/`state TestState`,
+    /*1*/`{`,
+    /*2*/`while (WaitedSeconds < 5){`,
+    /*3*/`Sleep(1);`,
+    /*4*/`WaitedSeconds += 1;`,
+    /*5*/`}`,
+    /*6*/`}`,
+    /*7*/])
+    .hasResult({ line:2, fixedText:'\t' })
+    .hasResult({ line:3, fixedText:'\t\t' })
+    .hasResult({ line:4, fixedText:'\t\t' })
+    .hasResult({ line:5, fixedText:'\t' })
 ;});
 
 test('correctly formatted enum has no linter errors', () => { linting([
