@@ -1,17 +1,37 @@
 import { UcParser } from "..";
+import { createEmptyStruct } from "../ast/UnrealClassStruct";
 import { createEmptyUnrealClassVariable } from "../ast/UnrealClassVariable";
 import { SemanticClass as C } from "../token";
 import { Token } from "../types";
+import { clearModifiers } from "./clearModifiers";
 import { parseNoneState } from "./parseNoneState";
 
 
-export function parseStructDeclaration(parser: UcParser, token: Token) {
+export function parseStructBegin(parser: UcParser, token: Token){
+    parser.rootFn = parseStructDeclaration;
+    parser.result.structs.push(createEmptyStruct(token));
+    token.type = C.Keyword;
+    clearModifiers(parser);
+}
+
+function parseStructDeclaration(parser: UcParser, token: Token) {
     parser.lastStruct.name = token;
     token.type = C.StructDeclaration;
     parser.rootFn = parseStructBodyBegin;
 }
 
+function parseStructParentName(parser: UcParser, token: Token) {
+    parser.lastStruct.parentName = token;
+    parser.rootFn = parseStructBodyBegin;
+}
+
 function parseStructBodyBegin(parser: UcParser, token: Token) {
+    if (token.text === 'extends')
+    {
+        token.type = C.Keyword;
+        parser.rootFn = parseStructParentName;
+        return;
+    }
     if (token.text !== '{')
     {
         parser.result.errors.push({

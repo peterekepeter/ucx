@@ -967,7 +967,7 @@ test("struct parsing", () => { parsing(`
 ;});
 
 
-test.skip('parse struct extending another struct', () => { parsing(`
+test('parse struct extending another struct', () => { parsing(`
     // A plane definition in 3d space.
     struct Plane extends Vector
     {

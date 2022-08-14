@@ -10,4 +10,17 @@ export interface UnrealClassStruct
     bodyFirstToken: Token | null;
     bodyLastToken: Token | null;
     members: UnrealClassVariable[];
+    parentName: Token | null;
+}
+
+export function createEmptyStruct(token: Token): UnrealClassStruct {
+    return {
+        name: null,
+        firstToken: token,
+        lastToken: token,
+        members: [],
+        bodyFirstToken: null,
+        bodyLastToken: null,
+        parentName: null,
+    };
 }

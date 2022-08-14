@@ -10,9 +10,9 @@ import { parseExec } from "./parseExec";
 import { parseState, parseStateBody } from "./parseState";
 import { clearModifiers } from "./clearModifiers";
 import { resolveFunctionModifiers } from "./resolveFunctionModifiers";
-import { parseStructDeclaration } from "./parseStruct";
 import { parseReplicationBlockBegin } from "./parseReplication";
 import { parseVarBegin } from "./parseVar";
+import { parseStructBegin } from "./parseStruct";
 
 
 export function parseNoneState(parser: UcParser, token: Token) {
@@ -55,23 +55,8 @@ export function parseNoneState(parser: UcParser, token: Token) {
         clearModifiers(parser);
         break;
 
-    case 'var':
-        parseVarBegin(parser, token);
-        break;
-
-    case 'struct':
-        parser.rootFn = parseStructDeclaration;
-        parser.result.structs.push({
-            name: null,
-            firstToken: token,
-            lastToken: token,
-            members: [],
-            bodyFirstToken: null,
-            bodyLastToken: null,
-        });
-        token.type = C.Keyword;
-        clearModifiers(parser);
-        break;
+    case 'var': parseVarBegin(parser, token); break;
+    case 'struct': parseStructBegin(parser, token); break;
 
     case 'enum':
         parser.rootFn = parseEnumDeclaration;
