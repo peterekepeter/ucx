@@ -972,10 +972,10 @@ test('parse struct extending another struct', () => { parsing(`
     struct Plane extends Vector
     {
         var() config float W;
-    };
-    `).hasNoErrors();
-    // todo assert parsed var and enum
-});
+    };`)
+    .hasNoErrors()
+    // todo assert parent
+;});
 
 
 test('parse array declaration with parse array count expression', () => { parsing(`
@@ -1256,11 +1256,11 @@ test.skip('parse variable declaration combined with enum', () => { parsing(`
     // todo assert parsed var and enum
 });
 
-test.skip('parse variable declaration with export modifier', () => { parsing(`
+test('parse variable declaration with export modifier', () => { parsing(`
     var const export model  Brush;
-    `).hasNoErrors()
-    .hasVariable(0, 'model', 'Brush'); 
-    // todo assert modifiers
+    `)
+    .hasNoErrors()
+    .hasVariable(0, 'model', 'Brush', { export: true }); 
 });
 
 test('parse replication statement', () => { parsing(`
@@ -1325,6 +1325,7 @@ interface ParserTestChecks
         config?: boolean, 
         array?:number, 
         localized?:boolean,
+        export?: boolean,
         template?:string,
         arrayExpression?:ExpressionCheckObj
     }): ParserTestChecks
@@ -1384,7 +1385,7 @@ function parsing(input: string): ParserTestChecks {
         isNoExport: (flag: boolean) => checkEquals(flag, ast.isNoExport, "isNoExport should be " + flag),
         isSafeReplace: (flag: boolean) => checkEquals(flag, ast.isSafeReplace, "isSafeReplace should be " + flag),
         hasNativeReplication: (flag: boolean) => checkEquals(flag, ast.isNativeReplication, "hasNativeReplication should be " + flag),
-        hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean, array?:number, localized?:boolean, template?:string, arrayExpression?:ExpressionCheckObj }) => {
+        hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean, array?:number, localized?:boolean, export?:boolean, template?:string, arrayExpression?:ExpressionCheckObj }) => {
             checkEquals(ast.variables[index]?.type?.text, type);
             checkEquals(ast.variables[index]?.name?.text, name);
             if (props?.transient != null) {
@@ -1401,6 +1402,9 @@ function parsing(input: string): ParserTestChecks {
             } 
             if (props?.array != null){
                 checkEquals(ast.variables[index]?.arrayCount, props.array);
+            }
+            if (props?.export != null){
+                checkEquals(ast.variables[index]?.isExport, props.export);
             }
             if (props?.localized != null){
                 checkEquals(ast.variables[index]?.localized, props.localized);

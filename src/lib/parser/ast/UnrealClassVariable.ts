@@ -11,6 +11,7 @@ export interface UnrealClassVariable {
     isConfig: boolean;
     isPrivate: boolean;
     isNative: boolean;
+    isExport: boolean;
     firstToken: Token | null;
     lastToken: Token | null;
     arrayCountToken: Token | null;
@@ -29,6 +30,7 @@ export function createEmptyUnrealClassVariable(): UnrealClassVariable {
         isConst: false,
         isTransient: false,
         isNative: false, 
+        isExport: false,
         group: null,
         isConfig: false,
         firstToken: null,

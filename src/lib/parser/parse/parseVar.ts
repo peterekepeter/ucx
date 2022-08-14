@@ -33,6 +33,7 @@ function parseVarDeclaration(parser: UcParser, token: Token) {
     case 'const':
     case 'globalconfig':
     case 'config':
+    case 'export':
     case 'native':
     case 'private':
         parser.modifiers.push(token);
@@ -224,6 +225,7 @@ function consumeAndProcessVariableModifiers(parser: UcParser, variable: UnrealCl
         case 'config': v.isConfig = true; break;
         case 'native': v.isNative = true; break;
         case 'private': v.isPrivate = true; break;
+        case 'export': v.isExport = true; break;
         default:
             parser.result.errors.push({
                 message: 'Uknown variable modifier',
