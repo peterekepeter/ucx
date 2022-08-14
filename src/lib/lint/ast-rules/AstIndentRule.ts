@@ -3,7 +3,7 @@ import { LintResult } from "../LintResult";
 import { UnrealClass } from "../../";
 import { ParserToken, SemanticClass } from "../../parser";
 import { toIndentString } from "../../indentation/toIndentString";
-import { UnrealClassExpression, UnrealClassStatement } from "../../parser/ast/UnrealClassFunction";
+import { UnrealClassExpression, UnrealClassFunction, UnrealClassStatement } from "../../parser/ast/UnrealClassFunction";
 
 
 export class AstIndentRule implements AstBasedLinter
@@ -33,9 +33,7 @@ export class AstIndentRule implements AstBasedLinter
         }
 
         for (const fn of ast.functions){
-            this.paintScope(fn.fnArgsFirstToken, fn.fnArgsLastToken);
-            this.paintScope(fn.bodyFirstToken, fn.bodyLastToken);
-            this.recursivePaintStatementScopes(ast, fn.body);
+            this.paintFunctionScopes(ast, fn);
         }
         
         this.paintScope(
@@ -52,6 +50,21 @@ export class AstIndentRule implements AstBasedLinter
         for (const struct of ast.structs){
             this.paintScope(struct.bodyFirstToken, struct.bodyLastToken);
         }
+
+        for (const state of ast.states)
+        {
+            this.paintScope(state.bodyFirstToken, state.bodyLastToken);
+            for (const fn of state.functions)
+            {
+                this.paintFunctionScopes(ast, fn);
+            }
+        }
+    }
+
+    paintFunctionScopes(ast: UnrealClass, fn: UnrealClassFunction) {
+        this.paintScope(fn.fnArgsFirstToken, fn.fnArgsLastToken);
+        this.paintScope(fn.bodyFirstToken, fn.bodyLastToken);
+        this.recursivePaintStatementScopes(ast, fn.body);
     }
 
     collapseDeepIndent(ast: UnrealClass){

@@ -315,6 +315,25 @@ test('incorrectly indented struct', () => { linting([
     .hasResult({ line:4, fixedText:'\t' });
 });
 
+test('lint incorrectly indented state', () => { linting([
+    /*0*/`state Voting`,
+    /*1*/`{`,
+    /*2*/`event BeginState()`,
+    /*3*/`{`,
+    /*4*/`bVotingStage = True;`,
+    /*5*/`VotingStagePreBeginWait = 0;`,
+    /*6*/`CountMapVotes();`,
+    /*7*/`}`,
+    /*8*/`}`,
+    /*9/*/])
+    .hasResult({ line:2, fixedText:'\t' })
+    .hasResult({ line:3, fixedText:'\t' })
+    .hasResult({ line:4, fixedText:'\t\t'})
+    .hasResult({ line:5, fixedText:'\t\t'})
+    .hasResult({ line:6, fixedText:'\t\t'})
+    .hasResult({ line:7, fixedText:'\t'})
+;});
+
 test('correctly formatted enum has no linter errors', () => { linting([
     'enum ESoundSlot',
     '{',
