@@ -6,6 +6,7 @@ export function resolveFunctionModifiers(modifiers: Token[]): Partial<UnrealClas
     let isSimulated = false;
     let isFinal = false;
     let isPrivate = false;
+    let isLatent = false;
     for (const modifier of modifiers) {
         switch (modifier.textLower) {
         case "static":
@@ -20,6 +21,9 @@ export function resolveFunctionModifiers(modifiers: Token[]): Partial<UnrealClas
         case "private":
             isPrivate = true;
             break;
+        case "latent":
+            isLatent = true;
+            break;
         }
     }
     return {
@@ -27,5 +31,6 @@ export function resolveFunctionModifiers(modifiers: Token[]): Partial<UnrealClas
         isSimulated,
         isFinal,
         isPrivate,
+        isLatent,
     };
 }

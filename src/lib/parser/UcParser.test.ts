@@ -538,11 +538,11 @@ test("parse static function", () => { parsing(`
 ;
 });
 
-test.skip('parse latent function declaration', () => { parsing(`
+test('parse latent function declaration', () => { parsing(`
     native(256) final latent function Sleep( float Seconds );
     `)
     .hasNoErrors()
-    .hasFunction(0, { name: "Sleep", /*isLatent: true*/ }); //todo assert latent
+    .hasFunction(0, { name: "Sleep", isLatent: true }); //todo assert latent
 });
 
 
@@ -1342,6 +1342,7 @@ interface ParserTestChecks
         isSimulated?: boolean,
         isFinal?: boolean
         isPrivate?: boolean,
+        isLatent?: boolean,
         returnType?: string,
         fnArgs?: { 
             type?: string,
@@ -1442,6 +1443,7 @@ function parsing(input: string): ParserTestChecks {
                 isStatic?: boolean,
                 isSimulated?: boolean,
                 isFinal?: boolean
+                isLatent?: boolean,
                 returnType?: string,
                 fnArgs?: { 
                     type?: string,
@@ -1463,6 +1465,7 @@ function parsing(input: string): ParserTestChecks {
                 isFinal: obj.isFinal,
                 isSimulated: obj.isSimulated,
                 isPrivate: obj.isPrivate,
+                isLatent: obj.isLatent,
                 returnType: obj.returnType?.text,
                 fnArgs: obj.fnArgs.map(a => ({ 
                     name:a.name?.text,
