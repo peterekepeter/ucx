@@ -134,7 +134,7 @@ test("parse variable declaration with private/const/editconst modifiers", () => 
     .hasNoErrors();
 });
 
-test.skip("parse operator declarations", () => { parsing(`
+test("parse operator declarations", () => { parsing(`
     native(161) static final operator(34) int  += ( out int A, int B );
     native(162) static final operator(34) int  -= ( out int A, int B );
     native(163) static final preoperator  int  ++ ( out int A );
@@ -142,8 +142,14 @@ test.skip("parse operator declarations", () => { parsing(`
     native(165) static final postoperator int  ++ ( out int A );
     native(166) static final postoperator int  -- ( out int A );
     `)
-    .hasNoErrors();}
-);
+    .hasNoErrors()
+    .hasFunction(0, { name: '+=', returns: 'int' })  
+    .hasFunction(1, { name: '-=', returns: 'int' })  
+    .hasFunction(2, { name: '++', returns: 'int' })  
+    .hasFunction(3, { name: '--', returns: 'int' })  
+    .hasFunction(4, { name: '++', returns: 'int' })  
+    .hasFunction(5, { name: '--', returns: 'int' })  
+;});
 
 test("parse empty function", () => { parsing(`
     function PostBeginPlay(){
@@ -551,7 +557,7 @@ test("parse function return type", () => { parsing(`
     `)
     .hasFunction(0,{
         name: 'IsAlive',
-        returnType: 'bool',
+        returns: 'bool',
     });
 });
 
@@ -1343,7 +1349,7 @@ interface ParserTestChecks
         isFinal?: boolean
         isPrivate?: boolean,
         isLatent?: boolean,
-        returnType?: string,
+        returns?: string,
         fnArgs?: { 
             type?: string,
             name?: string,

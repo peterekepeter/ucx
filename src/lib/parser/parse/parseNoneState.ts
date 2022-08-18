@@ -81,6 +81,9 @@ export function parseNoneState(parser: UcParser, token: Token) {
         clearModifiers(parser);
         break;
 
+    case 'operator':
+    case 'preoperator':
+    case 'postoperator':
     case 'event':
     case 'function':
         parseFnBegin(parser, token);

@@ -9,11 +9,10 @@ import { resolveFunctionModifiers } from "./resolveFunctionModifiers";
 
 export function parseFnBegin(parser: UcParser, token: Token)
 {
-    // are we parsing a state function or a class function?
-    (parser.currentClassState 
+    const container = parser.currentClassState 
         ? parser.lastState.functions 
-        : parser.result.functions
-    ).push({
+        : parser.result.functions;
+    container.push({
         ...createEmptyUnrealClassFunction(),
         ...resolveFunctionModifiers(parser.modifiers),
     });
@@ -22,8 +21,7 @@ export function parseFnBegin(parser: UcParser, token: Token)
     clearModifiers(parser);
 }
 
-
-export function parseFnDeclaration(parser: UcParser, token: Token){
+function parseFnDeclaration(parser: UcParser, token: Token){
     const fn = parser.lastFn;
     if (token.textLower === 'private'){
         token.type = C.Keyword;
