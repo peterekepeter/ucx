@@ -3,13 +3,12 @@ import { parseConstDeclaration } from "./parseConst";
 import { parseClassName } from "./parseClass";
 import { Token } from "../types";
 import { SemanticClass as C } from "../token/SemanticClass";
-import { parseFnDeclaration } from "./parseFunction";
+import { parseFnBegin } from "./parseFunction";
 import { UcParser } from "../UcParser";
 import { parseDefaultProperties } from "./parseDefaultProperties";
 import { parseExec } from "./parseExec";
 import { parseState, parseStateBody } from "./parseState";
 import { clearModifiers } from "./clearModifiers";
-import { resolveFunctionModifiers } from "./resolveFunctionModifiers";
 import { parseReplicationBlockBegin } from "./parseReplication";
 import { parseVarBegin } from "./parseVar";
 import { parseStructBegin } from "./parseStruct";
@@ -84,21 +83,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
 
     case 'event':
     case 'function':
-        parser.rootFn = parseFnDeclaration;
-        parser.result.functions.push({
-            name: null,
-            locals: [],
-            body: [],
-            bodyFirstToken: null,
-            bodyLastToken: null,
-            ...resolveFunctionModifiers(parser.modifiers),
-            returnType: null,
-            fnArgs: [],
-            fnArgsFirstToken: null,
-            fnArgsLastToken: null
-        });
-        token.type = C.Keyword;
-        clearModifiers(parser);
+        parseFnBegin(parser, token);
         break;
 
     case 'defaultproperties':

@@ -1,10 +1,8 @@
 import { SemanticClass, UcParser } from "..";
 import { Token } from "../types";
-import { clearModifiers } from "./clearModifiers";
-import { parseFnDeclaration } from "./parseFunction";
+import { parseFnBegin } from "./parseFunction";
 import { parseNoneState } from "./parseNoneState";
 import { parseStatement } from "./parseStatement";
-import { resolveFunctionModifiers } from "./resolveFunctionModifiers";
 
 export function parseState(parser: UcParser, token: Token) {
     parser.lastState.name = token;
@@ -35,22 +33,8 @@ export function parseStateBody(parser: UcParser, token: Token) {
 
     case 'event':
     case 'function':
-        parser.rootFn = parseFnDeclaration;
         parser.currentlyInStateFunction = true;
-        parser.lastState.functions.push({
-            name: null,
-            locals: [],
-            body: [],
-            bodyFirstToken: null,
-            bodyLastToken: null,
-            ...resolveFunctionModifiers(parser.modifiers),
-            returnType: null,
-            fnArgs: [],
-            fnArgsFirstToken: null,
-            fnArgsLastToken: null
-        });
-        token.type = SemanticClass.Keyword;
-        clearModifiers(parser);
+        parseFnBegin(parser, token);
         break;
         
     case "}":

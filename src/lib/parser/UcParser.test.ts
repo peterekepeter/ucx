@@ -1294,7 +1294,7 @@ test('parse replication statement', () => { parsing(`
     });
 });
 
-test.skip('parse replication statement with extra parenthesis in condition', () => { parsing(`
+test('parse replication statement with extra parenthesis in condition', () => { parsing(`
     replication
     {
         unreliable if( (Role==ROLE_Authority) && bSomething )

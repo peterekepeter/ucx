@@ -7,15 +7,34 @@ export interface UnrealClassFunction {
     body: UnrealClassStatement[];
     bodyFirstToken: Token | null;
     bodyLastToken: Token | null;
-    isStatic?: boolean;
-    isSimulated?: boolean;
-    isFinal?: boolean;
-    isPrivate?: boolean;
-    isLatent?: boolean;
+    isStatic: boolean;
+    isSimulated: boolean;
+    isFinal: boolean;
+    isPrivate: boolean;
+    isLatent: boolean;
     returnType: Token | null;
     fnArgs: UnrealClassFunctionArgument[];
     fnArgsLastToken: Token | null;
     fnArgsFirstToken: Token | null;
+}
+
+export function createEmptyUnrealClassFunction(){
+    return {
+        name: null,
+        locals: [],
+        body: [],
+        bodyFirstToken: null,
+        bodyLastToken: null,
+        isStatic: false,
+        isSimulated: false,
+        isFinal: false,
+        isPrivate: false,
+        isLatent: false,
+        returnType: null,
+        fnArgs: [],
+        fnArgsFirstToken: null,
+        fnArgsLastToken: null
+    };
 }
 
 export interface UnrealClassFunctionLocal {

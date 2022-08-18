@@ -1,9 +1,26 @@
 import { SemanticClass as C, SemanticClass, UcParser } from "..";
-import { UnrealClassFunctionArgument, UnrealClassStatement } from "../ast/UnrealClassFunction";
+import { createEmptyUnrealClassFunction, UnrealClassFunctionArgument } from "../ast/UnrealClassFunction";
 import { Token } from "../types";
+import { clearModifiers } from "./clearModifiers";
 import { parseNoneState } from "./parseNoneState";
 import { parseStatement } from "./parseStatement";
-import { resolveExpression, resolveStatementExpression } from "./resolveExpression";
+import { resolveFunctionModifiers } from "./resolveFunctionModifiers";
+
+
+export function parseFnBegin(parser: UcParser, token: Token)
+{
+    // are we parsing a state function or a class function?
+    (parser.currentClassState 
+        ? parser.lastState.functions 
+        : parser.result.functions
+    ).push({
+        ...createEmptyUnrealClassFunction(),
+        ...resolveFunctionModifiers(parser.modifiers),
+    });
+    parser.rootFn = parseFnDeclaration;
+    token.type = C.Keyword;
+    clearModifiers(parser);
+}
 
 
 export function parseFnDeclaration(parser: UcParser, token: Token){
