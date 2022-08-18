@@ -1259,7 +1259,7 @@ test('parse private function', () => {parsing(`
     });
 });
 
-test.skip('parse variable declaration combined with enum', () => { parsing(`
+test('parse variable declaration combined with enum', () => { parsing(`
     var(Display) enum ERenderStyle
     {
         STY_None,
@@ -1268,9 +1268,13 @@ test.skip('parse variable declaration combined with enum', () => { parsing(`
         STY_Translucent,
         STY_Modulated,
     } Style;
-    `).hasNoErrors();
+    `)
+    .hasNoErrors()
+    .hasVariable(0, 'ERenderStyle', 'Style')
+    .hasEnum(0, 'ERenderStyle', 0, 'STY_None')
+    .hasEnum(0, 'ERenderStyle', 1, 'STY_Normal')
     // todo assert parsed var and enum
-});
+;});
 
 test('parse variable declaration with export modifier', () => { parsing(`
     var const export model  Brush;

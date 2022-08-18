@@ -3,6 +3,7 @@ import { createEmptyUnrealClassVariable, UnrealClassVariable } from "../ast/Unre
 import { SemanticClass as C } from "../token/SemanticClass";
 import { UcParser } from "../UcParser";
 import { clearModifiers } from "./clearModifiers";
+import { parseEnumBegin } from "./parseEnum";
 import { parseNoneState } from "./parseNoneState";
 import { resolveExpression } from "./resolveExpression";
 
@@ -41,6 +42,11 @@ function parseVarDeclaration(parser: UcParser, token: Token) {
         break;
     case '(':
         parser.rootFn = parseVarGroup;
+        break;
+    case 'enum':
+        consumeAndProcessVariableModifiers(parser, variable);
+        token.type = C.Keyword;
+        parseEnumBegin(parser, token);
         break;
     default:
         consumeAndProcessVariableModifiers(parser, variable);
@@ -237,3 +243,20 @@ function consumeAndProcessVariableModifiers(parser: UcParser, variable: UnrealCl
     clearModifiers(parser);
 }
 
+
+export function hasIncompleteVarDeclaration(parser: UcParser)
+{
+    const lastVar = parser.lastVar;
+    return lastVar && !lastVar.name;
+}
+
+export function continueVarDelcarationFromTypeDeclaration(
+    parser: UcParser, 
+    type: Token, 
+    token: Token
+) {
+    const lastVar = parser.lastVar;
+    lastVar.type = type;
+    parser.rootFn = parseVarName;
+    parseVarName(parser, token);
+}

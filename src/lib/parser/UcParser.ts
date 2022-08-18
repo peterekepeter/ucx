@@ -5,7 +5,6 @@ import { UnrealClassFunction, UnrealClassFunctionLocal, UnrealClassStatement } f
 import { UnrealClassConstant, UnrealDefaultProperty } from "./ast/UnrealClassConstant";
 import { UnrealClassEnum } from "./ast/UnrealClassEnum";
 import { UnrealClassVariable } from "./ast/UnrealClassVariable";
-import { parseEnumBody, parseEnumBodyClosed } from "./parse/parseEnum";
 import { isParsingClassFn } from "./parse/parseClass";
 import { ParserFn, Token } from "./types";
 import { LazyParserToken, ParserToken, SemanticClass } from "./token";
@@ -78,17 +77,18 @@ export class UcParser{
         if (isParsingClassFn(fn)){
             detail = "Forgot to finish class declaration.";
         }
-        switch (fn){
-        case parseEnumBody:
-        case parseEnumBodyClosed:
+        if (this.isInsideEnum()) {
             detail = "Forgot to close the enum?";
-            break;
         }
         let message = "File ended too soon.";
         if (detail) {
             message = `${message} ${detail}`;
         }
         return message;
+    }
+
+    isInsideEnum() {
+        return false;
     }
 
     parse(line: number, position: number, text: string) {

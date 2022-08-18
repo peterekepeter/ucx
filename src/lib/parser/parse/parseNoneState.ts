@@ -1,4 +1,4 @@
-import { parseEnumDeclaration } from "./parseEnum";
+import { parseEnumBegin } from "./parseEnum";
 import { parseConstDeclaration } from "./parseConst";
 import { parseClassName } from "./parseClass";
 import { Token } from "../types";
@@ -58,19 +58,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
 
     case 'var': parseVarBegin(parser, token); break;
     case 'struct': parseStructBegin(parser, token); break;
-
-    case 'enum':
-        parser.rootFn = parseEnumDeclaration;
-        parser.result.enums.push({
-            name: null,
-            firstToken: token,
-            firstBodyToken: token,
-            lastToken: token,
-            enumeration: [],
-        });
-        token.type = C.Keyword;
-        clearModifiers(parser);
-        break;
+    case 'enum': parseEnumBegin(parser, token); break;
 
     case 'const':
         parser.rootFn = parseConstDeclaration;
