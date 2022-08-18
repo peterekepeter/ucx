@@ -12,13 +12,15 @@ export interface UnrealClassFunction {
     isFinal: boolean;
     isPrivate: boolean;
     isLatent: boolean;
+    isNative: boolean,
+    isIterator: boolean,
     returnType: Token | null;
     fnArgs: UnrealClassFunctionArgument[];
     fnArgsLastToken: Token | null;
     fnArgsFirstToken: Token | null;
 }
 
-export function createEmptyUnrealClassFunction(){
+export function createEmptyUnrealClassFunction(): UnrealClassFunction {
     return {
         name: null,
         locals: [],
@@ -30,6 +32,8 @@ export function createEmptyUnrealClassFunction(){
         isFinal: false,
         isPrivate: false,
         isLatent: false,
+        isNative: false,
+        isIterator: false,
         returnType: null,
         fnArgs: [],
         fnArgsFirstToken: null,

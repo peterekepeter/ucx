@@ -14,7 +14,7 @@ export function parseFnBegin(parser: UcParser, token: Token)
         : parser.result.functions;
     container.push({
         ...createEmptyUnrealClassFunction(),
-        ...resolveFunctionModifiers(parser.modifiers),
+        ...resolveFunctionModifiers(parser),
     });
     parser.rootFn = parseFnDeclaration;
     token.type = C.Keyword;

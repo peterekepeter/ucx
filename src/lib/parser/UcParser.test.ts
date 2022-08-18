@@ -143,12 +143,19 @@ test("parse operator declarations", () => { parsing(`
     native(166) static final postoperator int  -- ( out int A );
     `)
     .hasNoErrors()
-    .hasFunction(0, { name: '+=', returns: 'int' })  
-    .hasFunction(1, { name: '-=', returns: 'int' })  
-    .hasFunction(2, { name: '++', returns: 'int' })  
-    .hasFunction(3, { name: '--', returns: 'int' })  
-    .hasFunction(4, { name: '++', returns: 'int' })  
-    .hasFunction(5, { name: '--', returns: 'int' })  
+    .hasFunction(0, { name: '+=', returns: 'int' })
+    .hasFunction(1, { name: '-=', returns: 'int' })
+    .hasFunction(2, { name: '++', returns: 'int' })
+    .hasFunction(3, { name: '--', returns: 'int' })
+    .hasFunction(4, { name: '++', returns: 'int' })
+    .hasFunction(5, { name: '--', returns: 'int' })
+;});
+
+test("parse iterator function", () => { parsing(`
+    native(304) final iterator function AllActors( class<actor> BaseClass, out actor Actor, optional name MatchTag );
+    `)
+    .hasNoErrors()
+    .hasFunction(0, { name: 'AllActors', iterator: true })
 ;});
 
 test("parse empty function", () => { parsing(`
@@ -943,8 +950,11 @@ test("parse self call", () => { parsing(`
 
 
 test("parse native function declaration", () => { parsing(`
-    native(1718) final function bool AddToPackageMap( optional string PkgName);
-`).hasNoErrors();});
+    native(1718) final function bool AddToPackageMap( optional string PkgName );
+    `)
+    .hasNoErrors()
+    .hasFunction(0, { name: 'AddToPackageMap', native: true })
+;});
 
 
 test("struct parsing", () => { parsing(`
@@ -1349,6 +1359,8 @@ interface ParserTestChecks
         isFinal?: boolean
         isPrivate?: boolean,
         isLatent?: boolean,
+        native?: boolean,
+        iterator?: boolean,
         returns?: string,
         fnArgs?: { 
             type?: string,
@@ -1450,7 +1462,9 @@ function parsing(input: string): ParserTestChecks {
                 isSimulated?: boolean,
                 isFinal?: boolean
                 isLatent?: boolean,
-                returnType?: string,
+                native?: boolean,
+                iterator?: boolean,
+                returns?: string,
                 fnArgs?: { 
                     type?: string,
                     name?: string,
@@ -1472,7 +1486,9 @@ function parsing(input: string): ParserTestChecks {
                 isSimulated: obj.isSimulated,
                 isPrivate: obj.isPrivate,
                 isLatent: obj.isLatent,
-                returnType: obj.returnType?.text,
+                native: obj.isNative,
+                iterator: obj.isIterator,
+                returns: obj.returnType?.text,
                 fnArgs: obj.fnArgs.map(a => ({ 
                     name:a.name?.text,
                     type: a.type?.text,
