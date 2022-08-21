@@ -1237,6 +1237,30 @@ test('parse block statement termination also terminates single statement block',
     ]})
 ;});
 
+
+test('parse splits statements without relying on semicolon', () => {parsing(`
+    function Test(){
+        Log("hello")
+        Log("world")
+    }`)
+    .hasFunction(0, { body: [
+        { op: 'Log', args: ['"hello"'] },
+        { op: 'Log', args: ['"world"'] },
+    ]})
+;});
+
+test('parse splits assignment statements without relying on semicolon', () => {parsing(`
+    function Test(){
+        A = 1
+        B = 3
+    }`)
+    .hasFunction(0, { body: [
+        { op: '=', args: ['A', '1'] },
+        { op: '=', args: ['B', '3'] },
+    ]})
+;});
+
+
 test('parse private function', () => {parsing(`
     function private DoSomething(string arg){}
     private function AnotherOne() {}

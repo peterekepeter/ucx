@@ -120,15 +120,15 @@ function parseExpression(parser: UcParser, token: Token)
     switch (token.text)
     {
     case ":":
-        if (parser.expressionTokens.length === 1){
-            const labelToken = parser.expressionTokens[0];
+        if (parser.expressionSplitter.getTokens().length === 1){
+            const labelToken = parser.expressionSplitter.getTokens()[0];
             labelToken.type = SemanticClass.StatementLabel;
-            parser.expressionTokens = [];
+            parser.expressionSplitter.clear();
             parser.label = labelToken;
             parser.rootFn = parseStatement;
         }
         else {
-            parser.expressionTokens.push(token);
+            parser.expressionSplitter.addToken(token);
         }
         break;
     case "}":
@@ -147,7 +147,18 @@ function parseExpression(parser: UcParser, token: Token)
         parser.rootFn = parseStatement;
         break;
     default:
-        parser.expressionTokens.push(token);
+        if (parser.expressionSplitter.canContinueWithToken(token))
+        {
+            parser.expressionSplitter.addToken(token);
+        }
+        else {
+            const statement = resolveStatementExpressionAndApplyLabel(parser);
+            statement.argsLastToken = token;
+            parser.lastCodeBlock.push(statement);
+            popSingleStatementCodeBlocks(parser, token);
+            parser.rootFn = parseStatement;
+            parseStatement(parser, token);
+        }
         break;
     }
 }
@@ -286,8 +297,17 @@ function popSingleStatementCodeBlocks(parser: UcParser, token: Token){
 }
 
 function resolveStatementExpressionAndApplyLabel(parser: UcParser): UnrealClassStatement {
-    const result = resolveStatementExpression(parser.expressionTokens);
-    parser.expressionTokens = [];
+    let result: UnrealClassStatement;
+    if (parser.expressionTokens.length > 0) {
+        result = resolveStatementExpression(parser.expressionTokens);
+        parser.expressionTokens = [];
+    }
+    else 
+    {
+        result = resolveStatementExpression(parser.expressionSplitter.getTokens());
+        parser.expressionSplitter.clear();
+    }
+
     if (parser.label){
         result.label = parser.label;
         parser.label = null;
@@ -336,6 +356,7 @@ function parseForeachStatement(parser: UcParser, token: Token)
     {
     case '{':
         parser.lastStatement.args.push(resolveExpression(parser.expressionSplitter.getTokens()));
+        parser.expressionSplitter.clear();
         parser.rootFn = parseStatement;
         parser.lastStatement.bodyFirstToken = token;
         break;
@@ -345,6 +366,7 @@ function parseForeachStatement(parser: UcParser, token: Token)
         }
         else {
             parser.lastStatement.args.push(resolveExpression(parser.expressionSplitter.getTokens()));
+            parser.expressionSplitter.clear();
             parser.rootFn = parseSingleStatementBody;
             parser.lastStatement.bodyFirstToken = token;
             parser.rootFn(parser, token);
