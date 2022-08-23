@@ -486,6 +486,12 @@ test('lint newline after }', () => { lintingStatements(
     '}x = 4;'
 ).hasResult({ line: 2, position:1, fixedText:'\n' });});
 
+test('lint autocompletes semicolon for single statement', () => { lintingStatements(
+    'A = 1',
+)
+    .hasResult({ line: 0, position:5, fixedText:';' })
+;});
+
 test('lint string tab escape does not work', () => { lintingStatements(
     'x = "\\t";'
 ).hasResult({ line: 0, position:5, length:2 });});
@@ -512,7 +518,7 @@ test('lint operator spacing does not suggest adding space in defaultproperties',
 ]).hasNoLintResults();});
 
 test('lint class name reference can contain dot', () => { lintingStatements(
-    "c = class'Engine.Weapon'"
+    "c = class'Engine.Weapon';"
 ).hasNoLintResults();});
 
 test.skip('lint multiline boolean condition', () => { lintingStatements(
