@@ -1,6 +1,6 @@
-# ucx README
+# UnrealScript Extensions
 
-UnrealScript Extensions, Linter + Formatter. Work in progress.
+Work in progress. 🚧
 
 ## Features
 
