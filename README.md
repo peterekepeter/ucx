@@ -2,6 +2,10 @@
 
 Work in progress. 🚧
 
+Installation: 
+ - [VsCode extension](https://marketplace.visualstudio.com/items?itemName=peterekepeter.ucx)
+ - [CLI tool avaiable on npm](https://www.npmjs.com/package/ucx)
+
 ## Features
 
 > Many features are still experimental, for now use at your own risk!
