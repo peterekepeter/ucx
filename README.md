@@ -1,5 +1,11 @@
 # UnrealScript Extensions
 
+
+[![Node.js CI](https://github.com/peterekepeter/ucx/actions/workflows/node.js.yml/badge.svg)](https://github.com/peterekepeter/ucx/actions/workflows/node.js.yml)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=peterekepeter_ucx&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=peterekepeter_ucx)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=peterekepeter_ucx&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=peterekepeter_ucx)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=peterekepeter_ucx&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=peterekepeter_ucx)
+
 Work in progress. 🚧
 
 Installation: 
