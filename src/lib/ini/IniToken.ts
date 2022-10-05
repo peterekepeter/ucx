@@ -7,9 +7,7 @@ export type IniToken = {
 };
 
 export enum IniTokenType {
-    SectionMarkerBegin,
-    SectionMarkerEnd,
-    SectionName,
+    Section,
     KeyName,
     KeyEquals,
     Value
