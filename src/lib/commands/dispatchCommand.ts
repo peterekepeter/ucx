@@ -3,6 +3,7 @@ import { execBuild } from "./execBuild";
 import { execUcc } from "./execUcc";
 import { execUe } from "./execUe";
 import { execUt } from "./execUt";
+import { UnknownCommandError } from "./UnknownCommandError";
 
 
 export async function dispatchCommand(cmd: UcxCommand): Promise<void> {
@@ -20,6 +21,6 @@ export async function dispatchCommand(cmd: UcxCommand): Promise<void> {
         await execUe(cmd);
         break;
     default:
-        throw new Error(`unknown command "${cmd.command}"`);
+        throw new UnknownCommandError(`unknown command "${cmd.command}"`);
     }
 }

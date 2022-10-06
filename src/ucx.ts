@@ -2,11 +2,28 @@
 
 import { DEFAULT_UCX_COMMAND, parseCliArgs, parseEnvArgs,  } from "./lib/cli";
 import { dispatchCommand } from "./lib/commands/dispatchCommand";
+import { UnknownCommandError } from "./lib/commands/UnknownCommandError";
 
 
 setTimeout(async function main(){
-    const command = parseUserInput();
-    await dispatchCommand(command);
+    try
+    {
+        const command = parseUserInput();
+        if (!command.command) {
+            printUsage();
+        }
+        else {
+            await dispatchCommand(command);
+        }
+    }
+    catch (err) {
+        if (err instanceof UnknownCommandError){
+            console.error(err.message);
+        }
+        else {
+            throw err;
+        }
+    }
 }, 0);
 
 
