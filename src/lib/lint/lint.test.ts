@@ -2,6 +2,7 @@ import { ALL_AST_RULES } from "./ast-rules";
 import { LintResult } from "./LintResult";
 import { UcParser, ucTokenizeLine } from "..";
 import { ALL_V2_TOKEN_RULES } from "./token-rules";
+import { SourceEditor } from "../transformer";
 
 test('linting indent class declaration', () => {
     linting([
@@ -26,6 +27,20 @@ test('linting indent var declaration', () => {
         originalText: '',
         fixedText: '\t'
     });
+});
+
+test('linting indent function body', () => {
+    linting([
+        'function Init()',
+        '{',
+        'Count = 0;',
+        '}'
+    ]).hasFormattedResult([
+        'function Init()',
+        '{',
+        '\tCount = 0;',
+        '}'
+    ]);
 });
 
 test('linting indent function body', () => {
@@ -611,6 +626,9 @@ function linting(lines: string[], lineOffset = 0, positionOffset = 0) {
         },
         hasNoLintResults() {
             expect(results).toHaveLength(0);
+        },
+        hasFormattedResult(expectedLines: string[]){
+            expect(applyLinterFixes(lines, results)).toEqual(expectedLines.join('\n'));
         }
     };
 
@@ -628,4 +646,14 @@ function statementWrapper(...statementLines: string[]){
         ...statementLines.map(l => `\t${l}`),
         '}'
     ];
+}
+
+function applyLinterFixes(source: string | string[], results: LintResult[]){
+    const editor = new SourceEditor(source);
+    for (const result of results){
+        if (result.fixedText != null && result.line != null && result.position != null && result.length != null){
+            editor.replace(result.line, result.position, result.length, result.fixedText);
+        }
+    }
+    return editor.result;
 }
