@@ -1,8 +1,7 @@
-import { ALL_AST_RULES } from "./ast-rules";
 import { LintResult } from "./LintResult";
 import { UcParser, ucTokenizeLine } from "..";
-import { ALL_V2_TOKEN_RULES } from "./token-rules";
 import { SourceEditor } from "../transformer";
+import { buildFullLinter, FullLinterConfig } from "./buildFullLinter";
 
 test('linting indent class declaration', () => {
     linting([
@@ -12,7 +11,7 @@ test('linting indent class declaration', () => {
         line: 1,
         position: 0,
         originalText: '',
-        fixedText: '\t'
+        fixedText: '    '
     });
 });
 
@@ -25,7 +24,7 @@ test('linting indent var declaration', () => {
         line: 1,
         position: 0,
         originalText: '',
-        fixedText: '\t'
+        fixedText: '    '
     });
 });
 
@@ -38,7 +37,7 @@ test('linting indent function body', () => {
     ]).hasFormattedResult([
         'function Init()',
         '{',
-        '\tCount = 0;',
+        '    Count = 0;',
         '}'
     ]);
 });
@@ -52,7 +51,7 @@ test('linting indent function body', () => {
         line: 1,
         position: 0,
         originalText: '',
-        fixedText: '\t'
+        fixedText: '    '
     });
 });
 
@@ -66,13 +65,13 @@ test('linting indent codeblock in function', () => {
         '}'
     ]).hasResult({
         line: 2,
-        fixedText: '\t'
+        fixedText: '    '
     }).hasResult({
         line: 3,
-        fixedText: '\t\t'
+        fixedText: '        '
     }).hasResult({
         line: 4,
-        fixedText: '\t'
+        fixedText: '    '
     });
 });
 
@@ -85,9 +84,9 @@ test('linting indent if inside if', () => {
         '}',
         '}',
         '}'
-    ]).hasResult({ line: 1, fixedText: '\t'
-    }).hasResult({ line: 2, fixedText: '\t\t'
-    }).hasResult({ line: 3, fixedText: '\t\t\t'
+    ]).hasResult({ line: 1, fixedText: '    '
+    }).hasResult({ line: 2, fixedText: '        '
+    }).hasResult({ line: 3, fixedText: '            '
     });
 });
 
@@ -95,11 +94,11 @@ test('linting indent if inside if but first if has no brackets', () => {
     linting([
         'function Init()',
         '{',
-        '\tif (bVerify)',
-        '\t\tif (bEnabled)',
-        '\t\t{',
-        '\t\t\tCount = 0;',
-        '\t\t}',
+        '    if (bVerify)',
+        '        if (bEnabled)',
+        '        {',
+        '            Count = 0;',
+        '        }',
         '}'
     ]).hasNoLintResults();
 });
@@ -113,53 +112,51 @@ test.skip('multiline argument indentation', () => {
         '    {',
         '    }',
         '}'
-    ]).hasResult({ line: 3, originalText:'    ', fixedText: '\t\t'});
+    ]).hasResult({ line: 3, originalText:'    ', fixedText: '        '});
 });
 
 test('closing parenthesis is not indented', () => {
     linting([
         'function Init() {',
-        '\tif (bEnabled',
+        '    if (bEnabled',
         ')', // should have 1 indent, not 2
-        '\t{', 
-        '\t}',
+        '    {', 
+        '    }',
         '}'
-    ]).hasResult({ line: 2, fixedText: '\t'});
+    ]).hasResult({ line: 2, fixedText: '    '});
 });
 
 test('expression closing paranthesis is not indented', () => {
     linting([
-        'function Init() {',
+        'function Init()',
+        '{',
         '    x = (',
         '        3 + 4',
         '    );',
         '}'
-    ]).hasResult({ line: 1, fixedText: '\t' 
-    }).hasResult({ line: 2, fixedText: '\t\t' 
-    }).hasResult({ line: 3, fixedText: '\t' });
+    ]).hasNoFormattedResult();
 });
 
 test('lint indent only increases once when multiple scopes combine on same line', () => {
     linting([
         'function Init() {',
-        '    if (c<10) { if (c>5) {',
+        '    if (c < 10) { if (c > 5) {',
         '        Log("test");',
         '    }}',
         '}'
-    ]).hasResult({ line: 1, fixedText: '\t' 
-    }).hasResult({ line: 2, fixedText: '\t\t' 
-    }).hasResult({ line: 3, fixedText: '\t' });
+    ],undefined, undefined, {
+        enableBracketSpacingRule: false
+    }).hasNoFormattedResult();
 });
 
 test('lint indent single statement if without braces', () => {
     linting([
-        'function Init() {',
+        'function Init()',
+        '{',
         '    if (bFirstRun)',
         '        SaveConfig();',
         '}'
-    ]).hasResult({ line: 1, fixedText: '\t' 
-    }).hasResult({ line: 2, fixedText: '\t\t' 
-    });
+    ]).hasNoFormattedResult();
 });
 
 test('lint indent single statment if on one line', () => {
@@ -169,22 +166,21 @@ test('lint indent single statment if on one line', () => {
         '   if (M == self) return;',
         '   Count = 0;',
         '}'
-    ]).hasResult({ line: 2, fixedText: '\t' 
-    }).hasResult({ line: 3, fixedText: '\t' 
+    ]).hasResult({ line: 2, fixedText: '    ' 
+    }).hasResult({ line: 3, fixedText: '    ' 
     });
 });
 
 test('lint indent if with function call in condition', () => {
     linting([
-        'function Init(){',
-        '    if (CheckSomething()){',
+        'function Init()',
+        '{',
+        '    if (CheckSomething())',
+        '    {',
         '        SaveConfig();',
         '    }',
         '}',
-    ]).hasResult({ line: 1, fixedText: '\t' 
-    }).hasResult({ line: 2, fixedText: '\t\t' 
-    }).hasResult({ line: 3, fixedText: '\t' 
-    });
+    ]).hasNoFormattedResult();
 });
 
 test("lint keyword casing", () => {
@@ -203,8 +199,8 @@ test("lint indent enum", () => {
         '   TE_Stuff',
         '   TE_MoreStuff',
         '}'
-    ]).hasResult({ line: 1, fixedText:'\t' 
-    }).hasResult({ line: 2, fixedText:'\t' 
+    ]).hasResult({ line: 1, fixedText:'    ' 
+    }).hasResult({ line: 2, fixedText:'    ' 
     });
 });
 
@@ -215,7 +211,7 @@ test("lint indent enum with bracket newline", () => {
         '   TE_MoreStuff',
         ' }'
     ]).hasResult({ line: 1, fixedText:'' 
-    }).hasResult({ line: 2, fixedText:'\t' 
+    }).hasResult({ line: 2, fixedText:'    ' 
     });
 });
 
@@ -225,8 +221,8 @@ test("lint indent default properties", () => {
         'Description="Your description here!"',
         'DamageModifier=1.0',
         '}',
-    ]).hasResult({ line: 1, fixedText:'\t' 
-    }).hasResult({ line: 2, fixedText:'\t' 
+    ]).hasResult({ line: 1, fixedText:'    ' 
+    }).hasResult({ line: 2, fixedText:'    ' 
     });
     
 });
@@ -256,8 +252,8 @@ test("function argument on new line indent", () => { linting([
     ') {',
     '',
     '}'])
-    .hasResult({ line:1, fixedText:'\t' })
-    .hasResult({ line:2, fixedText:'\t' });
+    .hasResult({ line:1, fixedText:'    ' })
+    .hasResult({ line:2, fixedText:'    ' });
 });
 
 test('indent foreach statement block body', () => { linting([
@@ -268,11 +264,11 @@ test('indent foreach statement block body', () => { linting([
     /*4*/'Log(A);',
     /*5*/'}',
     /*6*/'}'])
-    .hasResult({ line:1, fixedText:'\t' })
-    .hasResult({ line:2, fixedText:'\t' })
-    .hasResult({ line:3, fixedText:'\t' })
-    .hasResult({ line:4, fixedText:'\t\t' })
-    .hasResult({ line:5, fixedText:'\t' });
+    .hasResult({ line:1, fixedText:'    ' })
+    .hasResult({ line:2, fixedText:'    ' })
+    .hasResult({ line:3, fixedText:'    ' })
+    .hasResult({ line:4, fixedText:'        ' })
+    .hasResult({ line:5, fixedText:'    ' });
 });
 
 test('indent replication block body', () => { linting([
@@ -282,15 +278,15 @@ test('indent replication block body', () => { linting([
     /*3*/'Pauser, TimeDilation, bNoCheating, bAllowFOV;',
     /*4*/'}',
     /*5*/])
-    .hasResult({ line:2, fixedText:'\t' })
-    .hasResult({ line:3, fixedText:'\t\t' });
+    .hasResult({ line:2, fixedText:'    ' })
+    .hasResult({ line:3, fixedText:'        ' });
 });
 
 test('indent replication block body', () => { linting([
     /*0*/'replication',
     /*1*/'{',
-    /*2*/'\treliable if(Role == ROLE_Authority)',
-    /*3*/'\t\tPauser, TimeDilation, bNoCheating, bAllowFOV;',
+    /*2*/'    reliable if(Role == ROLE_Authority)',
+    /*3*/'        Pauser, TimeDilation, bNoCheating, bAllowFOV;',
     /*4*/'}',
     /*5*/])
     .hasNoLintResults();
@@ -299,8 +295,8 @@ test('indent replication block body', () => { linting([
 test('indent replication block body where condition has parenthesis inside', () => { linting([
     /*0*/'replication',
     /*1*/'{',
-    /*2*/'\tunreliable if( (Role == ROLE_Authority) && (bNetOwner == bSomething) )',
-    /*3*/'\t\tAmbientSound;',
+    /*2*/'    unreliable if( (Role == ROLE_Authority) && (bNetOwner == bSomething) )',
+    /*3*/'        AmbientSound;',
     /*4*/'}',
     /*5*/])
     .hasNoLintResults();
@@ -309,9 +305,9 @@ test('indent replication block body where condition has parenthesis inside', () 
 test('correctly indented struct members', () => { linting([
     /*0*/'struct PointRegion',
     /*1*/'{',
-    /*2*/'\tvar zoneinfo Zone;       // Zone.',
-    /*3*/'\tvar int      iLeaf;      // Bsp leaf.',
-    /*4*/'\tvar byte     ZoneNumber; // Zone number.',
+    /*2*/'    var zoneinfo Zone;       // Zone.',
+    /*3*/'    var int      iLeaf;      // Bsp leaf.',
+    /*4*/'    var byte     ZoneNumber; // Zone number.',
     /*5*/'};'
     /*6*/])
     .hasNoLintResults();
@@ -325,9 +321,9 @@ test('incorrectly indented struct', () => { linting([
     /*4*/'var byte     ZoneNumber; // Zone number.',
     /*5*/'};'
     /*6*/])
-    .hasResult({ line:2, fixedText:'\t' })
-    .hasResult({ line:3, fixedText:'\t' })
-    .hasResult({ line:4, fixedText:'\t' });
+    .hasResult({ line:2, fixedText:'    ' })
+    .hasResult({ line:3, fixedText:'    ' })
+    .hasResult({ line:4, fixedText:'    ' });
 });
 
 test('incorrectly indented state with function', () => { linting([
@@ -341,12 +337,12 @@ test('incorrectly indented state with function', () => { linting([
     /*7*/`}`,
     /*8*/`}`,
     /*9/*/])
-    .hasResult({ line:2, fixedText:'\t' })
-    .hasResult({ line:3, fixedText:'\t' })
-    .hasResult({ line:4, fixedText:'\t\t'})
-    .hasResult({ line:5, fixedText:'\t\t'})
-    .hasResult({ line:6, fixedText:'\t\t'})
-    .hasResult({ line:7, fixedText:'\t'})
+    .hasResult({ line:2, fixedText:'    ' })
+    .hasResult({ line:3, fixedText:'    ' })
+    .hasResult({ line:4, fixedText:'        '})
+    .hasResult({ line:5, fixedText:'        '})
+    .hasResult({ line:6, fixedText:'        '})
+    .hasResult({ line:7, fixedText:'    '})
 ;});
 
 test('incorrectly indented state with control statements', () => { linting([
@@ -358,22 +354,22 @@ test('incorrectly indented state with control statements', () => { linting([
     /*5*/`}`,
     /*6*/`}`,
     /*7*/])
-    .hasResult({ line:2, fixedText:'\t' })
-    .hasResult({ line:3, fixedText:'\t\t' })
-    .hasResult({ line:4, fixedText:'\t\t' })
-    .hasResult({ line:5, fixedText:'\t' })
+    .hasResult({ line:2, fixedText:'    ' })
+    .hasResult({ line:3, fixedText:'        ' })
+    .hasResult({ line:4, fixedText:'        ' })
+    .hasResult({ line:5, fixedText:'    ' })
 ;});
 
 test('correctly formatted enum has no linter errors', () => { linting([
     'enum ESoundSlot',
     '{',
-    '\tSLOT_None,',
-    '\tSLOT_Misc,',
-    '\tSLOT_Pain,',
-    '\tSLOT_Interact,',
-    '\tSLOT_Ambient,',
-    '\tSLOT_Talk,',
-    '\tSLOT_Interface,',
+    '    SLOT_None,',
+    '    SLOT_Misc,',
+    '    SLOT_Pain,',
+    '    SLOT_Interact,',
+    '    SLOT_Ambient,',
+    '    SLOT_Talk,',
+    '    SLOT_Interface,',
     '};',])
     .hasNoLintResults();
 });
@@ -435,19 +431,27 @@ test('lint multiline comment with space is before function empty line is not req
 
 test('lint operator not enough space before operator', () => { lintingStatements(
     'count= 0;'
-).hasResult({ position: 5, originalText:'', fixedText:' ' });});
+).hasFormattedResult(statementWrapper(
+    'count = 0;'
+));});
 
 test('lint operator too much space before operator', () => { lintingStatements(
     'count   = 0;'
-).hasResult({ position: 5, originalText:'   ', fixedText:' ' });});
+).hasFormattedResult(statementWrapper(
+    'count = 0;'
+));});
 
 test('lint operator not enough space after operator', () => { lintingStatements(
     'count =0;'
-).hasResult({ position: 7, originalText:'', fixedText:' ' });});
+).hasFormattedResult(statementWrapper(
+    'count = 0;'
+));});
 
 test('lint operator too much space after operator', () => { lintingStatements(
     'count =   0;'
-).hasResult({ position: 7, originalText:'   ', fixedText:' ' });});
+).hasFormattedResult(statementWrapper(
+    'count = 0;'
+));});
 
 test('lint operator space just right', () => { lintingStatements(
     'count = 0;'
@@ -455,80 +459,111 @@ test('lint operator space just right', () => { lintingStatements(
 
 test('lint operator negation should not have space', () => { lintingStatements(
     'x = - 1;'
-).hasResult({ position: 5, fixedText:'', originalText:' '});});
+).hasFormattedResult(statementWrapper(
+    'x = -1;'
+));});
 
 test('lint None formatting correction', () => { lintingStatements(
     'x = none;'
-).hasResult({ position: 4, fixedText:'None', originalText:'none'});});
+).hasFormattedResult(statementWrapper(
+    'x = None;'
+));});
+    
 
 test('lint None is correctly formatted', () => { lintingStatements(
     'x = None;'
-).hasNoLintResults();});
+).hasFormattedResult(statementWrapper(
+    'x = None;'
+));});
 
 test('lint True/False is correctly formatted', () => { lintingStatements(
     'x = True;',
     'x = False;'
-).hasNoLintResults();});
+).hasFormattedResult(statementWrapper(
+    'x = True;',
+    'x = False;'
+));});
 
 test('lint True/False formatting correction', () => { lintingStatements(
     'x = true;',
     'x = false;'
-)
-    .hasResult({ position: 4, fixedText:'True', originalText:'true'})
-    .hasResult({ position: 4, fixedText:'False', originalText:'false'});
-});
+).hasFormattedResult(statementWrapper(
+    'x = True;',
+    'x = False;'
+));});
 
-test('lint newline before {', () => { lintingStatements(
+test.skip('lint newline before {', () => { lintingStatements(
     'if (bFirst) {',
     '}'
-).hasResult({ line: 0, position:12, fixedText:'\n\t' });});
+).hasFormattedResult(statementWrapper(
+    'if (bFirst)',
+    '{',
+    '}'
+));});
 
-test('lint newline after {', () => { lintingStatements(
+test.skip('lint newline after {', () => { lintingStatements(
     'if (bFirst)',
     '{x = True;',
     '}'
-).hasResult({ line: 1, position:1, fixedText:'\n\t\t' });});
-
-test('lint newline before }', () => { lintingStatements(
+).hasFormattedResult(statementWrapper(
     'if (bFirst)',
     '{',
-    '\tx = False;}'
-).hasResult({ line: 2, position:11, fixedText:'\n\t' });});
+    '    x = True;',
+    '}'
+));});
 
-test('lint newline after }', () => { lintingStatements(
+test.skip('lint newline before }', () => { lintingStatements(
+    'if (bFirst)',
+    '{',
+    '    x = False;}'
+).hasFormattedResult(statementWrapper(
+    'if (bFirst)',
+    '{',
+    '    x = False;',
+    '}'
+));});
+
+test.skip('lint newline after }', () => { lintingStatements(
     'if (bFirst)',
     '{',
     '}x = 4;'
-).hasResult({ line: 2, position:1, fixedText:'\n' });});
+).hasFormattedResult(statementWrapper(
+    'if (bFirst)',
+    '{',
+    '}',
+    'x = 4;'
+));});
 
 test('lint autocompletes semicolon for single statement', () => { lintingStatements(
     'A = 1',
-)
-    .hasResult({ line: 0, position:5, fixedText:';' })
-;});
+).hasFormattedResult(statementWrapper(
+    'A = 1;'
+));});
 
-test('lint string tab escape does not work', () => { lintingStatements(
+test('lint warning string tab escape does not work', () => { lintingStatements(
     'x = "\\t";'
-).hasResult({ line: 0, position:5, length:2 });});
+).hasResult({ message: "The '\\t' doesn't work in unreal strings." });});
 
 test('lint names cannot have space', () => { lintingStatements(
     "x = 'a cat';"
-).hasResult({ line: 0, position:4, length:7, originalText:"'a cat'" });});
+).hasResult({ message:'Names cannot contain spaces!', originalText:"'a cat'" });});
 
 test('lint operator spacing removes space in default properties', () => { linting([
     'defaultproperties',
     '{',
-    '\tDescription = "Your description here!"',
+    '    Description = "Your description here!"',
     '}'
-])
-    .hasResult({ line: 2, position:12, length:1, fixedText: '' })
-    .hasResult({ line: 2, position:14, length:1, fixedText: '' });
-});
+]).hasFormattedResult([
+    'defaultproperties',
+    '{',
+    '    Description="Your description here!"',
+    '}'
+]);});
 
 test('lint operator spacing does not suggest adding space in defaultproperties', () => { linting([
     'defaultproperties',
     '{',
-    '\tDescription="Your description here!"',
+    '    Description="Your description here!"',
     '}'
 ]).hasNoLintResults();});
 
@@ -554,17 +589,17 @@ test.skip('linting multiline variable declaration', () => {
         /*7*/'VolumeRadius,',
         /*8*/'VolumeFog;',
     ])
-        .hasResult({ line: 2, position: 0, originalText: '', fixedText: '\t' })
-        .hasResult({ line: 3, position: 0, originalText: '', fixedText: '\t' })
-        .hasResult({ line: 4, position: 0, originalText: '', fixedText: '\t' })
-        .hasResult({ line: 5, position: 0, originalText: '', fixedText: '\t' })
-        .hasResult({ line: 6, position: 0, originalText: '', fixedText: '\t' })
-        .hasResult({ line: 7, position: 0, originalText: '', fixedText: '\t' })
-        .hasResult({ line: 8, position: 0, originalText: '', fixedText: '\t' })
+        .hasResult({ line: 2, position: 0, originalText: '', fixedText: '    ' })
+        .hasResult({ line: 3, position: 0, originalText: '', fixedText: '    ' })
+        .hasResult({ line: 4, position: 0, originalText: '', fixedText: '    ' })
+        .hasResult({ line: 5, position: 0, originalText: '', fixedText: '    ' })
+        .hasResult({ line: 6, position: 0, originalText: '', fixedText: '    ' })
+        .hasResult({ line: 7, position: 0, originalText: '', fixedText: '    ' })
+        .hasResult({ line: 8, position: 0, originalText: '', fixedText: '    ' })
     ;
 });
 
-function linting(lines: string[], lineOffset = 0, positionOffset = 0) {
+function linting(lines: string[], lineOffset = 0, positionOffset = 0, options?: Partial<FullLinterConfig>) {
     const parser = new UcParser();
     for (let i = 0; i < lines.length; i++) {
         for (const token of ucTokenizeLine(lines[i])) {
@@ -575,22 +610,10 @@ function linting(lines: string[], lineOffset = 0, positionOffset = 0) {
     const ast = parser.getAst();
     ast.textLines = lines;
 
-    let results: LintResult[] = [];
-    for (const rule of ALL_AST_RULES){
-        const result = rule.lint(ast);
-        if (result){
-            results = [...results, ...result];
-        }
-    }
-
-    for (const token of ast.tokens){
-        for (const rule of ALL_V2_TOKEN_RULES) {
-            const result = rule.nextToken(token, ast.textLines);
-            if (result != null){
-                results.push(...result);
-            }
-        }
-    }
+    let results: LintResult[] = buildFullLinter({
+        indentType: '    ',
+        ...options,
+    }).lint(ast);
     
     for (const result of results){
         if (result.line != null)
@@ -605,7 +628,7 @@ function linting(lines: string[], lineOffset = 0, positionOffset = 0) {
 
     const checks = {
         hasResult(obj: LintResult){
-            let bestMatch: LintResult | null = null;
+            let bestMatch: LintResult | null = results[0];
             let bestScore = 0;
             for (const result of results){
                 let score = 
@@ -629,6 +652,9 @@ function linting(lines: string[], lineOffset = 0, positionOffset = 0) {
         },
         hasFormattedResult(expectedLines: string[]){
             expect(applyLinterFixes(lines, results)).toEqual(expectedLines.join('\n'));
+        },
+        hasNoFormattedResult(){
+            expect(applyLinterFixes(lines, results)).toEqual(lines.join('\n'));
         }
     };
 
@@ -636,14 +662,14 @@ function linting(lines: string[], lineOffset = 0, positionOffset = 0) {
 }
 
 function lintingStatements(...statementLines: string[]){
-    return linting(statementWrapper(...statementLines), -2, -1);
+    return linting(statementWrapper(...statementLines));
 }
 
 function statementWrapper(...statementLines: string[]){
     return [
-        'function F()',
+        'function Timer()',
         '{',
-        ...statementLines.map(l => `\t${l}`),
+        ...statementLines.map(l => `    ${l}`),
         '}'
     ];
 }

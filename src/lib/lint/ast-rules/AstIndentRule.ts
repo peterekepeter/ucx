@@ -1,14 +1,20 @@
-import {AstBasedLinter} from "../AstBasedLinter";
+import { AstBasedLinter } from "../AstBasedLinter";
 import { LintResult } from "../LintResult";
 import { UnrealClass } from "../../";
 import { ParserToken, SemanticClass } from "../../parser";
-import { toIndentString } from "../../indentation/toIndentString";
 import { UnrealClassExpression, UnrealClassFunction, UnrealClassStatement } from "../../parser/ast/UnrealClassFunction";
+import { IndentationType } from "../../indentation/IndentationType";
+import { IndentLevelStrings } from "../../indentation/IndentLevelStrings";
 
 
 export class AstIndentRule implements AstBasedLinter
 {
     indent: number[] = [];
+    indentStrings = new IndentLevelStrings(this.indentationType);
+
+    constructor (
+        private indentationType: IndentationType
+    ) { }
 
     lint(ast: UnrealClass): LintResult[] {
         this.paintScopes(ast);
@@ -125,7 +131,7 @@ export class AstIndentRule implements AstBasedLinter
             const textLine = ast.textLines[line];
             const actual = this.getLineIndentString(textLine);
             const expectedCount = this.indent[line] ?? 0;
-            const expected = toIndentString(expectedCount);
+            const expected = this.indentStrings.getIndentString(expectedCount);
             if (actual !== expected){
                 // correct it
                 results.push({
