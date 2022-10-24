@@ -1,12 +1,10 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { ALL_V2_TOKEN_RULES } from './lib/lint/token-rules';
 import { ucTokenizeLine } from './lib/tokenizer/ucTokenizeLine';
-import { TokenBasedLinter } from './lib/lint/TokenBasedLinter';
 import { ParserToken, SemanticClass, UcParser } from './lib/parser';
-import { ALL_AST_RULES } from './lib/lint/ast-rules';
 import { LintResult } from './lib/lint/LintResult';
+import { buildFullLinter } from './lib/lint/buildFullLinter';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -376,23 +374,10 @@ function* processLinterRules(document: vscode.TextDocument, options?: { reportPa
             };
         }
     }
-    for (const rule of ALL_AST_RULES){
-        const astResult = rule.lint(ast);
-        if (astResult != null){
-            for (const item of astResult){
-                yield item;
-            }
-        }
-    }
-    for (const token of ast.tokens){
-        for (const rule of ALL_V2_TOKEN_RULES){
-            const result = rule.nextToken(token, ast.textLines);
-            if (result != null){
-                for (const item of result){
-                    yield item;
-                }
-            }
-        }
+    const linter = buildFullLinter();
+    const results = linter.lint(ast);
+    for (const item of results){
+        yield item;
     }
 }
 
