@@ -599,6 +599,38 @@ test.skip('linting multiline variable declaration', () => {
     ;
 });
 
+test('lint struct indentation', () => { linting([
+    '// Identifies a unique convex volume in the world.',
+    'struct PointRegion',
+    '{',
+    'var zoneinfo Zone;       // Zone.',
+    'var int      iLeaf;      // Bsp leaf.',
+    'var byte     ZoneNumber; // Zone number.',
+    '};',
+]).hasFormattedResult([
+    '// Identifies a unique convex volume in the world.',
+    'struct PointRegion',
+    '{',
+    '    var zoneinfo Zone;       // Zone.',
+    '    var int      iLeaf;      // Bsp leaf.',
+    '    var byte     ZoneNumber; // Zone number.',
+    '};',
+]);});
+
+
+test('format negation operator spacing', () => { lintingStatements(
+    'if ( ! ShouldApplyTo(Game))',
+    '{',
+    '    enabled = ! enabled;',
+    '}'
+).hasFormattedResult(statementWrapper(
+    'if (!ShouldApplyTo(Game))',
+    '{',
+    '    enabled = !enabled;',
+    '}'
+));});
+    
+
 function linting(lines: string[], options?: Partial<FullLinterConfig>) {
     const parser = new UcParser();
     for (let i = 0; i < lines.length; i++) {

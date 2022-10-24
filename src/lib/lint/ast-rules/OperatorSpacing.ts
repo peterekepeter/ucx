@@ -14,12 +14,13 @@ export class OperatorSpacing implements AstBasedLinter
             }
             const prev = ast.tokens[i-1];
             const next = ast.tokens[i+1];
+            const isPrefix = istPrefixOperator(prev, token, next);
             const isInDefaultProperties = isInDefaultPropertiesScope(token, ast);
             if (prev && prev.line === token.line)
             {
                 const prevEnd = prev.position + prev.text.length;
                 const distance = token.position - prevEnd;
-                const expectedDistance = isInDefaultProperties ? 0 : 1;
+                const expectedDistance =  isPrefix && prev.text === '(' || isInDefaultProperties ? 0 : 1;
                 if (distance !== expectedDistance){
                     const message = expectedDistance === 0 
                         ? 'Expected no space before operator' 
@@ -42,7 +43,7 @@ export class OperatorSpacing implements AstBasedLinter
             {
                 const tokenEnd = token.position + token.text.length;
                 const distance = next.position - tokenEnd;
-                const expectedDistance = istPrefixOperator(prev, token, next) || isInDefaultProperties ? 0 : 1;
+                const expectedDistance = isPrefix || isInDefaultProperties ? 0 : 1;
                 if (distance !== expectedDistance){
                     const originalLine = ast.textLines[token.line];
                     const originalText = originalLine.slice(tokenEnd, next.position);
@@ -109,7 +110,7 @@ function canOperatorBeAppliedTo(token: ParserToken)
     }
 }
 
-const canBePrefixOperatorRegex = /^(?:-)$/;
+const canBePrefixOperatorRegex = /^[-!]$/;
 
 function isInDefaultPropertiesScope(token: ParserToken, ast: UnrealClass): boolean {
     const begin = ast.defaultPropertiesFirstToken;
