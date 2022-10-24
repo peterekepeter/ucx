@@ -54,6 +54,7 @@ export interface UnrealClassExpression {
 }
 
 export interface UnrealClassStatement extends UnrealClassExpression {
+    // FIXME: body length of 0 can denote both empty body {} and missing body
     body: UnrealClassStatement[];
     bodyFirstToken: Token | null;
     bodyLastToken: Token | null;

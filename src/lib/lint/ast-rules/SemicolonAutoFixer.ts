@@ -1,4 +1,4 @@
-import { UnrealClass } from "../../parser";
+import { SemanticClass, UnrealClass } from "../../parser";
 import { getAllStatements, UnrealClassStatement } from "../../parser/ast";
 import { AstBasedLinter } from "../AstBasedLinter";
 import { LintResult } from "../LintResult";
@@ -10,6 +10,9 @@ export class SemicolonAutoFixer implements AstBasedLinter
         for (const st of getAllStatements(ast)){
             if (st.body.length > 0){
                 continue; // is control
+            }
+            if (st.op?.type === SemanticClass.Keyword){
+                continue; // is probably control as well
             }
             const lastToken = st.argsLastToken;
             if (!lastToken){

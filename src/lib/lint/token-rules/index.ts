@@ -1,3 +1,4 @@
+import { IndentationType } from "../../indentation/IndentationType";
 import { LintResult } from "../LintResult";
 import { TokenBasedLinterV2 } from "../TokenBasedLinter";
 import { BracketSpacingRule } from "./BracketSpacingRule";
@@ -16,6 +17,7 @@ export type TokenBasedLinterConfiguration =
     enableBracketSpacingRule: boolean
     enableValidateStringRule: boolean
     enableValidateNamesRule: boolean
+    indentType: IndentationType
 };
 
 export const DEFAULT_TOKEN_BASED_LINTER_CONFIGURATION: TokenBasedLinterConfiguration = {
@@ -25,6 +27,7 @@ export const DEFAULT_TOKEN_BASED_LINTER_CONFIGURATION: TokenBasedLinterConfigura
     enableBracketSpacingRule: true,
     enableValidateStringRule: true,
     enableValidateNamesRule: true,
+    indentType: '\t',
 };
 
 export function buildTokenBasedLinter(partialConfig?: Partial<TokenBasedLinterConfiguration>): TokenBasedLinterV2 {
@@ -36,12 +39,12 @@ export function buildTokenBasedLinter(partialConfig?: Partial<TokenBasedLinterCo
 
     const children: TokenBasedLinterV2[] = [];
 
-    if (config.enableKeywordFormatRule) { children.push(new KeywordFormatRule()); }
-    if (config.enableNoneFormatRule) { children.push(new NoneFormatRule()); }
-    if (config.enableTrueFalseFormatRule) { children.push(new TrueFalseFormatRule()); }
-    if (config.enableBracketSpacingRule) { children.push(new BracketSpacingRule()); }
-    if (config.enableValidateStringRule) { children.push(new ValidateStringRule()); }
-    if (config.enableValidateNamesRule) { children.push(new ValidateNamesRule()); }
+    if (config.enableKeywordFormatRule) { children.push(new KeywordFormatRule()) }
+    if (config.enableNoneFormatRule) { children.push(new NoneFormatRule()) }
+    if (config.enableTrueFalseFormatRule) { children.push(new TrueFalseFormatRule()) }
+    if (config.enableBracketSpacingRule) { children.push(new BracketSpacingRule(config.indentType)) }
+    if (config.enableValidateStringRule) { children.push(new ValidateStringRule()) }
+    if (config.enableValidateNamesRule) { children.push(new ValidateNamesRule()) }
 
     return {
         nextToken(token, textLines) {

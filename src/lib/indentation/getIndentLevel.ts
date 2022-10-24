@@ -1,11 +1,21 @@
-export function getIndentLevel(lineText: string): number {
-    let level = 0;
+import { IndentationType } from "./IndentationType";
+
+export function getIndentLevel(lineText: string, indentType: IndentationType): number {
+    let tabs = 0;
+    let spaces = 0;
     for (let i = 0; i < lineText.length; i++) {
         if (lineText[i] === '\t') {
-            level++;
-        } else {
+            tabs += 1;
+        } if (lineText[i] === ' ') {
+            spaces += 1;
+        }
+        else {
             break;
         }
+    }
+    let level = tabs;
+    if (indentType !== '\t'){
+        level += Math.floor(spaces / indentType.length);
     }
     return level;
 }

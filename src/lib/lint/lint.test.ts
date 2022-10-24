@@ -144,8 +144,8 @@ test('lint indent only increases once when multiple scopes combine on same line'
         '        Log("test");',
         '    }}',
         '}'
-    ],undefined, undefined, {
-        enableBracketSpacingRule: false
+    ], {
+        enableBracketSpacingRule: false // needed to test the feature
     }).hasNoFormattedResult();
 });
 
@@ -492,8 +492,8 @@ test('lint True/False formatting correction', () => { lintingStatements(
     'x = False;'
 ));});
 
-test.skip('lint newline before {', () => { lintingStatements(
-    'if (bFirst) {',
+test('lint newline before {', () => { lintingStatements(
+    'if (bFirst){',
     '}'
 ).hasFormattedResult(statementWrapper(
     'if (bFirst)',
@@ -501,7 +501,7 @@ test.skip('lint newline before {', () => { lintingStatements(
     '}'
 ));});
 
-test.skip('lint newline after {', () => { lintingStatements(
+test('lint newline after {', () => { lintingStatements(
     'if (bFirst)',
     '{x = True;',
     '}'
@@ -512,7 +512,7 @@ test.skip('lint newline after {', () => { lintingStatements(
     '}'
 ));});
 
-test.skip('lint newline before }', () => { lintingStatements(
+test('lint newline before }', () => { lintingStatements({ indentEnabled: false },
     'if (bFirst)',
     '{',
     '    x = False;}'
@@ -523,7 +523,7 @@ test.skip('lint newline before }', () => { lintingStatements(
     '}'
 ));});
 
-test.skip('lint newline after }', () => { lintingStatements(
+test('lint newline after }', () => { lintingStatements(
     'if (bFirst)',
     '{',
     '}x = 4;'
@@ -599,7 +599,7 @@ test.skip('linting multiline variable declaration', () => {
     ;
 });
 
-function linting(lines: string[], lineOffset = 0, positionOffset = 0, options?: Partial<FullLinterConfig>) {
+function linting(lines: string[], options?: Partial<FullLinterConfig>) {
     const parser = new UcParser();
     for (let i = 0; i < lines.length; i++) {
         for (const token of ucTokenizeLine(lines[i])) {
@@ -614,17 +614,6 @@ function linting(lines: string[], lineOffset = 0, positionOffset = 0, options?: 
         indentType: '    ',
         ...options,
     }).lint(ast);
-    
-    for (const result of results){
-        if (result.line != null)
-        {
-            result.line += lineOffset;
-        }
-        if (result.position != null)
-        {
-            result.position += positionOffset;
-        }
-    }
 
     const checks = {
         hasResult(obj: LintResult){
@@ -661,8 +650,10 @@ function linting(lines: string[], lineOffset = 0, positionOffset = 0, options?: 
     return checks;
 }
 
-function lintingStatements(...statementLines: string[]){
-    return linting(statementWrapper(...statementLines));
+function lintingStatements(...statementLines: string[]): ReturnType<typeof linting>;
+function lintingStatements(options?: Partial<FullLinterConfig>, ...statementLines: string[]): ReturnType<typeof linting>;
+function lintingStatements(options?: Partial<FullLinterConfig>| string, ...statementLines: string[]){
+    return (typeof options === "string") ? linting(statementWrapper(options, ...statementLines)) : linting(statementWrapper(...statementLines), options);
 }
 
 function statementWrapper(...statementLines: string[]){
