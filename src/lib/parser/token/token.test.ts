@@ -46,6 +46,10 @@ test("operators", () => {
     verify("!", C.Operator);
 });
 
+test("new is keyword", () => {
+    verify("new", C.Operator);
+});
+
 test("language constants", () => {
     verify("None", C.LanguageConstant);
     verify("True", C.LanguageConstant);

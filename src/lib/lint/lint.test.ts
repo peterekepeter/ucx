@@ -629,6 +629,12 @@ test('format negation operator spacing', () => { lintingStatements(
     '    enabled = !enabled;',
     '}'
 ));});
+
+test('format no change on well formatted new class instantiation', () => { lintingStatements(
+    "MapTagsConfig = new class'MapTagsConfig';"
+).hasFormattedResult(statementWrapper(
+    "MapTagsConfig = new class'MapTagsConfig';"
+));});
     
 
 function linting(lines: string[], options?: Partial<FullLinterConfig>) {

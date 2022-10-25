@@ -151,6 +151,20 @@ test('inline comment', () => parsing(`
 ));
 
 
+test('new operator', () => parsing(`
+    function Init(){
+        x = new class'Test';
+    }
+`).hasTokens(
+    ["x", C.VariableReference],
+    ["=", C.Operator],
+    ["new", C.Keyword],
+    ["class", C.ClassReference],
+    ["'Test'", C.ObjectReferenceName],
+    [";", C.None],
+));
+
+
 test('exec', () => parsing(`
     #exec Texture Import File=Textures\NuRaRulesBG.pcx Name=NuRaRulesBG Group=Windows Mips=On Flags=2
     class XClass;
@@ -159,6 +173,7 @@ test('exec', () => parsing(`
     ['class', C.Keyword],
     ['XClass', C.ClassDeclaration]
 ));
+
 
 test('default property with object reference', () => parsing(`
     defaultproperties {

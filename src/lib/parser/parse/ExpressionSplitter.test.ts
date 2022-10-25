@@ -76,8 +76,6 @@ test('splits single line foreach followed by if statement', () => {
         ]);
 });
 
-
-
 test('splits single line foreach followed by if statement', () => {
     parsing("foreach AllActors( class 'Projectile', A ) {")
         .yieldsGroups([
@@ -87,8 +85,14 @@ test('splits single line foreach followed by if statement', () => {
         ]);
 });
 
-
-
+test('does not split new operator', () => {
+    parsing("a=new class'T' b=new class'T'")
+        .yieldsGroups([
+            // ignore the fact that it removes a space
+            "a=newclass'T'",
+            "b=newclass'T'",
+        ]);
+});
 
 function parsing(str: string) {
     const splitter = new ExpressionSplitter();
