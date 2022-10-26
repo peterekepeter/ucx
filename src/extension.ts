@@ -390,8 +390,16 @@ function processFormattingRules(document: vscode.TextDocument, edits: vscode.Tex
             const position = new vscode.Position(result.line, result.position);
             edits.push(vscode.TextEdit.insert(position, result.fixedText));
         } else if (result.fixedText === '') {
-            const start = new vscode.Position(result.line, result.position);
-            const end = new vscode.Position(result.line, result.position + result.length);
+            let start = new vscode.Position(result.line, result.position);
+            let end = new vscode.Position(result.line, result.position + result.length);
+            const lineText = document.lineAt(result.line).text;
+            if (end.character >= lineText.length){
+                end = new vscode.Position(result.line + 1, 0);
+                // cannot touch whitespace befer the default prop it can interfere with indent change
+                // if (isWhitepace(lineText.substring(0, result.position))){
+                //     start = new vscode.Position(result.line, 0);
+                // }
+            }
             edits.push(vscode.TextEdit.delete(new vscode.Range(start, end)));
         } else {
             const start = new vscode.Position(result.line, result.position);
@@ -399,6 +407,12 @@ function processFormattingRules(document: vscode.TextDocument, edits: vscode.Tex
             edits.push(vscode.TextEdit.replace(new vscode.Range(start, end), result.fixedText));
         } 
     }
+}
+
+const WS_REGEX = /^\s*$/;
+
+function isWhitepace(text: string){
+    return WS_REGEX.test(text);
 }
 
 function insertSemicolonEndOfLine(document: vscode.TextDocument, edits: vscode.TextEdit[]) {

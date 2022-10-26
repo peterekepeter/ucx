@@ -635,7 +635,26 @@ test('format no change on well formatted new class instantiation', () => { linti
 ).hasFormattedResult(statementWrapper(
     "MapTagsConfig = new class'MapTagsConfig';"
 ));});
-    
+
+test('format removes useless default int properties', () => { linting([
+    'var int a;',
+    'var int b;',
+    '',
+    'defaultproperties',
+    '{',
+    '    a=0',
+    '    b=1',
+    '};',
+]).hasFormattedResult([
+    'var int a;',
+    'var int b;',
+    '',
+    'defaultproperties',
+    '{',
+    '    ',  // check to see if line can be removed
+    '    b=1',
+    '};',
+]);});
 
 function linting(lines: string[], options?: Partial<FullLinterConfig>) {
     const parser = new UcParser();

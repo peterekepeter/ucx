@@ -4,6 +4,7 @@ import { LintResult } from "../LintResult";
 import { AstIndentRule } from "./AstIndentRule";
 import { EmptyLineBeforeFunction } from "./EmptyLineBeforeFunction";
 import { OperatorSpacing } from "./OperatorSpacing";
+import { RedundantDefaultValue } from "./RedundantDefaultValue";
 import { SemicolonAutoFixer } from "./SemicolonAutoFixer";
 
 export type AstLinterConfiguration =
@@ -50,6 +51,8 @@ export function buildAstLinter(partialConfig?: Partial<AstLinterConfiguration>):
     {
         children.push(new SemicolonAutoFixer());
     }
+
+    children.push(new RedundantDefaultValue);
 
     return {
         lint: (ast) => {
