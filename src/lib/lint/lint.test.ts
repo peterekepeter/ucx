@@ -540,6 +540,18 @@ test('lint autocompletes semicolon for single statement', () => { lintingStateme
     'A = 1;'
 ));});
 
+test('lint autocompletes semicolon in new class statement', () => { lintingStatements(
+    "A = new class'TestClass'",
+).hasFormattedResult(statementWrapper(
+    "A = new class'TestClass';",
+));});
+
+test('lint does not add semicolon in middle of the new class statement', () => { lintingStatements(
+    "A = new class'TestClass';",
+).hasFormattedResult(statementWrapper(
+    "A = new class'TestClass';",
+));});
+
 test('lint warning string tab escape does not work', () => { lintingStatements(
     'x = "\\t";'
 ).hasResult({ message: "The '\\t' doesn't work in unreal strings." });});
