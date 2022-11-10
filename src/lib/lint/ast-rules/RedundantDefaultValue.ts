@@ -26,8 +26,6 @@ export class RedundantDefaultValue implements AstBasedLinter
                 if (results == null){
                     results = [];
                 }
-                const tokenLine = defaultProp.name.line;
-                const textLine = uc.textLines[tokenLine];
                 const lastPos = this.getLastPosition(defaultProp.value);
                 if (lastPos == null) { 
                     continue;

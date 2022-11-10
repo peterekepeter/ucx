@@ -1,4 +1,5 @@
 import { IndentationType } from "../../indentation/IndentationType";
+import { ParserToken } from "../../parser";
 import { LintResult } from "../LintResult";
 import { TokenBasedLinterV2 } from "../TokenBasedLinter";
 import { BracketSpacingRule } from "./BracketSpacingRule";
@@ -9,60 +10,55 @@ import { ValidateNamesRule } from "./ValidateNamesRule";
 import { ValidateStringRule } from "./ValidateStringRule";
 
 
-export type TokenBasedLinterConfiguration =
-{
-    enableKeywordFormatRule: boolean
-    enableNoneFormatRule: boolean
-    enableTrueFalseFormatRule: boolean
-    enableBracketSpacingRule: boolean
-    enableValidateStringRule: boolean
-    enableValidateNamesRule: boolean
-    indentType: IndentationType
-};
+export type TokenBasedLinterConfiguration = typeof DEFAULT_TOKEN_BASED_LINTER_CONFIGURATION;
 
-export const DEFAULT_TOKEN_BASED_LINTER_CONFIGURATION: TokenBasedLinterConfiguration = {
+export const DEFAULT_TOKEN_BASED_LINTER_CONFIGURATION = {
     enableKeywordFormatRule: true,
     enableNoneFormatRule: true,
     enableTrueFalseFormatRule: true,
     enableBracketSpacingRule: true,
     enableValidateStringRule: true,
     enableValidateNamesRule: true,
-    indentType: '\t',
+    indentType: '\t' as IndentationType,
 };
 
 export function buildTokenBasedLinter(partialConfig?: Partial<TokenBasedLinterConfiguration>): TokenBasedLinterV2 {
+    return new ComposedLinter([
+        ...configureChildren({
+            ...DEFAULT_TOKEN_BASED_LINTER_CONFIGURATION,
+            ...partialConfig,
+        })
+    ]);
+}
+
+class ComposedLinter implements TokenBasedLinterV2
+{
+    constructor(private subLinters: TokenBasedLinterV2[]){}
     
-    const config = {
-        ...DEFAULT_TOKEN_BASED_LINTER_CONFIGURATION,
-        ...partialConfig,
-    };
-
-    const children: TokenBasedLinterV2[] = [];
-
-    if (config.enableKeywordFormatRule) { children.push(new KeywordFormatRule()) }
-    if (config.enableNoneFormatRule) { children.push(new NoneFormatRule()) }
-    if (config.enableTrueFalseFormatRule) { children.push(new TrueFalseFormatRule()) }
-    if (config.enableBracketSpacingRule) { children.push(new BracketSpacingRule(config.indentType)) }
-    if (config.enableValidateStringRule) { children.push(new ValidateStringRule()) }
-    if (config.enableValidateNamesRule) { children.push(new ValidateNamesRule()) }
-
-    return {
-        nextToken(token, textLines) {
-            let result: LintResult[] | null = null;
-            for (const child of children){
-                const childResult = child.nextToken(token, textLines);
-                if (childResult && childResult.length > 0)
-                {
-                    if (result == null){
-                        result = childResult;
-                    }
-                    else {
-                        result.push(...childResult);
-                    }
+    nextToken(token: ParserToken, textLines: string[]) {
+        let result: LintResult[] | null = null;
+        for (const child of this.subLinters){
+            const childResult = child.nextToken(token, textLines);
+            if (childResult && childResult.length > 0)
+            {
+                if (result == null){
+                    result = childResult;
+                }
+                else {
+                    result.push(...childResult);
                 }
             }
-            return result;
         }
-    };
+        return result;
+    }
+}
 
+function* configureChildren(config: TokenBasedLinterConfiguration): Iterable<TokenBasedLinterV2> {
+    const c = config;
+    if (c.enableKeywordFormatRule) { yield new KeywordFormatRule() }
+    if (c.enableNoneFormatRule) { yield new NoneFormatRule() }
+    if (c.enableTrueFalseFormatRule) { yield new TrueFalseFormatRule() }
+    if (c.enableBracketSpacingRule) { yield new BracketSpacingRule(c.indentType) }
+    if (c.enableValidateStringRule) { yield new ValidateStringRule() }
+    if (c.enableValidateNamesRule) { yield new ValidateNamesRule() }
 }
