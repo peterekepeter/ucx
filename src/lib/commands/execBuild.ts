@@ -1,7 +1,7 @@
 import { UcxCommand } from "../cli";
 import * as os from "os";
 import { promises as fs, constants } from "fs";
-import { exec, spawn } from "child_process";
+import { exec, execSync, spawn } from "child_process";
 import { SourceEditor, transformFor436 } from "../transformer";
 import { UcParser, UnrealClass } from "../parser";
 import { ucTokenizeLine } from "../tokenizer";
@@ -43,6 +43,8 @@ async function getBuildContext(projectDir: string, cmd: UcxCommand): Promise<Bui
         ... resolvedPaths,
         ... await generateBuildNameAndDir(resolvedPaths.gameDir),
     };
+    context.tempToCleanup.push({ fullPath: context.buildDir, isDir: true });
+    context.tempToCleanup.push({ fullPath: context.buildClassesDir, isDir: true });
     console.log('building', projectName, '(', context.buildName, ')');
     return context;
 }
@@ -127,7 +129,6 @@ async function visitSourceFolder(context: BuildContext, dirPath: string) {
 }
 
 async function visitSourceFile(context: BuildContext, srcPath: string) {
-    // console.log('COPY', srcPath);
     if (srcPath.endsWith('.ini')){
         const destPath = getBuildPath(context, srcPath);
         context.buildIniFile = destPath;
@@ -141,11 +142,13 @@ async function visitSourceFile(context: BuildContext, srcPath: string) {
             content = content.replace(toReplace, replaceWith);
             await tempWrite(context, destPath, content);
             return;
-        };
+        }
+        else {
+            await tempCopy(context, srcPath, destPath);
+        }
     } 
     else if (srcPath.endsWith('.uc')){
         const destPath = getBuildClassesPath(context, srcPath);
-        console.log({srcPath, destPath});
         await tempTransformSource(context, srcPath, destPath);
         return;
     }
@@ -190,7 +193,7 @@ Paths=../Sounds/*.uax
 Paths=../Music/*.umx`;
     const iniPath = `${context.buildDir}/auto-generated-make.ini`;
     context.buildIniFile = iniPath;
-    await fs.writeFile(iniPath, content, 'utf-8');
+    await tempWrite(context, iniPath, content);
 }
 
 function detectPathSeparator(path: string): string {
@@ -293,23 +296,10 @@ async function deleteTemporaryFiles(context: BuildContext) {
     }
 }
 
-function runUccBuildCommand(context: BuildContext): Promise<void> {
-    return new Promise((resolve, reject) => {
-        console.log('spawning', context.uccPath);
-        exec(`"${context.uccPath}" make ini="${context.buildIniFile}"`, {
-
-        }, (error, stdout, stderr) => {
-            console.log(stdout);
-            // console.error(stderr);
-            if (error){
-                reject(error);
-            }
-            else {    
-                resolve();
-            }
-        });
+function runUccBuildCommand(context: BuildContext): void {
+    execSync(`"${context.uccPath}" make ini="${context.buildIniFile}"`, {
+        stdio: "inherit"
     });
-    
 }
 
 async function copyOutput(c: BuildContext) {
