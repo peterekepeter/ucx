@@ -6,21 +6,21 @@ import { execUt } from "./execUt";
 import { UnknownCommandError } from "./UnknownCommandError";
 
 
+const knownCommands: Record<string,(cmd: UcxCommand) => Promise<void>> = {
+    build: execBuild,
+    ucc: execUcc,
+    ut: execUt,
+    ue: execUe,
+};
+
+
 export async function dispatchCommand(cmd: UcxCommand): Promise<void> {
-    switch(cmd.command){
-    case "build":
-        await execBuild(cmd);
-        break;
-    case "ucc":
-        await execUcc(cmd);
-        break;
-    case "ut":
-        await execUt(cmd);
-        break;
-    case "ue":
-        await execUe(cmd);
-        break;
-    default:
-        throw new UnknownCommandError(`unknown command "${cmd.command}"`);
+    if (cmd.command in knownCommands){
+        const fn = knownCommands[cmd.command];
+        await fn(cmd);
+    } else {
+        const message = `Unknown command "${cmd.command}"`;
+        const commandList = Object.keys(knownCommands);
+        throw new UnknownCommandError(message, commandList);
     }
 }

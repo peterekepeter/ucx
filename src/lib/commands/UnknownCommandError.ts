@@ -1,6 +1,9 @@
 
 export class UnknownCommandError extends Error {
-    constructor(message: string){
+    constructor(
+        message: string,
+        public knownCommands: string[]
+    ){
         super(message);
     }
 }

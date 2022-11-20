@@ -1,11 +1,13 @@
 import { UcxCommand } from "../cli";
-import * as os from "os";
 import { promises as fs, constants } from "fs";
-import { exec, execSync, spawn } from "child_process";
+import { execSync } from "child_process";
 import { SourceEditor, transformFor436 } from "../transformer";
 import { UcParser, UnrealClass } from "../parser";
 import { ucTokenizeLine } from "../tokenizer";
+
+import chalk = require("chalk");
 import path = require("path");
+import { SubprocessError } from "./SubprocessError";
 
 export async function execBuild(cmd: UcxCommand){
     const projectFolders = await getBuildProjects(cmd.files);
@@ -45,7 +47,7 @@ async function getBuildContext(projectDir: string, cmd: UcxCommand): Promise<Bui
     };
     context.tempToCleanup.push({ fullPath: context.buildDir, isDir: true });
     context.tempToCleanup.push({ fullPath: context.buildClassesDir, isDir: true });
-    console.log('building', projectName, '(', context.buildName, ')');
+    console.log(chalk.green('building'), chalk.bold(projectName), chalk.gray(context.buildName));
     return context;
 }
 
@@ -286,8 +288,8 @@ async function deleteTemporaryFiles(context: BuildContext) {
     const todo = context.tempToCleanup;
     context.tempToCleanup = [];
     todo.reverse();
-    for (const item of todo){
-        // console.log("DELETE", item.fullPath);
+    for (const item of todo)
+    {
         if (item.isDir){
             await fs.rmdir(item.fullPath);
         } else {
@@ -297,9 +299,14 @@ async function deleteTemporaryFiles(context: BuildContext) {
 }
 
 function runUccBuildCommand(context: BuildContext): void {
-    execSync(`"${context.uccPath}" make ini="${context.buildIniFile}"`, {
-        stdio: "inherit"
-    });
+    try {
+        execSync(`"${context.uccPath}" make ini="${context.buildIniFile}"`, {
+            stdio: "inherit"
+        });
+    }
+    catch (err){
+        throw new SubprocessError("UCC.exe make failed");
+    }
 }
 
 async function copyOutput(c: BuildContext) {

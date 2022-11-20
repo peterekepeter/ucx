@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 
 import { DEFAULT_UCX_COMMAND, parseCliArgs, parseEnvArgs,  } from "./lib/cli";
+import { SubprocessError } from "./lib/commands";
 import { dispatchCommand } from "./lib/commands/dispatchCommand";
 import { UnknownCommandError } from "./lib/commands/UnknownCommandError";
+import chalk = require('chalk');
 
+setTimeout(main, 0);
 
-setTimeout(async function main(){
+async function main(){
     try
     {
         const command = parseUserInput();
@@ -17,15 +20,18 @@ setTimeout(async function main(){
         }
     }
     catch (err) {
-        if (err instanceof UnknownCommandError){
-            console.error(err.message);
+        if (err instanceof UnknownCommandError) {
+            console.error(chalk.red(err.message));
+            console.log("Available commands:", err.knownCommands.map(c => chalk.bold(c)).join(', '));
+        }
+        else if (err instanceof SubprocessError){
+            console.error(chalk.red(err.message));
         }
         else {
             throw err;
         }
     }
-}, 0);
-
+};
 
 function parseUserInput(){
     try {
@@ -40,7 +46,6 @@ function parseUserInput(){
         throw error;
     }
 }
-
 
 function printUsage(){
     console.log(USAGE_INFO);
