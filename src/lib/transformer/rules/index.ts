@@ -1,1 +1,1 @@
-export * from './contantFolding';
+export * from './constantFolding';

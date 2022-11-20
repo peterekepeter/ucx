@@ -1,8 +1,10 @@
-import { UnrealClass } from "../../parser";
+import { ParserToken, SemanticClass, UnrealClass } from "../../parser";
+import { UnrealClassVariable } from "../../parser/ast";
 import { UnrealClassStatement } from "../../parser/ast/UnrealClassFunction";
 import { SourceEditor } from "../SourceEditor";
 import { SourceTransformer } from "../SourceTransformer";
 
+const log = console.log;
 
 export const foldConstants: SourceTransformer = (editor, uc) => {
     foldVariableDeclarations(editor, uc);
@@ -11,24 +13,47 @@ export const foldConstants: SourceTransformer = (editor, uc) => {
 
 function foldVariableDeclarations(editor: SourceEditor, uc: UnrealClass) {
     for (const variable of uc.variables){
-        if (variable.arrayCountExpression == null || variable.arrayCount == null){
-            continue;
-        }
-        if ('text' in variable.arrayCountExpression){
-            continue;
-        }
-        const expression = variable.arrayCountExpression;
-        if (expression.op && 
-            expression.argsLastToken && 
-            expression.op.textLower === 'arraycount'
-        ){
-            const closingParenthesis = expression.argsLastToken?.position ?? 0;
-            const line = expression.op?.line;
-            const position = expression.op?.position ?? 0;
-            const length = closingParenthesis - position + 1;
-            editor.replace(line, position, length, String(variable.arrayCount));
-        }
+        foldConstantsInVariableDeclaration(editor, variable, uc);
+    }
+}
 
+function foldConstantsInVariableDeclaration(editor: SourceEditor, variable: UnrealClassVariable, uc: UnrealClass) 
+{
+    if (variable.arrayCountExpression == null || variable.arrayCount == null){
+        return;
+    }
+    if ('text' in variable.arrayCountExpression){
+        const token = variable.arrayCountExpression;
+        if (token.type === SemanticClass.Identifier)
+        {
+            replaceTokenWithConstantValue(editor, token, uc);
+        }
+        return;
+    }
+    const expression = variable.arrayCountExpression;
+    if (expression.op && 
+        expression.argsLastToken && 
+        expression.op.textLower === 'arraycount'
+    ){
+        const closingParenthesis = expression.argsLastToken?.position ?? 0;
+        const line = expression.op?.line;
+        const position = expression.op?.position ?? 0;
+        const length = closingParenthesis - position + 1;
+        editor.replace(line, position, length, String(variable.arrayCount));
+    }
+}
+
+function replaceTokenWithConstantValue(editor: SourceEditor, token: ParserToken, uc: UnrealClass)
+{
+    for (var constant of uc.constants){
+        if (!constant.name || !constant.value) {
+            return;
+        }
+        if (constant.name.textLower === token.textLower)
+        {
+            editor.replace(token.line, token.position, token.text.length, constant.value.text);
+            break;
+        }
     }
 }
 
@@ -37,6 +62,9 @@ function foldFunctions(editor: SourceEditor, uc: UnrealClass) {
     {
         for (const st of fn.body){
             foldStatement(editor, uc, st);
+        }
+        for (const local of fn.locals){
+            
         }
     }
 }

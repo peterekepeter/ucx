@@ -32,6 +32,14 @@ test("replaces array count expression with resolved count", () => expect(transfo
     }
 `));
 
+test("substitues constants used in array declarations", () => expect(transform(`
+    const MAX_RULES = 512;
+    var string RuleList[MAX_RULES];
+`)).toBe(`
+    const MAX_RULES = 512;
+    var string RuleList[512];
+`));
+
 function transform(input: string): string {
     const editor = new SourceEditor(input);
     const uc = parse(input);
