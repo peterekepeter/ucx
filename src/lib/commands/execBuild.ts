@@ -5,12 +5,22 @@ import { exec, spawn } from "child_process";
 import { SourceEditor, transformFor436 } from "../transformer";
 import { UcParser, UnrealClass } from "../parser";
 import { ucTokenizeLine } from "../tokenizer";
+import path = require("path");
 
 export async function execBuild(cmd: UcxCommand){
     const projectFolders = await getBuildProjects(cmd.files);
+    let context: BuildContext | undefined;
     for (const project of projectFolders){
-        const context = await getBuildContext(project, cmd);
-        await buildProject(context);
+        try {
+            context = await getBuildContext(project, cmd);
+            await buildProject(context);
+        }
+        finally {
+            if (context) {
+                await deleteTemporaryFiles(context);
+                context = undefined;
+            }
+        }
     }
 }
 
@@ -19,9 +29,6 @@ async function buildProject(context: BuildContext) {
     await generateBuildIniIfNotExists(context);
     await runUccBuildCommand(context);
     await copyOutput(context);
-    if (context.performCleanup){   
-        await deleteTemporaryFiles(context);
-    }
 }
 
 async function getBuildContext(projectDir: string, cmd: UcxCommand): Promise<BuildContext> {
@@ -91,7 +98,8 @@ interface BuildContext
     pathSeparator: string;
     systemDir: string;
     gameDir: string
-    buildDir: string
+    buildDir: string;
+    buildClassesDir: string;
     buildName: string;
     buildIniFile?: string
     performCleanup: boolean,
@@ -119,9 +127,9 @@ async function visitSourceFolder(context: BuildContext, dirPath: string) {
 }
 
 async function visitSourceFile(context: BuildContext, srcPath: string) {
-    const destPath = getBuildPath(context, srcPath);
     // console.log('COPY', srcPath);
     if (srcPath.endsWith('.ini')){
+        const destPath = getBuildPath(context, srcPath);
         context.buildIniFile = destPath;
         let content = await fs.readFile(srcPath, 'utf-8');
         if (content.indexOf('EditPackages=') !== -1)
@@ -135,12 +143,16 @@ async function visitSourceFile(context: BuildContext, srcPath: string) {
             return;
         };
     } 
-    if (srcPath.endsWith('.uc')){
+    else if (srcPath.endsWith('.uc')){
+        const destPath = getBuildClassesPath(context, srcPath);
+        console.log({srcPath, destPath});
         await tempTransformSource(context, srcPath, destPath);
         return;
     }
-    
-    await tempCopy(context, srcPath, destPath);
+    else {
+        const destPath = getBuildPath(context, srcPath);
+        await tempCopy(context, srcPath, destPath);
+    }
 }
 
 async function generateBuildIniIfNotExists(context: BuildContext){
@@ -202,7 +214,23 @@ function getBuildPath(context: BuildContext, fullPath: string){
     throw new Error(`Path "${fullPath}" not part of project ${context.projectDir}`);
 }
 
-async function generateBuildNameAndDir(gameDir: string): Promise<{ buildName: string, buildDir: string }> {
+function getBuildClassesPath(context: BuildContext, fullPath: string){
+    if (fullPath.startsWith(context.projectDir)){
+        const filename = getFilename(fullPath);
+        return context.buildClassesDir + path.sep + filename;
+    }
+    throw new Error(`Path "${fullPath}" not part of project ${context.projectDir}`);
+}
+
+function getFilename(filePath: string): string {
+    const lastSlash = Math.max(filePath.lastIndexOf("\\"), filePath.lastIndexOf("/"));
+    if (lastSlash === -1){
+        throw new Error(`Cannot get filename of "${filePath}"`);
+    }
+    return filePath.substring(lastSlash + 1);
+}
+
+async function generateBuildNameAndDir(gameDir: string): Promise<{ buildName: string, buildDir: string, buildClassesDir: string }> {
     const number = Date.now();
     let error: unknown;
     for (let i=0; i<1000; i++){
@@ -211,8 +239,10 @@ async function generateBuildNameAndDir(gameDir: string): Promise<{ buildName: st
         try {
             await fs.mkdir(buildDir);
             buildDir = await fs.realpath(buildDir);
-            await fs.rmdir(buildDir);
-            return { buildName, buildDir };
+            let buildClassesDir = buildDir + "/Classes";
+            await fs.mkdir(buildClassesDir);
+            buildClassesDir = await fs.realpath(buildClassesDir);
+            return { buildName, buildDir, buildClassesDir };
         }
         catch (err)
         {
@@ -224,6 +254,17 @@ async function generateBuildNameAndDir(gameDir: string): Promise<{ buildName: st
 
 
 async function tempMkDir(context: BuildContext, path: string){
+    try 
+    {
+        const dirStat = await fs.stat(path);
+        if (dirStat.isDirectory()){
+            return; // already exists
+        }
+    }
+    catch 
+    {
+        // dir does not exists
+    }
     await fs.mkdir(path, { recursive: false });
     context.tempToCleanup.push({ fullPath: path, isDir: true });
 }
