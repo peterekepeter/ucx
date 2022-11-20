@@ -16,10 +16,10 @@ export async function execBuild(cmd: UcxCommand){
             await buildProject(context);
         }
         finally {
-            if (context) {
+            if (context && context.performCleanup) {
                 await deleteTemporaryFiles(context);
-                context = undefined;
             }
+            context = undefined;
         }
     }
 }
