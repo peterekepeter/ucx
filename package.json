@@ -2,7 +2,7 @@
 	"name": "ucx",
 	"displayName": "ucx",
 	"description": "UnrealScript Extensions",
-	"version": "0.5.0",
+	"version": "0.5.2",
 	"repository": "https://github.com/peterekepeter/ucx",
 	"publisher": "peterekepeter",
 	"engines": {
@@ -59,6 +59,7 @@
 		]
 	},
 	"scripts": {
+		"publish-all": "npm publish && npm run vsce-publish",
 		"vscode:prepublish": "npx rimraf ./out && npm run esbuild-base -- --minify",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",

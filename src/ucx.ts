@@ -23,9 +23,11 @@ async function main(){
         if (err instanceof UnknownCommandError) {
             console.error(chalk.red(err.message));
             console.log("Available commands:", err.knownCommands.map(c => chalk.bold(c)).join(', '));
+            process.exit(1);
         }
         else if (err instanceof SubprocessError){
             console.error(chalk.red(err.message));
+            process.exit(1);
         }
         else {
             throw err;
