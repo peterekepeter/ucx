@@ -94,6 +94,14 @@ test('does not split new operator', () => {
         ]);
 });
 
+test('does not split new(self) operator', () => {
+    parsing("a=new(self) class'T'")
+        .yieldsGroups([
+            // ignore the fact that it removes a space
+            "a=new(self)class'T'",
+        ]);
+});
+
 function parsing(str: string) {
     const splitter = new ExpressionSplitter();
     const tokens = tokenize(str);
