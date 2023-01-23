@@ -40,5 +40,5 @@ export function createEmptyUnrealClassVariable(): UnrealClassVariable {
         localized: false,
         template: null,
         arrayCountExpression: null,
-    }
+    };
 }

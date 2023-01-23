@@ -53,7 +53,7 @@ function parseEnumBodyClosed(parser: UcParser, token: Token) {
             parser.result.errors.push({ 
                 message: 'Enum typename not found!',
                 token
-            })
+            });
             parser.rootFn = parseNoneState;
             return;
         }

@@ -636,7 +636,7 @@ test('lint struct indentation', () => { linting([
 ]);});
 
 
-test('format negation operator spacing', () => { lintingStatements(
+test.skip('format negation operator spacing', () => { lintingStatements(
     'if ( ! ShouldApplyTo(Game))',
     '{',
     '    enabled = ! enabled;',

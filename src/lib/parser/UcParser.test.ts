@@ -936,7 +936,7 @@ test("parse super call", () => { parsing(`
         super.F();
     }`)
     .hasNoErrors()
-    .hasTokens(['super', C.Keyword], ['.', C.None], ['F', C.VariableReference]);
+    .hasTokens(['super', C.Keyword], ['.', C.None], ['F', C.FunctionReference]);
 });
 
 
@@ -945,7 +945,7 @@ test("parse self call", () => { parsing(`
         self.G();
     }`)
     .hasNoErrors()
-    .hasTokens(['self', C.Keyword], ['.', C.None], ['G', C.VariableReference]);
+    .hasTokens(['self', C.Keyword], ['.', C.None], ['G', C.FunctionReference]);
 });
 
 
