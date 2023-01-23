@@ -147,7 +147,13 @@ function resolveSubExpression(
     }
     for (let i=begin; i<end; i++){
         if (tokens[i].type === SemanticClass.Identifier){
-            tokens[i].type = SemanticClass.VariableReference;
+            if (i+1<end && tokens[i+1].text === '(')
+            {
+                tokens[i].type = SemanticClass.FunctionReference;
+            }
+            else {
+                tokens[i].type = SemanticClass.VariableReference;
+            }
         }
     }
     if (tokenCount === 3 && tokens[begin+1].type === SemanticClass.Operator){

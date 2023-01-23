@@ -168,10 +168,12 @@ export function activate(context: vscode.ExtensionContext) {
                     type = TOKEN_TYPE_VARIABLE;
                     break;
                 case SemanticClass.ExecInstruction:
-                    type = TOKEN_TYPE_MACRO;
+                    // skip this until tmGrammar has proper syntax
+                    // type = TOKEN_TYPE_MACRO;
                     break;
                 case SemanticClass.LanguageConstant:
-                    type = TOKEN_TYPE_KEYWORD;
+                    // skip for now, tmGrammar identifies this type of constant
+                    // type = TOKEN_TYPE_KEYWORD;
                     break;
                 case SemanticClass.StatementLabel:
                     type = TOKEN_TYPE_LABEL;

@@ -42,7 +42,7 @@
 											"patterns": [
 												{
 													"name": "constant.numeric.unrealscript",
-													"match": "\\d+.?\\d*"
+													"match": "-?\\d+.?\\d*"
 												},
 												{
 													"name": "string.unquoted.unrealscript",
@@ -53,7 +53,7 @@
 									}
 								},
 								{
-									"name": "keyword.other",
+									"name": "meta.type.name",
 									"match": "\\w+"
 								}
 							]
@@ -131,7 +131,7 @@
 							}
 						},
 						{
-							"name": "storage.modifier",
+							"name": "keyword.unrealscript",
 							"match": "(?i)\\b(config)\\s*\\(([^)]+)\\)",
 							"captures": {
 								"2": {
@@ -144,8 +144,8 @@
 							"name": "keyword"
 						},
 						{
-							"name": "storage.modifier",
-							"match": "(?i)\\b(config|abstract|native|nativereplication|perobjectconfig|noexport|safereplace)\\b"
+							"name": "keyword.unrealscript",
+							"match": "(?i)\\b(config|abstract|native|nativereplication|perobjectconfig|noexport|safereplace|transient)\\b"
 						}
 					]
 				},
@@ -195,6 +195,18 @@
 					"patterns": [
 						{
 							"include": "#comments"
+						},
+						{
+							"name": "keyword.unrealscript",
+							"match": "(?i)\\b(reliable|unreliable|if)\\b"
+						},
+						{
+							"name": "variable.unrealscript",
+							"match": "(?i)\\b([a-z_][a-z_0-9]*)"
+						},
+						{
+							"name": "keyword.operator.unrealscript",
+							"match": "&&|\\^\\^|\\|\\||==|!=|\\*=|/=|\\+\\+|--|\\+=|-=|@|<<|>>|<=|>=|~=|\\+|-|\\*|/|<|>|%|\\$|~|&|\\^|\\||\\!|=|."
 						}
 					]
 				},
@@ -240,10 +252,6 @@
 					"patterns": [
 						{
 							"include": "#defaultkeyvalue.unrealscript"
-						},
-						{
-							"name": "punctuation.separator.unrealscript",
-							"match": ","
 						}
 					]
 				},
@@ -294,7 +302,7 @@
 				},
 				{
 					"name": "variable.other",
-					"match": "[a-zA-Z_][a-zA-Z_0-9]*"
+					"match": "(?i)[a-z_][a-z_0-9]*"
 				}
 			]
 		},
@@ -402,7 +410,7 @@
 					}
 				},
 				{
-					"name": "storage.modifier.unrealscript",
+					"name": "keyword.unrealscript",
 					"match": "(?i)\\b(globalconfig|config|private|localized|const|transient|const|native|editconst)\\b"
 				},
 				{
@@ -428,27 +436,48 @@
 			]
 		},
 		"functiondefinition": {
-			"name": "meta.function.unrealscript",
-			"begin": "(?i)\\b(native|static|final)\\b\\s*(\\(([0-9]*)\\))?",
-			"beginCaptures": {
-				"1": {
-					"name": "storage.modifier"
-				},
-				"2": {
-					"name": "constant.numeric"
-				}
-			},
-			"end": ";",
 			"patterns": [
 				{
 					"include": "#comments"
 				},
 				{
-					"name": "storage.modifier",
-					"match": "(?i)\\b(native|static|final)\\b\\s*(\\(([0-9]*)\\))?",
+					"begin": "\\(",
+					"end": "\\)",
+					"patterns": [
+						{
+							"include": "#comments"
+						},
+						{
+							"match": "(?i)\\b(coerce|optional|out)\\b",
+							"name": "keyword.unrealscript"
+						},
+						{
+							"match": "(?i)\\b([a-z_][a-z_0-9]*)\\s+([a-z_][a-z_0-9]*)",
+							"captures": {
+								"1": {
+									"name": "meta.type.name.unrealscript"
+								},
+								"2": {
+									"name": "variable.parameter.unrealscript"
+								}
+							}
+						},
+						{
+							"name": "string.quoted.double.unrealscript",
+							"begin": "\\\"",
+							"end": "\\\""
+						}
+					]
+				},
+				{
+					"include": "#functionblock"
+				},
+				{
+					"name": "keyword.unrealscript",
+					"match": "(?i)\\b(simulated|native|static|final|out|local|new|state|exec)\\b\\s*(\\(([0-9]*)\\))?",
 					"captures": {
 						"2": {
-							"name": "constant.numeric"
+							"name": "constant.numeric.unrealscript"
 						}
 					}
 				},
@@ -459,13 +488,125 @@
 							"name": "keyword.unrealscript"
 						},
 						"2": {
-							"name": "constant.numeric"
+							"name": "constant.numeric.unrealscript"
 						}
 					}
 				},
 				{
+					"match": "(?i)\\b([a-z_][a-z_0-9]*)\\s+([a-z_][a-z_0-9]*)",
+					"captures": {
+						"1": {
+							"name": "meta.type.name.unrealscript"
+						},
+						"2": {
+							"name": "entity.name.function.unrealscript"
+						}
+					}
+				},
+				{
+					"name": "string.quoted.double.unrealscript",
+					"begin": "\\\"",
+					"end": "\\\""
+				},
+				{
+					"match": "&&|\\^\\^|\\|\\||==|!=|\\*=|/=|\\+\\+|--|\\+=|-=|$|@|<<|>>|<=|>=|~=|\\+|-|\\*|/|<|>|%|\\$|~|&|\\^|\\||\\!|=",
+					"name": "keyword.operator"
+				},
+				{
 					"match": "(?i)\\b[a-z_][a-z_0-9]*",
-					"name": "entity.name.function"
+					"name": "entity.name.function.unrealscript"
+				}
+			]
+		},
+		"functionblock": {
+			"name": "meta.function.block.unrealscript",
+			"begin": "\\{",
+			"end": "\\}",
+			"patterns": [
+				{
+					"include": "#comments"
+				},
+				{
+					"include": "#functionblock"
+				},
+				{
+					"begin": "\\\"",
+					"end": "\\\"",
+					"name": "string.quoted.double"
+				},
+				{
+					"begin": "\\'",
+					"end": "\\'",
+					"name": "string.quoted.single"
+				},
+				{
+					"name": "meta.section.ignores",
+					"begin": "(?i)\\b(ignores)\\b",
+					"end": ";",
+					"captures": {
+						"1": {
+							"name": "keyword.unrealscript"
+						}
+					},
+					"patterns": [
+						{
+							"match": "(?i)\\b([a-z_][a-z_0-9]*)\\b",
+							"name": "entity.name.function.unrealscript"
+						}
+					]
+				},
+				{
+					"name": "keyword.unrealscript",
+					"match": "(?i)\\b(native|static|final|out|local|new|if|else|for|while|goto|break|continue|return|super|self|function|event|ignores|exec|switch|case|assert|default)\\b\\s*(\\(([0-9]*)\\))?",
+					"captures": {
+						"2": {
+							"name": "constant.numeric.unrealscript"
+						}
+					}
+				},
+				{
+					"name": "constant.numeric.unrealscript",
+					"match": "\\d+|-?\\d+(?:\\.\\d*|x[0-9a-f]*)?"
+				},
+				{
+					"match": "(?i)\\b([a-z_][a-z_0-9]*(?:(<)[a-z_0-9]+(>))?)\\s+([a-z_][a-z_0-9]*)",
+					"captures": {
+						"1": {
+							"name": "meta.type.name.unrealscript"
+						},
+						"2": {
+							"name": "keyword.operator"
+						},
+						"3": {
+							"name": "keyword.operator"
+						},
+						"4": {
+							"name": "variable.unrealscript"
+						}
+					}
+				},
+				{
+					"match": "&&|\\^\\^|\\|\\||==|!=|\\*=|/=|\\+\\+|--|\\+=|-=|@|<<|>>|<=|>=|~=|\\+|-|\\*|/|<|>|%|\\$|~|&|\\^|\\||\\!|=|\\.",
+					"name": "keyword.operator"
+				},
+				{
+					"match": "(?i)\\b([a-z_][a-z_0-9]*):",
+					"captures": {
+						"1": {
+							"name": "entity.name.label.unrealscript"
+						}
+					}
+				},
+				{
+					"match": "(?i)\\b([a-z_][a-z_0-9]*)\\(",
+					"captures": {
+						"1": {
+							"name": "entity.name.function.unrealscript"
+						}
+					}
+				},
+				{
+					"include": "#defaultvalue"
 				}
 			]
 		}
