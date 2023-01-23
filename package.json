@@ -56,6 +56,13 @@
 				"firstLine": "^\\s*class\\s*[a-zA-Z0-9_]+\\s*(?:extends|expands)\\s*[a-zA-Z0-9_]+",
 				"configuration": "./uc.language-configuration.json"
 			}
+		],
+		"grammars": [
+			{
+				"language": "unrealscript",
+				"scopeName": "source.unrealscript",
+				"path": "./syntaxes/unrealscript.tmLanguage.json"
+			}
 		]
 	},
 	"scripts": {

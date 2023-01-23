@@ -1,0 +1,474 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "unrealscript",
+	"patterns": [
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#preprocessor"
+		},
+		{
+			"include": "#toplevel"
+		}
+	],
+	"repository": {
+		"preprocessor": {
+			"patterns": [
+				{
+					"name": "meta.preprocessor.unrealscript",
+					"begin": "#",
+					"end": "$",
+					"patterns": [
+						{
+							"name": "keyword.other",
+							"begin": "exec",
+							"end": "$",
+							"patterns": [
+								{
+									"include": "#comments"
+								},
+								{
+									"match": "(\\w+)(=)([^\\s]+)",
+									"captures": {
+										"1": {
+											"name": "variable.parameter"
+										},
+										"2": {
+											"name": "keyword.operator"
+										},
+										"3": {
+											"name": "constant.other",
+											"patterns": [
+												{
+													"name": "constant.numeric.unrealscript",
+													"match": "\\d+.?\\d*"
+												},
+												{
+													"name": "string.unquoted.unrealscript",
+													"match": ".*"
+												}
+											]
+										}
+									}
+								},
+								{
+									"name": "keyword.other",
+									"match": "\\w+"
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.line.double-slash.unrealscript",
+					"match": "//.*"
+				},
+				{
+					"name": "comment.block.unrealscript",
+					"begin": "/\\*",
+					"end": "\\*/"
+				}
+			]
+		},
+		"toplevel": {
+			"patterns": [
+				{
+					"name": "meta.section.defaultproperties.unrealscript",
+					"begin": "defaultproperties",
+					"end": "}",
+					"beginCaptures": {
+						"0": {
+							"name": "keyword"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#comments"
+						},
+						{
+							"include": "#defaultkeyvalue"
+						}
+					]
+				},
+				{
+					"name": "meta.classdefinition.unrealscript",
+					"begin": "(?i)(class)",
+					"end": ";",
+					"beginCaptures": {
+						"1": {
+							"name": "keyword"
+						}
+					},
+					"patterns": [
+						{
+							"match": "(?i)\\G\\s+([a-z_][a-z_0-9]+)",
+							"captures": {
+								"1": {
+									"name": "entity.name.class"
+								}
+							}
+						},
+						{
+							"match": "(?i)(extends|expands)\\s+([a-z_][a-z_0-9]+)",
+							"captures": {
+								"1": {
+									"name": "keyword"
+								},
+								"2": {
+									"name": "entity.name.class",
+									"patterns": [
+										{
+											"name": "entity.other.inherited-class",
+											"match": ".*"
+										}
+									]
+								}
+							}
+						},
+						{
+							"name": "storage.modifier",
+							"match": "(?i)\\b(config)\\s*\\(([^)]+)\\)",
+							"captures": {
+								"2": {
+									"name": "string.unquoted"
+								}
+							}
+						},
+						{
+							"match": "(?i)\\b(class|extends|expands)\\b",
+							"name": "keyword"
+						},
+						{
+							"name": "storage.modifier",
+							"match": "(?i)\\b(config|abstract|native|nativereplication|perobjectconfig|noexport|safereplace)\\b"
+						}
+					]
+				},
+				{
+					"include": "#vardefinition"
+				},
+				{
+					"name": "meta.constdefinition.unrealscript",
+					"begin": "(?i)(const)",
+					"end": ";",
+					"beginCaptures": {
+						"1": {
+							"name": "keyword.unrealscript"
+						}
+					},
+					"patterns": [
+						{
+							"match": "(?i)\\G\\s+([a-z_][a-z_0-9]*)\\s*(=)\\s*([^;]*)",
+							"captures": {
+								"1": {
+									"name": "variable.other.constant.unrealscript"
+								},
+								"2": {
+									"name": "keyword.operator"
+								},
+								"3": {
+									"name": "constant.other",
+									"patterns": [
+										{
+											"include": "#defaultvalue"
+										}
+									]
+								}
+							}
+						}
+					]
+				},
+				{
+					"name": "meta.section.replicationblock.unrealscript",
+					"begin": "(?i)(replication)",
+					"end": "}",
+					"beginCaptures": {
+						"1": {
+							"name": "keyword.unrealscript"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#comments"
+						}
+					]
+				},
+				{
+					"include": "#enumdefinition"
+				},
+				{
+					"include": "#structdefinition"
+				},
+				{
+					"include": "#functiondefinition"
+				}
+			]
+		},
+		"defaultkeyvalue": {
+			"match": "([a-zA-Z_][a-zA-Z_0-9]*)(\\((\\d+)\\))?(=)(\\(.*\\)|\".*?\"|[^,\n]*)",
+			"captures": {
+				"1": {
+					"name": "variable.other.object.unrealscript"
+				},
+				"3": {
+					"name": "constant.numeric"
+				},
+				"4": {
+					"name": "keyword.operator"
+				},
+				"5": {
+					"name": "constant.other",
+					"patterns": [
+						{
+							"include": "#defaultvalue"
+						}
+					]
+				}
+			}
+		},
+		"defaultvalue": {
+			"patterns": [
+				{
+					"name": "meta.objectliteral.unrealscript",
+					"begin": "\\(",
+					"end": "\\)",
+					"patterns": [
+						{
+							"include": "#defaultkeyvalue.unrealscript"
+						},
+						{
+							"name": "punctuation.separator.unrealscript",
+							"match": ","
+						}
+					]
+				},
+				{
+					"name": "string.quoted.double.unrealscript",
+					"begin": "\"",
+					"end": "\""
+				},
+				{
+					"match": "([a-zA-Z_][a-zA-Z_0-9]*)('[^']*')",
+					"captures": {
+						"1": {
+							"name": "entity.name.class.unrealscript"
+						},
+						"2": {
+							"name": "string.quoted.single.unrealscript",
+							"patterns": [
+								{
+									"include": "#unrealname"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "string.quoted.single.unrealscript",
+					"match": "'[a-zA-Z0-9_\\.]*'"
+				},
+				{
+					"name": "constant.numeric.unrealscript",
+					"match": "-?\\d+(?:\\.\\d*|x[0-9a-f]*)?"
+				},
+				{
+					"name": "constant.language.boolean.true.unrealscript",
+					"match": "(?i)true"
+				},
+				{
+					"name": "constant.language.boolean.true.unrealscript",
+					"match": "(?i)false"
+				},
+				{
+					"name": "constant.language.none.unrealscript",
+					"match": "(?i)none"
+				},
+				{
+					"name": "variable.other.enummember.unrealscript",
+					"match": "[A-Z]+_[a-zA-Z_][a-zA-Z_0-9]*"
+				},
+				{
+					"name": "variable.other",
+					"match": "[a-zA-Z_][a-zA-Z_0-9]*"
+				}
+			]
+		},
+		"unrealname": {
+			"name": "string.quoted.single",
+			"patterns": [
+				{
+					"name": "keyword.operator",
+					"match": "\\."
+				}
+			]
+		},
+		"enumdefinition": {
+			"name": "meta.enum.unrealscript",
+			"begin": "(?i)(enum)",
+			"end": ";",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#comments"
+				},
+				{
+					"name": "entity.name.enum",
+					"match": "(?i)\\G\\s+[a-z_][a-z_0-9]*"
+				},
+				{
+					"name": "meta.enum.block.unrealscript",
+					"begin": "{",
+					"end": "}",
+					"patterns": [
+						{
+							"include": "#comments"
+						},
+						{
+							"name": "variable.name",
+							"match": "(?i)([a-z_][a-z_0-9]*)"
+						}
+					]
+				}
+			]
+		},
+		"structdefinition": {
+			"name": "meta.struct.unrealscript",
+			"begin": "(?i)\\b(struct)\\b",
+			"end": ";",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#comments"
+				},
+				{
+					"name": "entity.name.struct",
+					"match": "(?i)\\G\\s+[a-z_][a-z_0-9]*"
+				},
+				{
+					"match": "(?i)(extends)\\s+([a-z_][a-z_0-9]*)",
+					"captures": {
+						"1": {
+							"name": "keyword.unrealscript"
+						},
+						"2": {
+							"name": "entity.name.struct"
+						}
+					}
+				},
+				{
+					"name": "meta.struct.block.unrealscript",
+					"begin": "{",
+					"end": "}",
+					"patterns": [
+						{
+							"include": "#comments"
+						},
+						{
+							"include": "#vardefinition"
+						}
+					]
+				}
+			]
+		},
+		"vardefinition": {
+			"name": "meta.vardefinition.unrealscript",
+			"begin": "(?i)\\b(var)\\b",
+			"end": ";",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword"
+				}
+			},
+			"patterns": [
+				{
+					"match": "\\G\\s*\\(([^)]*)\\)",
+					"captures": {
+						"1": {
+							"name": "string.unquoted.unrealscript"
+						}
+					}
+				},
+				{
+					"name": "storage.modifier.unrealscript",
+					"match": "(?i)\\b(globalconfig|config|private|localized|const|transient|const|native|editconst)\\b"
+				},
+				{
+					"match": "(?i)([a-z_][a-z_0-9<>]*)\\s+([a-z_][a-z_0-9]*)",
+					"captures": {
+						"1": {
+							"name": "meta.type.name"
+						},
+						"2": {
+							"name": "variable.name"
+						}
+					}
+				},
+				{
+					"name": "variable.name",
+					"match": "(?i)([a-z_][a-z_0-9]*)"
+				},
+				{
+					"begin": "\\[",
+					"end": "\\]",
+					"contentName": "constant.other"
+				}
+			]
+		},
+		"functiondefinition": {
+			"name": "meta.function.unrealscript",
+			"begin": "(?i)\\b(native|static|final)\\b\\s*(\\(([0-9]*)\\))?",
+			"beginCaptures": {
+				"1": {
+					"name": "storage.modifier"
+				},
+				"2": {
+					"name": "constant.numeric"
+				}
+			},
+			"end": ";",
+			"patterns": [
+				{
+					"include": "#comments"
+				},
+				{
+					"name": "storage.modifier",
+					"match": "(?i)\\b(native|static|final)\\b\\s*(\\(([0-9]*)\\))?",
+					"captures": {
+						"2": {
+							"name": "constant.numeric"
+						}
+					}
+				},
+				{
+					"match": "(?i)\\b(operator|preoperator|postoperator|event|function)\\b\\s*(\\(([0-9]*)\\))?",
+					"captures": {
+						"1": {
+							"name": "keyword.unrealscript"
+						},
+						"2": {
+							"name": "constant.numeric"
+						}
+					}
+				},
+				{
+					"match": "(?i)\\b[a-z_][a-z_0-9]*",
+					"name": "entity.name.function"
+				}
+			]
+		}
+	},
+	"scopeName": "source.unrealscript"
+}
