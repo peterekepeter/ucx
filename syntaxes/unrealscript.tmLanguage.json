@@ -222,7 +222,7 @@
 			]
 		},
 		"defaultkeyvalue": {
-			"match": "([a-zA-Z_][a-zA-Z_0-9]*)(\\((\\d+)\\))?(=)(\\(.*\\)|\".*?\"|[^,\n]*)",
+			"match": "([a-zA-Z_][a-zA-Z_0-9]*)(\\((\\d+)\\))?(=)(\\(.*\\)|\"(\\\\.|[^\"])*?\"|[^,\n]*)",
 			"captures": {
 				"1": {
 					"name": "variable.other.object.unrealscript"
@@ -256,9 +256,7 @@
 					]
 				},
 				{
-					"name": "string.quoted.double.unrealscript",
-					"begin": "\"",
-					"end": "\""
+					"include": "#doublequotedstring"
 				},
 				{
 					"match": "([a-zA-Z_][a-zA-Z_0-9]*)('[^']*')",
@@ -463,9 +461,7 @@
 							}
 						},
 						{
-							"name": "string.quoted.double.unrealscript",
-							"begin": "\\\"",
-							"end": "\\\""
+							"include": "#doublequotedstring"
 						}
 					]
 				},
@@ -504,9 +500,7 @@
 					}
 				},
 				{
-					"name": "string.quoted.double.unrealscript",
-					"begin": "\\\"",
-					"end": "\\\""
+					"include": "#doublequotedstring"
 				},
 				{
 					"match": "&&|\\^\\^|\\|\\||==|!=|\\*=|/=|\\+\\+|--|\\+=|-=|$|@|<<|>>|<=|>=|~=|\\+|-|\\*|/|<|>|%|\\$|~|&|\\^|\\||\\!|=",
@@ -530,9 +524,7 @@
 					"include": "#functionblock"
 				},
 				{
-					"begin": "\\\"",
-					"end": "\\\"",
-					"name": "string.quoted.double"
+					"include": "#doublequotedstring"
 				},
 				{
 					"begin": "\\'",
@@ -607,6 +599,18 @@
 				},
 				{
 					"include": "#defaultvalue"
+				}
+			]
+		},
+		"doublequotedstring": 
+		{
+			"begin": "\"",
+			"end": "\"",
+			"name": "string.quoted.double.unrealscript",
+			"patterns": [
+				{
+					"name": "constant.character.escape.unrealscript",
+					"match": "\\\\[\"\\\\]"
 				}
 			]
 		}

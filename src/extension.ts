@@ -101,7 +101,7 @@ export function activate(context: vscode.ExtensionContext) {
             const tokensBuilder = new vscode.SemanticTokensBuilder(legend);
             // on line 1, characters 1-5 are a class declaration
             for (const token of ast.tokens){
-                let type: number | undefined;
+                let type: number | undefined = undefined;
                 let modifier: number | undefined = undefined;
                 switch(token.type){
                 case SemanticClass.Comment: 
@@ -149,9 +149,14 @@ export function activate(context: vscode.ExtensionContext) {
                     modifier = TOKEN_MODIFIER_READONLY;
                     break;
                 case SemanticClass.ObjectReferenceName:
-                case SemanticClass.LiteralName:
-                case SemanticClass.LiteralString:
                     type = TOKEN_TYPE_STRING;
+                    break;
+                case SemanticClass.LiteralName:
+                    type = TOKEN_TYPE_STRING;
+                    break;
+                case SemanticClass.LiteralString:
+                    // skip, tmGrammer has better highlight for escapes
+                    // type = TOKEN_TYPE_STRING;
                     break;
                 case SemanticClass.LiteralNumber:
                     type = TOKEN_TYPE_NUMBER;

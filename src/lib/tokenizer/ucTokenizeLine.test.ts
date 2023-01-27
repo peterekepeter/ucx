@@ -30,6 +30,19 @@ test("tokenize float point value", () => verifyTokens(`
     'const', 'Pi', '=', '3.1415926535897932', ';'
 ]));
 
+test("tokenize string", () => verifyTokens(`
+    const HTML = "abcd"
+`, [
+    'const', 'HTML', '=', '"abcd"'
+]));
+
+
+test("tokenize string with escape", () => verifyTokens(`
+    const HTML = "<font color=\\"FFFF00\\">"
+`, [
+    'const', 'HTML', '=', '"<font color=\\"FFFF00\\">"'
+]));
+
 test("tokenize multiline comment", () => verifyTokens(`
     /*  
      * Something
@@ -115,7 +128,6 @@ test("tokenize operators", () => verifyTokens(`
 `, [
     '~='
 ]));
-
 
 function verifyTokens(input: string, output: string[]){
     expect(tokenize(input)).toEqual(output);
