@@ -659,6 +659,12 @@ test('format no change on well formatted negation of function return', () => { l
     "x = !TestSomething();"
 ));});
 
+test('format no change on well formatted negation of static function return', () => { lintingStatements(
+    "x = !class'Util'.static.TestSomething(Level);"
+).hasFormattedResult(statementWrapper(
+    "x = !class'Util'.static.TestSomething(Level);"
+));});
+
 test('format no change on well formatted new class instantiation', () => { lintingStatements(
     "MapTagsConfig = new class'MapTagsConfig';"
 ).hasFormattedResult(statementWrapper(
