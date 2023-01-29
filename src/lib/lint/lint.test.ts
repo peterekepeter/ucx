@@ -635,8 +635,7 @@ test('lint struct indentation', () => { linting([
     '};',
 ]);});
 
-
-test.skip('format negation operator spacing', () => { lintingStatements(
+test('format negation operator spacing', () => { lintingStatements(
     'if ( ! ShouldApplyTo(Game))',
     '{',
     '    enabled = ! enabled;',
@@ -646,6 +645,18 @@ test.skip('format negation operator spacing', () => { lintingStatements(
     '{',
     '    enabled = !enabled;',
     '}'
+));});
+
+test('format no change on well formatted negation of variable', () => { lintingStatements(
+    "x = !x;"
+).hasFormattedResult(statementWrapper(
+    "x = !x;"
+));});
+
+test('format no change on well formatted negation of function return', () => { lintingStatements(
+    "x = !TestSomething();"
+).hasFormattedResult(statementWrapper(
+    "x = !TestSomething();"
 ));});
 
 test('format no change on well formatted new class instantiation', () => { lintingStatements(

@@ -98,6 +98,7 @@ function canOperatorBeAppliedTo(token: ParserToken)
     case C.LiteralNumber:
     case C.LiteralString:
     case C.LiteralName:
+    case C.FunctionReference: // can be applied to function result
     case C.LanguageConstant:
     case C.ClassConstant:
     case C.VariableReference:
