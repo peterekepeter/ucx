@@ -368,6 +368,7 @@ function* processLinterRules(document: vscode.TextDocument, options?: { reportPa
     }
     parser.endOfFile(document.lineCount, 0);
     const ast = parser.getAst();
+    ast.fileName = document.fileName;
     ast.textLines = lines;
     if (options?.reportParserErrors){
         for (const parseError of ast.errors){

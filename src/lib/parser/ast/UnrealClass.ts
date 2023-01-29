@@ -11,6 +11,7 @@ import { UnrealExecInstruction } from "./UnrealExecInstruction";
 
 
 export interface UnrealClass {
+    fileName?: string;
     configName?: Token | null;
     classFirstToken?: Token | null;
     classLastToken?: Token | null;

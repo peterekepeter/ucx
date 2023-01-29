@@ -2,6 +2,7 @@ import { IndentationType } from "../../indentation/IndentationType";
 import { AstBasedLinter } from "../AstBasedLinter";
 import { LintResult } from "../LintResult";
 import { AstIndentRule } from "./AstIndentRule";
+import { ClassNamingRule } from "./ClassNamingRule";
 import { EmptyLineBeforeFunction } from "./EmptyLineBeforeFunction";
 import { OperatorSpacing } from "./OperatorSpacing";
 import { RedundantDefaultValue } from "./RedundantDefaultValue";
@@ -14,6 +15,7 @@ export type AstLinterConfiguration =
     emptyLineBeforeFunctionEnabled: boolean,
     operatorSpacingEnabled: boolean,
     semicolorFixEnabled: boolean,
+    classNamingRule: boolean,
 };
 
 export const DEFAULT_AST_LINTER_CONFIGURATION: AstLinterConfiguration = {
@@ -21,7 +23,8 @@ export const DEFAULT_AST_LINTER_CONFIGURATION: AstLinterConfiguration = {
     indentEnabled: true,
     indentType: '\t',
     operatorSpacingEnabled: true,
-    semicolorFixEnabled: true
+    semicolorFixEnabled: true,
+    classNamingRule: true,
 };
 
 export function buildAstLinter(partialConfig?: Partial<AstLinterConfiguration>): AstBasedLinter
@@ -50,6 +53,10 @@ export function buildAstLinter(partialConfig?: Partial<AstLinterConfiguration>):
     if (config.semicolorFixEnabled)
     {
         children.push(new SemicolonAutoFixer());
+    }
+
+    if (config.classNamingRule) {
+        children.push(new ClassNamingRule());
     }
 
     children.push(new RedundantDefaultValue);

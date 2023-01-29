@@ -709,7 +709,35 @@ test('format removes useless default int properties', () => { linting([
     '};',
 ]);});
 
-function linting(lines: string[], options?: Partial<FullLinterConfig>) {
+test('checks class name to be filename', () => { linting([
+    'class SomeClass extends Object;'
+], undefined, './something/AnotherClass.uc').hasResult({
+    message: "Class names should match file names, expected class name: AnotherClass"
+});});
+
+test('checks class declaration to exists', () => { linting([
+], undefined, './something/AnotherClass.uc').hasResult({
+    message: "Missing class declaration"
+});});
+
+test('class name is correctly set', () => { linting([
+    'class SomeClass extends Object;'
+], undefined, './something/SomeClass.uc').hasNoLintResults();});
+
+test('class name is correctly set, but filename is not', () => { linting([
+    'class SomeClass extends Object;'
+], undefined, './something/Some-Class.uc').hasResult({
+    message: "File names should match class names, expected file name: SomeClass.uc"
+});});
+
+test('class name not having correct casing', () => { linting([
+    'class something extends Object;'
+], undefined, './something/Some-Class.uc').hasResult({
+    message: "Class names should be in PascalCase"
+});});
+
+
+function linting(lines: string[], options?: Partial<FullLinterConfig>, fileName?: string) {
     const parser = new UcParser();
     for (let i = 0; i < lines.length; i++) {
         for (const token of ucTokenizeLine(lines[i])) {
@@ -719,6 +747,7 @@ function linting(lines: string[], options?: Partial<FullLinterConfig>) {
     parser.endOfFile(lines.length, 0);
     const ast = parser.getAst();
     ast.textLines = lines;
+    ast.fileName = fileName;
 
     let results: LintResult[] = buildFullLinter({
         indentType: '    ',
