@@ -555,7 +555,7 @@ test('lint does not add semicolon in middle of the new class statement', () => {
 test('lint does not add semicolon in middle of the new(self) class statement', () => { lintingStatements(
     "A = new(self) class'TestClass';",
 ).hasFormattedResult(statementWrapper(
-    "A = new(self) class'TestClass';",
+    "A = new(Self) class'TestClass';",
 ));});
 
 test('lint warning string tab escape does not work', () => { lintingStatements(
@@ -652,6 +652,24 @@ test('format no change on well formatted new class instantiation', () => { linti
     "MapTagsConfig = new class'MapTagsConfig';"
 ).hasFormattedResult(statementWrapper(
     "MapTagsConfig = new class'MapTagsConfig';"
+));});
+
+test('super keywords are capitalized', () => { lintingStatements(
+    "super.PostBeginPlay();"
+).hasFormattedResult(statementWrapper(
+    "Super.PostBeginPlay();"
+));});
+
+test('self keywords are capitalized', () => { lintingStatements(
+    "Log(self.Class);"
+).hasFormattedResult(statementWrapper(
+    "Log(Self.Class);"  
+));});
+
+test.skip('default keyords in expressions are capitalized', () => { lintingStatements(
+    "W.EntryActor = WaterZoneType.default.EntryActor;"
+).hasFormattedResult(statementWrapper(
+    "W.EntryActor = WaterZoneType.Default.EntryActor;"  
 ));});
 
 test('format removes useless default int properties', () => { linting([

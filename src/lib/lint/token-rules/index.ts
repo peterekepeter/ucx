@@ -3,9 +3,7 @@ import { ParserToken } from "../../parser";
 import { LintResult } from "../LintResult";
 import { TokenBasedLinterV2 } from "../TokenBasedLinter";
 import { BracketSpacingRule } from "./BracketSpacingRule";
-import { KeywordFormatRule } from "./KeywordFormatRule";
-import { NoneFormatRule } from "./NoneFormatRule";
-import { TrueFalseFormatRule } from "./TrueFalseFormatRule";
+import { KeywordCasingRule } from "./KeywordCasingRule";
 import { ValidateNamesRule } from "./ValidateNamesRule";
 import { ValidateStringRule } from "./ValidateStringRule";
 
@@ -13,12 +11,10 @@ import { ValidateStringRule } from "./ValidateStringRule";
 export type TokenBasedLinterConfiguration = typeof DEFAULT_TOKEN_BASED_LINTER_CONFIGURATION;
 
 export const DEFAULT_TOKEN_BASED_LINTER_CONFIGURATION = {
-    enableKeywordFormatRule: true,
-    enableNoneFormatRule: true,
-    enableTrueFalseFormatRule: true,
     enableBracketSpacingRule: true,
     enableValidateStringRule: true,
     enableValidateNamesRule: true,
+    enableKeywordCasingRule: true,
     indentType: '\t' as IndentationType,
 };
 
@@ -55,10 +51,8 @@ class ComposedLinter implements TokenBasedLinterV2
 
 function* configureChildren(config: TokenBasedLinterConfiguration): Iterable<TokenBasedLinterV2> {
     const c = config;
-    if (c.enableKeywordFormatRule) { yield new KeywordFormatRule() }
-    if (c.enableNoneFormatRule) { yield new NoneFormatRule() }
-    if (c.enableTrueFalseFormatRule) { yield new TrueFalseFormatRule() }
     if (c.enableBracketSpacingRule) { yield new BracketSpacingRule(c.indentType) }
     if (c.enableValidateStringRule) { yield new ValidateStringRule() }
     if (c.enableValidateNamesRule) { yield new ValidateNamesRule() }
+    if (c.enableKeywordCasingRule) { yield new KeywordCasingRule() }
 }
