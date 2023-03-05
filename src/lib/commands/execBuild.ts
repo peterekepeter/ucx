@@ -4,10 +4,15 @@ import { execSync } from "child_process";
 import { SourceEditor, transformFor436 } from "../transformer";
 import { UcParser, UnrealClass } from "../parser";
 import { ucTokenizeLine } from "../tokenizer";
-
-import chalk = require("chalk");
-import path = require("path");
 import { SubprocessError } from "./SubprocessError";
+import { InvalidUccPath } from "./InvalidUccPath";
+
+import os = require("os");
+import path = require("path");
+import { green, bold, gray, yellow } from "chalk";
+import { CommandBuilder } from "./subprocess/CommandBuilder";
+import { detectPlatform, PlatformType } from "./subprocess/detectPlatform";
+import { detectPathSeparator, getFilename, pathUpOneLevel } from "./filesystem";
 
 export async function execBuild(cmd: UcxCommand){
     const projectFolders = await getBuildProjects(cmd.files);
@@ -47,7 +52,7 @@ async function getBuildContext(projectDir: string, cmd: UcxCommand): Promise<Bui
     };
     context.tempToCleanup.push({ fullPath: context.buildDir, isDir: true });
     context.tempToCleanup.push({ fullPath: context.buildClassesDir, isDir: true });
-    console.log(chalk.green('building'), chalk.bold(projectName), chalk.gray(context.buildName));
+    console.log(green('building'), bold(projectName), gray(context.buildName));
     return context;
 }
 
@@ -69,17 +74,19 @@ function getProjectNameFromPath(projectDir: string){
 async function getUccPath(inputUccPath: string)
 : Promise<{ uccPath: string, systemDir: string, gameDir: string }> {
     try {
-        const uccPathPromise = fs.realpath(inputUccPath);
-        const gameDirPromise = fs.realpath(inputUccPath + "/../../");
-        const systemDirPromise = fs.realpath(inputUccPath + "/../");
-        return {
-            uccPath: await uccPathPromise,
-            gameDir: await gameDirPromise,
-            systemDir: await systemDirPromise,
+        const separator = detectPathSeparator(inputUccPath);
+        const uccPath = inputUccPath;
+        const systemDir = pathUpOneLevel(uccPath, separator);
+        const gameDir = pathUpOneLevel(systemDir, separator);
+        const result = {
+            uccPath,
+            gameDir,
+            systemDir,
         };
+        return result;
     }
     catch (error){
-        throw new Error(`UCC path is required, "${inputUccPath}" not valid path`);
+        throw new InvalidUccPath(`UCC path is required, "${inputUccPath}" not valid path`, error);
     }
 }
 
@@ -198,13 +205,6 @@ Paths=../Music/*.umx`;
     await tempWrite(context, iniPath, content);
 }
 
-function detectPathSeparator(path: string): string {
-    if (path.indexOf('\\') !== -1){
-        return "\\";
-    }
-    return "/";
-}
-
 function getProjectRelativePath(context: BuildContext, fullPath: string){
     if (fullPath.startsWith(context.projectDir)){
         return fullPath.substring(context.projectDir.length + 1);
@@ -225,14 +225,6 @@ function getBuildClassesPath(context: BuildContext, fullPath: string){
         return context.buildClassesDir + path.sep + filename;
     }
     throw new Error(`Path "${fullPath}" not part of project ${context.projectDir}`);
-}
-
-function getFilename(filePath: string): string {
-    const lastSlash = Math.max(filePath.lastIndexOf("\\"), filePath.lastIndexOf("/"));
-    if (lastSlash === -1){
-        throw new Error(`Cannot get filename of "${filePath}"`);
-    }
-    return filePath.substring(lastSlash + 1);
 }
 
 async function generateBuildNameAndDir(gameDir: string): Promise<{ buildName: string, buildDir: string, buildClassesDir: string }> {
@@ -298,14 +290,41 @@ async function deleteTemporaryFiles(context: BuildContext) {
     }
 }
 
-function runUccBuildCommand(context: BuildContext): void {
+async function runUccBuildCommand(context: BuildContext): Promise<void> {
+    let logFile = '';
     try {
-        execSync(`"${context.uccPath}" make ini="${context.buildIniFile}"`, {
-            stdio: "inherit"
-        });
+        const platform = detectPlatform(context.uccPath);
+        const builder = new CommandBuilder(platform);
+       
+        // standard command
+        builder.push(context.uccPath, 'make');
+
+        if (context.buildIniFile)
+        {
+            const iniFilename = getFilename(context.buildIniFile);
+            const relativeIniPath = ['..', context.buildName, iniFilename].join(context.pathSeparator);
+            builder.push(`ini="${relativeIniPath}"`);
+        }
+        
+        const command = builder.getCommand();
+        logFile = command.logFile ?? '';
+        console.log(green('execSync:'), command);
+        execSync(command.command);
     }
     catch (err){
         throw new SubprocessError("UCC.exe make failed");
+    }
+    finally
+    {
+        if (logFile)
+        {
+            console.log(green("logFile:"), logFile);
+            const logContent = await fs.readFile(logFile, 'utf8');
+            console.log(logContent);
+        }
+        else {
+            console.log(yellow("warn: log file not detected!"));
+        }
     }
 }
 

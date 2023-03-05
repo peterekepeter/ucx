@@ -4,7 +4,8 @@ import { DEFAULT_UCX_COMMAND, parseCliArgs, parseEnvArgs,  } from "./lib/cli";
 import { SubprocessError } from "./lib/commands";
 import { dispatchCommand } from "./lib/commands/dispatchCommand";
 import { UnknownCommandError } from "./lib/commands/UnknownCommandError";
-import chalk = require('chalk');
+import { red, bold } from "chalk";
+import { InvalidUccPath } from "./lib/commands/InvalidUccPath";
 
 setTimeout(main, 0);
 
@@ -21,12 +22,16 @@ async function main(){
     }
     catch (err) {
         if (err instanceof UnknownCommandError) {
-            console.error(chalk.red(err.message));
-            console.log("Available commands:", err.knownCommands.map(c => chalk.bold(c)).join(', '));
+            console.error(red(err.message));
+            console.log("Available commands:", err.knownCommands.map(c => bold(c)).join(', '));
             process.exit(1);
         }
         else if (err instanceof SubprocessError){
-            console.error(chalk.red(err.message));
+            console.error(red(err.message));
+            process.exit(1);
+        }
+        else if (err instanceof InvalidUccPath) {
+            console.error(INVALID_UCC_INFO);
             process.exit(1);
         }
         else {
@@ -55,4 +60,8 @@ function printUsage(){
 
 const USAGE_INFO = `
 ucx command [--option optionValue] path1 path2 path3 ...
+`;
+
+const INVALID_UCC_INFO = `
+path to UCC must be provided either via env var ${bold('UCC_PATH')}  or cli argument ${bold('--ucc')}
 `;
