@@ -1,6 +1,13 @@
 import { getFilename } from "../filesystem";
 import { PlatformType } from "./detectPlatform";
 
+export type SubprocessCommand = {
+    command: string, 
+    platform: PlatformType, 
+    logFile: string|undefined, 
+    executableFile: string|undefined 
+};
+
 export class CommandBuilder 
 {
     executableFile?: string;
@@ -25,7 +32,7 @@ export class CommandBuilder
         this.args.push(...args);
     }
 
-    getCommand(): { platform: PlatformType, command: string, logFile: string|undefined, executableFile:string|undefined }
+    getCommand(): SubprocessCommand
     {
         return {
             platform: this.platform,

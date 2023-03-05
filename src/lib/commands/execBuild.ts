@@ -4,7 +4,7 @@ import { execSync } from "child_process";
 import { SourceEditor, transformFor436 } from "../transformer";
 import { UcParser, UnrealClass } from "../parser";
 import { ucTokenizeLine } from "../tokenizer";
-import { SubprocessError } from "./SubprocessError";
+import { SubprocessError } from "./subprocess/SubprocessError";
 import { InvalidUccPath } from "./InvalidUccPath";
 
 import os = require("os");
@@ -13,6 +13,7 @@ import { green, bold, gray, yellow } from "chalk";
 import { CommandBuilder } from "./subprocess/CommandBuilder";
 import { detectPlatform, PlatformType } from "./subprocess/detectPlatform";
 import { detectPathSeparator, getFilename, pathUpOneLevel } from "./filesystem";
+import { runSubprocess } from "./subprocess/runSubprocess";
 
 export async function execBuild(cmd: UcxCommand){
     const projectFolders = await getBuildProjects(cmd.files);
@@ -291,41 +292,22 @@ async function deleteTemporaryFiles(context: BuildContext) {
 }
 
 async function runUccBuildCommand(context: BuildContext): Promise<void> {
-    let logFile = '';
-    try {
-        const platform = detectPlatform(context.uccPath);
-        const builder = new CommandBuilder(platform);
-       
-        // standard command
-        builder.push(context.uccPath, 'make');
 
-        if (context.buildIniFile)
-        {
-            const iniFilename = getFilename(context.buildIniFile);
-            const relativeIniPath = ['..', context.buildName, iniFilename].join(context.pathSeparator);
-            builder.push(`ini="${relativeIniPath}"`);
-        }
-        
-        const command = builder.getCommand();
-        logFile = command.logFile ?? '';
-        console.log(green('execSync:'), command);
-        execSync(command.command);
-    }
-    catch (err){
-        throw new SubprocessError("UCC.exe make failed");
-    }
-    finally
+    const platform = detectPlatform(context.uccPath);
+    const builder = new CommandBuilder(platform);
+    
+    // standard command
+    builder.push(context.uccPath, 'make');
+
+    if (context.buildIniFile)
     {
-        if (logFile)
-        {
-            console.log(green("logFile:"), logFile);
-            const logContent = await fs.readFile(logFile, 'utf8');
-            console.log(logContent);
-        }
-        else {
-            console.log(yellow("warn: log file not detected!"));
-        }
+        const iniFilename = getFilename(context.buildIniFile);
+        const relativeIniPath = ['..', context.buildName, iniFilename].join(context.pathSeparator);
+        builder.push(`ini="${relativeIniPath}"`);
     }
+    
+    const command = builder.getCommand();
+    await runSubprocess(command);
 }
 
 async function copyOutput(c: BuildContext) {
