@@ -1,19 +1,14 @@
 import { UcxCommand } from "../cli";
 import { promises as fs, constants } from "fs";
-import { execSync } from "child_process";
 import { SourceEditor, transformFor436 } from "../transformer";
 import { UcParser, UnrealClass } from "../parser";
 import { ucTokenizeLine } from "../tokenizer";
-import { SubprocessError } from "./subprocess/SubprocessError";
 import { InvalidUccPath } from "./InvalidUccPath";
 
-import os = require("os");
 import path = require("path");
 import { green, bold, gray, yellow } from "chalk";
-import { CommandBuilder } from "./subprocess/CommandBuilder";
-import { detectPlatform, PlatformType } from "./subprocess/detectPlatform";
 import { detectPathSeparator, getFilename, pathUpOneLevel } from "./filesystem";
-import { runSubprocess } from "./subprocess/runSubprocess";
+import { Subprocess } from "./subprocess/Subprocess";
 
 export async function execBuild(cmd: UcxCommand){
     const projectFolders = await getBuildProjects(cmd.files);
@@ -293,21 +288,16 @@ async function deleteTemporaryFiles(context: BuildContext) {
 
 async function runUccBuildCommand(context: BuildContext): Promise<void> {
 
-    const platform = detectPlatform(context.uccPath);
-    const builder = new CommandBuilder(platform);
-    
-    // standard command
-    builder.push(context.uccPath, 'make');
+    const process = new Subprocess(context.uccPath, 'make');
 
     if (context.buildIniFile)
     {
         const iniFilename = getFilename(context.buildIniFile);
         const relativeIniPath = ['..', context.buildName, iniFilename].join(context.pathSeparator);
-        builder.push(`ini="${relativeIniPath}"`);
+        process.addArgs(`ini="${relativeIniPath}"`);
     }
     
-    const command = builder.getCommand();
-    await runSubprocess(command);
+    await process.execCommand();
 }
 
 async function copyOutput(c: BuildContext) {
