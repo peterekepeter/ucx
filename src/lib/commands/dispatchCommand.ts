@@ -3,6 +3,7 @@ import { execBuild } from "./execBuild";
 import { execUcc } from "./execUcc";
 import { execUe } from "./execUe";
 import { execUt } from "./execUt";
+import { execVersion } from "./execVersion";
 import { UnknownCommandError } from "./UnknownCommandError";
 
 
@@ -11,6 +12,7 @@ const knownCommands: Record<string,(cmd: UcxCommand) => Promise<void>> = {
     ucc: execUcc,
     ut: execUt,
     ue: execUe,
+    version: execVersion,
 };
 
 
