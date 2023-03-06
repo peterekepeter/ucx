@@ -6,7 +6,7 @@ import { ucTokenizeLine } from "../tokenizer";
 import { InvalidUccPath } from "./InvalidUccPath";
 
 import path = require("path");
-import { green, bold, gray, yellow } from "chalk";
+import { green, bold, gray, yellow } from "./terminal";
 import { detectPathSeparator, getFilename, pathUpOneLevel } from "./filesystem";
 import { Subprocess } from "./subprocess/Subprocess";
 
