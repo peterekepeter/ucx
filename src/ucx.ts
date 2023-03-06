@@ -4,7 +4,7 @@ import { DEFAULT_UCX_COMMAND, parseCliArgs, parseEnvArgs,  } from "./lib/cli";
 import { SubprocessError } from "./lib/commands";
 import { dispatchCommand } from "./lib/commands/dispatchCommand";
 import { UnknownCommandError } from "./lib/commands/UnknownCommandError";
-import { red, bold } from "chalk";
+import { red, bold } from "./lib/commands/terminal";
 import { InvalidUccPath } from "./lib/commands/InvalidUccPath";
 
 setTimeout(main, 0);

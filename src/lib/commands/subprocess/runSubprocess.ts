@@ -1,6 +1,6 @@
 import { execSync } from "child_process";
 import { SubprocessCommand } from "./CommandBuilder";
-import { green, yellow, gray, blue, red, bold } from "chalk";
+import { green, yellow, gray, blue, red, bold } from "../terminal";
 import { promises as fs } from "fs";
 import { SubprocessError } from "./SubprocessError";
 
