@@ -72,6 +72,7 @@ async function getUccPath(inputUccPath: string)
     try {
         const separator = detectPathSeparator(inputUccPath);
         const uccPath = inputUccPath;
+        await fs.lstat(uccPath);
         const systemDir = pathUpOneLevel(uccPath, separator);
         const gameDir = pathUpOneLevel(systemDir, separator);
         const result = {

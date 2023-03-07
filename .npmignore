@@ -11,5 +11,8 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/*.vsix
+syntaxes/
+.github/
+uc.language.configuration.json
 
 out/extension.js
