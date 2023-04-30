@@ -1,17 +1,17 @@
-import { execSync } from "child_process";
+import { exec, execSync, spawn } from "child_process";
 import { SubprocessCommand } from "./CommandBuilder";
 import { green, yellow, gray, blue, red, bold } from "../terminal";
-import { promises as fs } from "fs";
+import { promises as fs, watchFile as fsWatchFile } from "fs";
 import { SubprocessError } from "./SubprocessError";
 
 export async function runSubprocess(command: SubprocessCommand): Promise<void>
 {
+    let printLogFile = command.preferredLogMode === 'logfile' && command.logFile != null;
     let quiet = false;
     try 
     {
-        console.log(green('execSync:'), command.command);
         execSync(command.command, {
-            stdio: "inherit"
+            stdio: printLogFile ? 'ignore' : 'inherit'
         });
         quiet = true;
     }
@@ -20,12 +20,15 @@ export async function runSubprocess(command: SubprocessCommand): Promise<void>
     }
     finally
     {
+        if (!printLogFile){
+            return;
+        }
+        
         if (!command.logFile) {
             console.log(yellow("warn: log file not detected!"));
             return;
         }
     
-        console.log(green("logFile:"), command.logFile, "quiet mode is", quiet);
         const logContent = await fs.readFile(command.logFile, 'utf8');
         const decorated = decorateLog(logContent, quiet);
         console.log(decorated);
@@ -78,8 +81,8 @@ function decorateLog(input: string, quiet: boolean): string{
             }
             else if (i.startsWith('Heading:')) {
                 tag = blue(tag);
-                rest = rest.replace(/\w+/, s => bold(s));
-                rest = rest.replace(/-+/g, s => gray(s));
+                rest = rest.replace(/\w/g, s => bold(s));
+                rest = rest.replace(/-{20}/g, s => gray(s));
             }
             else if (i.startsWith('Log: Success')) {
                 tag = green(bold(tag));

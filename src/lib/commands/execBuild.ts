@@ -291,6 +291,8 @@ async function runUccBuildCommand(context: BuildContext): Promise<void> {
 
     const process = new Subprocess(context.uccPath, 'make');
 
+    process.useLogfileOutputIfAvailable();
+
     if (context.buildIniFile)
     {
         const iniFilename = getFilename(context.buildIniFile);

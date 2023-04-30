@@ -14,6 +14,10 @@ export class Subprocess
         this.addArgs(...args);
     }
 
+    useLogfileOutputIfAvailable(){
+        this.builder.preferredLogMode = 'logfile';
+    }
+
     addArgs(...arg: string[])
     {
         this.builder.push(...arg);

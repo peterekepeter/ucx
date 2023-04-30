@@ -3,7 +3,7 @@ import os = require("os");
 export enum PlatformType {
     Win32,
     Linux,
-    Wine
+    Wine,
 }
 
 export function detectPlatform(exePath:string): PlatformType {

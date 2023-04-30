@@ -3,7 +3,8 @@ import { PlatformType } from "./detectPlatform";
 
 export type SubprocessCommand = {
     command: string, 
-    platform: PlatformType, 
+    platform: PlatformType,
+    preferredLogMode: 'stdio' | 'logfile', 
     logFile: string|undefined, 
     executableFile: string|undefined 
 };
@@ -13,12 +14,13 @@ export class CommandBuilder
     executableFile?: string;
     logFile?: string;
     args: string[] = [];
+    preferredLogMode: 'stdio' | 'logfile' = 'stdio';
 
     constructor(public platform: PlatformType)
     {
         if (platform === PlatformType.Wine)
         {
-            this.args.push('wineconsole');
+            this.args.push('wine');
         }
     }
  
@@ -38,6 +40,7 @@ export class CommandBuilder
             platform: this.platform,
             command: this.args.join(' '),
             logFile: this.logFile,
+            preferredLogMode: this.preferredLogMode,
             executableFile: this.executableFile,
         };
     }
