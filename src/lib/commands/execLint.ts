@@ -1,0 +1,233 @@
+import { UcxCommand } from "../cli";
+import { detectPathSeparator } from "./filesystem";
+import { promises as fs } from "fs";
+import { lintAst } from "../lint";
+import { getAstFromFile } from "./getAstFromFile";
+import { UserInputError } from "./error";
+import { LintResult } from "../lint/LintResult";
+import { ParserToken, SemanticClass as C, UnrealClass } from "../parser";
+import { blue, bold, cyan, gray, green, magenta, red, yellow } from "./terminal";
+
+type LintContext = {
+    fileSeparator: string
+    errorCount: number,
+    warningCount: number,
+    filesParsed: number,
+};
+
+export async function execLint(cmd: UcxCommand): Promise<void> {
+    if (cmd.files.length === 0) {
+        throw new UserInputError("No files were given to lint");
+    }
+    const context: LintContext = {
+        fileSeparator: detectPathSeparator(cmd.ucxScript),
+        errorCount: 0,
+        filesParsed: 0,
+        warningCount: 0,
+    };
+    for (const file of cmd.files)
+    {
+        await lintVisitPath(file, context);
+    }
+    if (context.errorCount > 0) {
+        process.exit(1);
+    } else {
+        process.exit(0);
+    }
+}
+
+async function lintVisitPath(file: string, context: LintContext) {
+    const stat = await fs.stat(file);
+    if (stat.isDirectory()){
+        await lintVisitDirectory(file, context);
+    }
+    else if (stat.isFile())
+    {
+        await lintVisitFile(file, context);
+    }
+}
+
+async function lintVisitDirectory(path: string, context: LintContext) {
+    for (const child of await fs.readdir(path)){
+        const childPath = path + context.fileSeparator + child;
+        await lintVisitPath(childPath, context);
+    }
+}
+
+async function lintVisitFile(file: string, context: LintContext) {
+    if (!file.endsWith('.uc')) {
+        return; 
+    }
+    const ignoreWarnings = true;
+    let ast: UnrealClass;
+    try 
+    {
+        context.filesParsed += 1;
+        ast = await getAstFromFile(file);
+    }
+    catch (error){
+        console.log(`${file} ${red(bold("parser failed !!!"))}`);
+        context.errorCount += 1;
+        return;
+    }
+    try 
+    {
+        let localErrorCount = 0;
+        let localWarningCount = 0;
+        let reachedErrorLimit = false;
+        let reachedWarningLimit = false;
+        let maxPrint = 16;
+        for (const problem of lintAst(ast)) {
+            if (problem.severity === 'error') {
+                context.errorCount += 1;
+                localErrorCount += 1;
+                if (localErrorCount < maxPrint) {
+                    printProblem(ast, problem);
+                } else if (!reachedErrorLimit) {
+                    reachedErrorLimit = true;
+                    console.log(`${file} ${red(bold("reached error limit"))}`);
+                }
+            } else {
+                context.warningCount += 1;
+                localWarningCount += 1;
+                if (!ignoreWarnings)
+                {
+                    if (localWarningCount < maxPrint) {
+                        printProblem(ast, problem);
+                    } else if (!reachedWarningLimit) {
+                        reachedWarningLimit = true;
+                        console.log(`${file} ${yellow(bold("reached warning limit"))}`);
+                    }
+                }
+            }
+        }
+    }
+    catch (error){
+        console.log(`${file} ${red(bold("linter failed !!!"))}`);
+        context.errorCount += 1;
+        return;
+    }
+}
+
+function printProblem(ast: UnrealClass, problem: LintResult) {
+    const lineNo = (problem.line ?? 0) + 1;
+    const positionNo = (problem.position ?? 0) + 1;
+    const isError = problem.severity === 'error';
+    const type = isError ? 'error' : 'warn';
+    const paddedType = type.padStart(8, ' ');
+    const msg = bold(problem.message ?? '');
+    const tag = bold(isError ? red(paddedType) : yellow(paddedType));
+    let preview = '';
+    if (problem.line != null) {
+        const srcLines = [];
+        const srcIndexes = [];
+        let printFrom = -1;
+        let printTo = -1;
+        for (let i=problem.line-2; i<problem.line+2; i+=1){
+            const content = ast.textLines[i] ?? '';
+            const index = srcLines.length;
+            srcLines.push(ast.textLines[i] ?? '');
+            srcIndexes.push(i);
+            const ws = isWhitepace(content);
+            if (printFrom === -1 && !ws) {
+                printFrom = index;
+            }
+            if (!ws) {
+                printTo = index;
+            }
+        }
+        if (printFrom !== -1 && printTo !== -1){
+            for (let i=printFrom; i<=printTo; i+=1){
+                const srcLineNo = srcIndexes[i];
+                const srcLineContent = srcLines[i];
+                const lineColumn = gray(srcLineNo.toString().padStart(8, ' ') + ' | ');
+                const content = getFormattedContent(srcLineContent, srcLineNo, ast).replace('\t', ' ');
+                preview += `${lineColumn}${content}\n`;
+                if (srcIndexes[i] === problem.line && problem.position != null && problem.length != null) {
+                    const spaceBefore = ''.padStart(11 + problem.position,' ');
+                    const chars = bold(''.padStart(problem.length, '~'));
+                    const cchars = isError ? red(chars) : yellow(chars);
+                    preview += `${spaceBefore}${cchars}\n`;
+                }
+            }
+        }
+    }
+    console.log(`${ast.fileName}:${lineNo}:${positionNo}\n${preview}${tag} : ${msg}\n`);
+}
+
+function isWhitepace(input: string){
+    return /^\s*$/.test(input);
+}
+
+function getFormattedContent(str: string, srcLineNo: number, ast: UnrealClass): string {
+    const formatLineIndex = srcLineNo - 0;
+    for (let i=ast.tokens.length-1; i>=0; i-=1) {
+        const token = ast.tokens[i];
+        if (token.line !== formatLineIndex) {
+            continue;
+        }
+        const from = token.position;
+        const to = from + token.text.length;
+        str = str.substring(0, from) 
+            + foramtToken(str.substring(from, to), token)
+            + str.substring(to);
+    }
+    return str;
+}
+
+function foramtToken(str: string, token: ParserToken): string {
+    switch (token.type){
+    case C.None:
+        break;
+    case C.Keyword:
+    case C.ModifierKeyword:
+        str = magenta(str);
+        break;
+    case C.Comment:
+        str = gray(str);
+        break;
+    case C.ClassDeclaration:
+    case C.EnumDeclaration:
+        str = cyan(str);
+        break;
+    case C.ClassReference:
+    case C.ClassVariable:
+    case C.LocalVariable:
+    case C.EnumMember:
+    case C.ClassConstant:
+        str = green(str);
+        break;
+    case C.TypeReference:
+        str = magenta(str);
+        break;
+    case C.LanguageConstant:
+    case C.LiteralString:
+    case C.LiteralName:
+    case C.LiteralNumber:
+        str = blue(str);
+        break;
+    case C.Identifier:
+    case C.FunctionDeclaration:
+    case C.FunctionReference:
+        str = blue(str);
+        break;
+    case C.AssignmentOperator:
+    case C.Operator:
+        str = gray(str);
+        break;
+    case C.VariableReference:
+    case C.ExecInstruction:
+        str = gray(str);
+        break;
+    case C.ObjectReferenceName:
+    case C.StateDeclaration:
+    case C.StatementLabel:
+    case C.StructDeclaration:
+    case C.StructMember:
+    case C.StructMemberDeclaration:
+        str = yellow(str);
+        break;
+    }
+    return str;
+}
+

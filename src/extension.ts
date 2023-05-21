@@ -2,9 +2,11 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { ucTokenizeLine } from './lib/tokenizer/ucTokenizeLine';
-import { ParserToken, SemanticClass, UcParser } from './lib/parser';
+import { ParserToken, SemanticClass, UcParser, UnrealClass } from './lib/parser';
 import { LintResult } from './lib/lint/LintResult';
 import { buildFullLinter } from './lib/lint/buildFullLinter';
+import { ParserError } from './lib/parser/types';
+import { lintAst } from './lib/lint';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -335,7 +337,10 @@ function* getDiagnostics(document: vscode.TextDocument): Iterable<vscode.Diagnos
     const cfg = vscode.workspace.getConfiguration("ucx");
     let reportParserErrors = !!cfg.get('reportParserErrors') ?? false;
 
-    for (const lintResult of processLinterRules(document, { reportParserErrors })){
+    for (const lintResult of processLinterRules(document)){
+        if (lintResult.source === 'parser' && !reportParserErrors) {
+            continue;
+        }
         if (lintResult.message != null && 
             lintResult.line != null &&
             lintResult.position != null &&
@@ -355,7 +360,12 @@ function* getDiagnostics(document: vscode.TextDocument): Iterable<vscode.Diagnos
     }
 }
 
-function* processLinterRules(document: vscode.TextDocument, options?: { reportParserErrors?: boolean }): Iterable<LintResult> {
+function processLinterRules(document: vscode.TextDocument): Iterable<LintResult> {
+    const ast = getVsCodeDocumentAst(document);
+    return lintAst(ast);
+}
+
+function getVsCodeDocumentAst(document: vscode.TextDocument): UnrealClass {
     const parser = new UcParser();
     const lines = new Array<string>(document.lineCount);
     for (let lineIndex=0; lineIndex < document.lineCount; lineIndex++){
@@ -370,23 +380,7 @@ function* processLinterRules(document: vscode.TextDocument, options?: { reportPa
     const ast = parser.getAst();
     ast.fileName = document.fileName;
     ast.textLines = lines;
-    if (options?.reportParserErrors){
-        for (const parseError of ast.errors){
-            yield {
-                message: parseError.message,
-                line: parseError.token.line,
-                position: parseError.token.position,
-                length: parseError.token.text.length,
-                originalText: parseError.token.text,
-                severity: 'error'
-            };
-        }
-    }
-    const linter = buildFullLinter();
-    const results = linter.lint(ast);
-    for (const item of results){
-        yield item;
-    }
+    return ast;
 }
 
 function processFormattingRules(document: vscode.TextDocument, edits: vscode.TextEdit[]){

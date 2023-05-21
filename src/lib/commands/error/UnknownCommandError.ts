@@ -7,3 +7,4 @@ export class UnknownCommandError extends Error {
         super(message);
     }
 }
+

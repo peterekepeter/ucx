@@ -1,0 +1,1 @@
+export { lintAst } from "./lint";

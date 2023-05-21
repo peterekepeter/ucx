@@ -1,2 +1,2 @@
 export * from './subprocess/SubprocessError';
-export * from './UnknownCommandError';
+export * from './error/UnknownCommandError';

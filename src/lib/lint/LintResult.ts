@@ -6,4 +6,5 @@ export interface LintResult {
     originalText?: string;
     fixedText?: string;
     severity?: 'warning' | 'error';
+    source?: 'parser' | 'linter';
 }

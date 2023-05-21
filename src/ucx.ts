@@ -3,7 +3,7 @@
 import { DEFAULT_UCX_COMMAND, parseCliArgs, parseEnvArgs,  } from "./lib/cli";
 import { SubprocessError } from "./lib/commands";
 import { dispatchCommand } from "./lib/commands/dispatchCommand";
-import { UnknownCommandError } from "./lib/commands/UnknownCommandError";
+import { UnknownCommandError, UserInputError } from "./lib/commands/error";
 import { red, bold } from "./lib/commands/terminal";
 import { InvalidUccPath } from "./lib/commands/InvalidUccPath";
 
@@ -28,6 +28,10 @@ async function main(){
         }
         else if (err instanceof SubprocessError){
             console.error(red(err.message));
+            process.exit(1);
+        }
+        else if (err instanceof UserInputError){
+            console.error(red('Error: ' + err.message));
             process.exit(1);
         }
         else if (err instanceof InvalidUccPath) {

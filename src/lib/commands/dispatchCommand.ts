@@ -1,10 +1,11 @@
 import { UcxCommand } from "../cli";
 import { execBuild } from "./execBuild";
+import { execLint } from "./execLint";
 import { execUcc } from "./execUcc";
 import { execUe } from "./execUe";
 import { execUt } from "./execUt";
 import { execVersion } from "./execVersion";
-import { UnknownCommandError } from "./UnknownCommandError";
+import { UnknownCommandError } from "./error";
 
 
 const knownCommands: Record<string,(cmd: UcxCommand) => Promise<void>> = {
@@ -13,6 +14,7 @@ const knownCommands: Record<string,(cmd: UcxCommand) => Promise<void>> = {
     ut: execUt,
     ue: execUe,
     version: execVersion,
+    lint: execLint,
 };
 
 

@@ -19,3 +19,5 @@ export function pathUpOneLevel(input: string, separator: string): string
     const lastIndex = input.lastIndexOf(separator);
     return input.substring(0, lastIndex);
 }
+
+export { getFileContent } from './fsWrappers';
