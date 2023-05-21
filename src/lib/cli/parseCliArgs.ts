@@ -19,6 +19,12 @@ export function parseCliArgs(argv: string[]): Partial<UcxCommand>{
         }
         else if (arg.startsWith('--')){
             switch (arg){
+            case '--verbose':
+                result.verbose = true;
+                break;
+            case '--quiet':
+                result.quiet = true;
+                break;
             case '--no-clean':
                 result.noClean = true;
                 break;

@@ -13,6 +13,7 @@ type LintContext = {
     errorCount: number,
     warningCount: number,
     filesParsed: number,
+    ignoreWarnings: boolean,
 };
 
 export async function execLint(cmd: UcxCommand): Promise<void> {
@@ -21,6 +22,7 @@ export async function execLint(cmd: UcxCommand): Promise<void> {
     }
     const context: LintContext = {
         fileSeparator: detectPathSeparator(cmd.ucxScript),
+        ignoreWarnings: cmd.quiet,
         errorCount: 0,
         filesParsed: 0,
         warningCount: 0,
@@ -58,7 +60,7 @@ async function lintVisitFile(file: string, context: LintContext) {
     if (!file.endsWith('.uc')) {
         return; 
     }
-    const ignoreWarnings = true;
+    const ignoreWarnings = context.ignoreWarnings;
     let ast: UnrealClass;
     try 
     {
