@@ -90,6 +90,12 @@ test("tokenize comment start/end", () => verifyTokens(`
     'var', 'string', '/*', 'Items', '[', '32', ']', '*/', 'Item', ';'
 ]));
 
+test("tokenize assign negative value", () => verifyTokens(`
+    id=-1;
+`, [
+    'id', '=', '-1', ';'
+]));
+
 test("tokenize exec", () => verifyTokens(`
     #exec obj load file=..\\Sounds\\Announcer.uax
 `, [

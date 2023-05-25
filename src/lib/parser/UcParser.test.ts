@@ -636,6 +636,17 @@ test("parse default properties section", () => { parsing(`
 });
 
 
+test("parse default properties section with negative value", () => { parsing(`
+    defaultproperties {
+        PlayerID=-1
+        DamageModifier=1.0
+    }
+    `)
+    .hasNoErrors()
+    .hasDefaultProperty(0, { name: "PlayerID", value: '-1' })
+    .hasDefaultProperty(1, { name: "DamageModifier", value: "1.0" });
+});
+
 test("parse event as function", () => { parsing(`
     event ActorEntered( actor Other )
     {

@@ -18,7 +18,7 @@ export function getExpressionTokenType(token: Token): DetectedExpressionTypes {
     else if (text.startsWith("'")) {
         return SemanticClass.LiteralName;
     }
-    else if (/^[0-9]/.test(text)) {
+    else if (/^[+-]?[0-9]/.test(text)) {
         return SemanticClass.LiteralNumber;
     }
     else if (/^(true|false|none)$/i.test(text)) {

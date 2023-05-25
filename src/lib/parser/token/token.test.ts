@@ -5,6 +5,7 @@ import { LazyParserToken } from "./LazyParserToken";
 
 test("numbers", () => {
     verify("42", C.LiteralNumber);
+    verify("-42", C.LiteralNumber);
     verify("0.14", C.LiteralNumber);
     verify("0xFFAA", C.LiteralNumber);
 });
