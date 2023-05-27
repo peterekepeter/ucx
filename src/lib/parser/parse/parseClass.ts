@@ -56,6 +56,12 @@ function parseClassDecorators(parser: UcParser, token: Token) {
         parser.result.isNativeReplication = true;
         token.type = SemanticClass.Keyword;
         break;
+
+    case 'perobjectconfig':
+        parser.result.classDeclarationLastToken = token;
+        parser.result.isPerObjectConfig = true;
+        token.type = SemanticClass.Keyword;
+        break;
     
     case 'config':
         token.type = SemanticClass.Keyword;

@@ -27,6 +27,7 @@ export class UcParser{
         isSafeReplace: false,
         isNative: false,
         isNativeReplication: false,
+        isPerObjectConfig: false,
         errors: [],
         variables: [],
         execInstructions: [],

@@ -24,6 +24,7 @@ export interface UnrealClass {
     isNoExport: boolean;
     isSafeReplace: boolean;
     isNativeReplication: boolean;
+    isPerObjectConfig: boolean;
     errors: ParserError[];
     constants: UnrealClassConstant[];
     variables: UnrealClassVariable[];

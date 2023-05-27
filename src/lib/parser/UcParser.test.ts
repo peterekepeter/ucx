@@ -13,6 +13,7 @@ test("parse basic class declration", () => {
         .isNoExport(false)
         .isSafeReplace(false)
         .hasNativeReplication(false)
+        .hasPerObjectConfig(false)
         .hasNoErrors();
 });
 
@@ -20,13 +21,15 @@ test("parse class declaration with extra decorators", () => { parsing(`
     class Actor extends Object
         abstract
         native
-        nativereplication;
+        nativereplication
+        perobjectconfig;
     `)
     .hasClassName('Actor')
     .hasParentClassName('Object')
     .isAbstract(true)
     .isNative(true)
     .hasNativeReplication(true)
+    .hasPerObjectConfig(true)
     .hasNoErrors();
 });
 
@@ -1404,6 +1407,7 @@ interface ParserTestChecks
     isSafeReplace(flag: boolean): ParserTestChecks
     isNoExport(flag: boolean): ParserTestChecks
     hasNativeReplication(flag: boolean): ParserTestChecks
+    hasPerObjectConfig(flag: boolean): ParserTestChecks
     hasVariable(index: number, type: string, name: string, props?: { 
         transient?: boolean, 
         const?: boolean, 
@@ -1474,6 +1478,7 @@ function parsing(input: string): ParserTestChecks {
         isNoExport: (flag: boolean) => checkEquals(flag, ast.isNoExport, "isNoExport should be " + flag),
         isSafeReplace: (flag: boolean) => checkEquals(flag, ast.isSafeReplace, "isSafeReplace should be " + flag),
         hasNativeReplication: (flag: boolean) => checkEquals(flag, ast.isNativeReplication, "hasNativeReplication should be " + flag),
+        hasPerObjectConfig: (flag: boolean) => checkEquals(flag, ast.isPerObjectConfig, "isPerObjectConfig should be " + flag),
         hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean, array?:number, localized?:boolean, export?:boolean, template?:string, arrayExpression?:ExpressionCheckObj }) => {
             checkEquals(ast.variables[index]?.type?.text, type);
             checkEquals(ast.variables[index]?.name?.text, name);
