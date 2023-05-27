@@ -30,13 +30,13 @@ export class ExpressionSplitter
                 const l = this.tokens.length;
                 if (this.tokens[l - 1].text === ')')
                 {
-                    // check if new(self) operator
-                    if (this.tokens.length > 4 &&
-                        this.tokens[l - 3].text === '(' &&
-                        this.tokens[l - 4].textLower === 'new')
-                    {
-                        // it is! allow continuation with term
-                        return this.isTerm(token);
+                    for (let i = l - 3; i > 0; i-=1) {
+                        if (this.tokens[i].text === '(' &&
+                            this.tokens[i - 1].textLower === 'new')
+                        {
+                            // it is! allow continuation with term
+                            return this.isTerm(token);
+                        }
                     }
                 }
             }

@@ -147,7 +147,7 @@ function printProblem(ast: UnrealClass, problem: LintResult) {
                 preview += `${lineColumn}${content}\n`;
                 if (srcIndexes[i] === problem.line && problem.position != null && problem.length != null) {
                     const spaceBefore = ''.padStart(11 + problem.position,' ');
-                    const chars = bold(''.padStart(problem.length, '~'));
+                    const chars = bold(''.padStart(Math.max(1, problem.length), '~'));
                     const cchars = isError ? red(chars) : yellow(chars);
                     preview += `${spaceBefore}${cchars}\n`;
                 }

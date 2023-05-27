@@ -647,6 +647,15 @@ test("parse default properties section with negative value", () => { parsing(`
     .hasDefaultProperty(1, { name: "DamageModifier", value: "1.0" });
 });
 
+test("parse defaultproperties empty string", () => { parsing(`
+    defaultproperties {
+        PrefixDictionary=""
+    }
+    `)
+    .hasNoErrors()
+    .hasDefaultProperty(0, { name: "PrefixDictionary", value: '""' });
+});
+
 test("parse event as function", () => { parsing(`
     event ActorEntered( actor Other )
     {
@@ -939,8 +948,30 @@ test("parse new object syntax", () => { parsing(`
     }`)
     .hasNoErrors()
     .hasTokens(['r1', C.VariableReference], ['=', C.Operator], ['new', C.Keyword]);
+    // TODO assert AST syntax
 });
 
+test("parse new object syntax with arguments", () => { parsing(`
+    function F(){
+        ClientConf = new (class'UcxConfig', 'UcxConfig') class'UcxConfig';
+    }
+    `)
+    .hasNoErrors()
+    .hasTokens(
+        ['ClientConf', C.VariableReference], 
+        ['=', C.Operator], 
+        ['new', C.Keyword], 
+        ['(', C.None],
+        ['class', C.ClassReference],
+        ["'UcxConfig'", C.ObjectReferenceName],
+        [',', C.None],
+        ["'UcxConfig'", C.LiteralName],
+        [')', C.None],
+        ['class', C.ClassReference],
+        ["'UcxConfig'", C.ObjectReferenceName],
+    );
+    // TODO assert AST syntax
+});
 
 test("parse super call", () => { parsing(`
     function F(){
