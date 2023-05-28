@@ -544,6 +544,30 @@ test("parse else if statement", () => { parsing(`
 });
 
 
+test("parse switch statement", () => { parsing(`
+function Init() {
+	switch (E)
+	{
+		case 2:
+            Log("2");
+            break;
+    }
+}`)
+    .hasFunction(0, {
+        name:"Init",
+        body: [{
+            op: "switch",
+            args: ["E"],
+            // TODO switch body AST
+        }]
+    })
+    .hasTokens(["switch", C.Keyword])
+    .hasTokens(["case", C.Keyword])
+    .hasTokens(["break", C.Keyword])
+    .hasNoErrors();
+});
+
+
 test("parse static function", () => { parsing(`
     static function Hello(){
         Log("Hello World!");

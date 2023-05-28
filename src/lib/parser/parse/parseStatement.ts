@@ -17,6 +17,7 @@ export function parseStatement(parser: UcParser, token: Token)
     case "for":
     case "while":
     case "if":
+    case "switch":
         parser.rootFn = parseControlStatement;
         token.type = C.Keyword;
         const statement: UnrealClassStatement = {
@@ -78,6 +79,7 @@ export function parseStatement(parser: UcParser, token: Token)
     case "continue":
     case "break":
     case "return":
+    case "case":
         token.type = SemanticClass.Keyword;
     default:
         // default to expression
