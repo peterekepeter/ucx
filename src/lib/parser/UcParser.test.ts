@@ -651,6 +651,24 @@ test("parse variable with array", () => { parsing(`
 });
 
 
+test("parse config variable with array", () => { parsing(`
+    var config string A;
+    var config string M[8192];
+
+    defaultproperties
+    {
+        A=""
+        M(0)=""
+    }
+    `)
+    .hasNoErrors()
+    .hasVariable(0, 'string', 'A', { array: undefined, config: true, })
+    .hasVariable(1, 'string', 'M', { array: 8192, config: true, })
+    .hasDefaultProperty(0, { name: 'A', value: '""', arrayIndex: undefined })
+    .hasDefaultProperty(1, { name: 'M', value: '""', arrayIndex: "0" });
+});
+
+
 test("parse default properties section", () => { parsing(`
     defaultproperties {
         Description="Your description here!"
@@ -666,6 +684,7 @@ test("parse default properties section", () => { parsing(`
 test("parse default properties section with negative value", () => { parsing(`
     defaultproperties {
         PlayerID=-1
+
         DamageModifier=1.0
     }
     `)
@@ -673,6 +692,7 @@ test("parse default properties section with negative value", () => { parsing(`
     .hasDefaultProperty(0, { name: "PlayerID", value: '-1' })
     .hasDefaultProperty(1, { name: "DamageModifier", value: "1.0" });
 });
+
 
 test("parse defaultproperties empty string", () => { parsing(`
     defaultproperties {
@@ -682,6 +702,7 @@ test("parse defaultproperties empty string", () => { parsing(`
     .hasNoErrors()
     .hasDefaultProperty(0, { name: "PrefixDictionary", value: '""' });
 });
+
 
 test("parse event as function", () => { parsing(`
     event ActorEntered( actor Other )

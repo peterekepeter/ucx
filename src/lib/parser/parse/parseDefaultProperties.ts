@@ -8,6 +8,7 @@ import { parseNoneState } from "./parseNoneState";
 export function parseDefaultProperties(parser: UcParser, token: Token) {
     switch (token.text) {
     case '{':
+        parser.expressionTokens = [];
         parser.result.defaultPropertiesFirstToken = token;
         parser.result.defaultPropertiesLastToken = token;
         parser.rootFn = parseProperty;
@@ -105,6 +106,7 @@ function parsePropertyValue(parser: UcParser, token: Token)
             parser.lastDefaultProperty.value = expression;
         }
         else {
+            console.log("here", token);
             for(const token of parser.expressionTokens) {
                 parser.result.errors.push({
                     token, message: 'Failed to parse default property value' 
