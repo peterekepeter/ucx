@@ -65,6 +65,7 @@ export interface UnrealClassStatement extends UnrealClassExpression {
 export interface UnrealClassFunctionArgument {
     type: Token | null,
     name: Token | null,
+    template: Token | null,
     isOut: boolean;
     isOptional: boolean;
     isCoerce: boolean;

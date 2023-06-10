@@ -930,6 +930,21 @@ test("parse type variable", () => { parsing(`
     .hasTokens(['var',C.Keyword], ['class', C.TypeReference], ['<', C.None], ['actor', C.ClassReference], ['>', C.None]);
 });
 
+test("parse class type in function parameter declaration", () => { parsing(`
+    function Test(class<Weapon> weapon)
+    {
+    }`)
+    .hasNoErrors()
+    .hasFunction(0, {
+        name: 'Test',
+        fnArgs: [{
+            name: 'weapon',
+            type: 'class',
+            template: 'Weapon',
+        }]
+    })
+;});
+
 
 test("parse globalconfig var", () => { parsing(`
     var globalconfig int FragLimit;
@@ -1483,6 +1498,7 @@ interface ParserTestChecks
         returns?: string,
         fnArgs?: { 
             type?: string,
+            template?: string,
             name?: string,
             isOut?: boolean,
             isOptional?: boolean,
@@ -1612,6 +1628,7 @@ function parsing(input: string): ParserTestChecks {
                 fnArgs: obj.fnArgs.map(a => ({ 
                     name:a.name?.text,
                     type: a.type?.text,
+                    template: a.template?.text,
                     isOut: a.isOut, 
                     isOptional: a.isOptional,
                     isCoerce: a.isCoerce,

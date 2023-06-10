@@ -1,4 +1,4 @@
-import { SemanticClass as C, SemanticClass, UcParser } from "..";
+import { SemanticClass as C, ParserToken, SemanticClass, UcParser } from "..";
 import { createEmptyUnrealClassFunction, UnrealClassFunctionArgument } from "../ast/UnrealClassFunction";
 import { Token } from "../types";
 import { clearModifiers } from "./clearModifiers";
@@ -73,12 +73,12 @@ function parseFnParams(parser: UcParser, token: Token)
     switch (token.text){
     case ",":
         token.type = SemanticClass.None;
-        fn.fnArgs.push(resolveFnArg(parser.fnArgTokens));
+        fn.fnArgs.push(resolveFnArg(parser, parser.fnArgTokens));
         parser.fnArgTokens = [];
         break;
     case ")":
         if (parser.fnArgTokens.length > 0){
-            fn.fnArgs.push(resolveFnArg(parser.fnArgTokens));
+            fn.fnArgs.push(resolveFnArg(parser, parser.fnArgTokens));
         }
         fn.fnArgsLastToken = token;
         parser.rootFn = parseFnAfterParameters;
@@ -88,20 +88,50 @@ function parseFnParams(parser: UcParser, token: Token)
         break;
     }
 }
-function resolveFnArg(tokens: Token[]): UnrealClassFunctionArgument {
+function resolveFnArg(parser: UcParser, tokens: Token[]): UnrealClassFunctionArgument {
     const name = tokens.length >= 1 ? tokens[tokens.length - 1] : null;
-    const type = tokens.length >= 2 ? tokens[tokens.length - 2] : null;
+    let type = tokens.length >= 2 ? tokens[tokens.length - 2] : null;
+    let template: Token|null = null;
+    let modifiersStart = 0;
+    let modifiersEnd = tokens.length >= 3 ? tokens.length - 2 : 0;
+    if (type?.text === '>'){
+        if (tokens.length >= 5) {
+            type = tokens[tokens.length - 5];
+            const close = tokens[tokens.length - 2];
+            const open = tokens[tokens.length - 4];
+            template = tokens[tokens.length - 3];
+            open.type = C.None;
+            close.type = C.None;
+            type.type = C.TypeReference;
+            template.type = C.TypeReference;
+            modifiersEnd = tokens.length - 5;
+        }
+        else {
+            parser.result.errors.push({
+                message: "Invalid parameter type declaration.",
+                token: type,
+            });
+        }
+    }
     if (name != null){
         name.type = C.LocalVariable;
     }
     if (type != null){
         type.type = C.TypeReference;
     }
-    const modifiers = tokens.length >= 3 ? tokens.slice(0, tokens.length - 2) : [];
+    else {
+        if (name) {
+            parser.result.errors.push({
+                message: 'Function parameter is missing type',
+                token: name,
+            });
+        }
+    }
     let isOut = false;
     let isOptional = false;
     let isCoerce = false;
-    for (const modifierToken of modifiers){
+    for (let i = modifiersStart; i < modifiersEnd; i+=1){
+        const modifierToken = tokens[i];
         switch(modifierToken.textLower){
         case "out":
             isOut = true;
@@ -116,11 +146,14 @@ function resolveFnArg(tokens: Token[]): UnrealClassFunctionArgument {
             modifierToken.type = C.Keyword;
             break;
         default:
-            // TODO error
+            parser.result.errors.push({
+                message: "Unknown function parameter type modifier.",
+                token: modifierToken,
+            });
             break;
         }
     }
-    return { name, type, isOut, isOptional, isCoerce };
+    return { name, type, isOut, isOptional, isCoerce, template };
 }
 
 function parseFnAfterParameters(parser: UcParser, token: Token)
