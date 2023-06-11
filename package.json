@@ -2,7 +2,7 @@
 	"name": "ucx",
 	"displayName": "ucx",
 	"description": "UnrealScript Extensions",
-	"version": "0.8.2",
+	"version": "0.9.0",
 	"repository": "https://github.com/peterekepeter/ucx",
 	"publisher": "peterekepeter",
 	"engines": {
@@ -11,9 +11,6 @@
 	"bin": "./out/ucx.js",
 	"categories": [
 		"Other"
-	],
-	"activationEvents": [
-		"onLanguage:unrealscript"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -54,7 +51,22 @@
 					".uci"
 				],
 				"firstLine": "^\\s*class\\s*[a-zA-Z0-9_]+\\s*(?:extends|expands)\\s*[a-zA-Z0-9_]+",
-				"configuration": "./uc.language-configuration.json"
+				"configuration": "./uc.language-configuration.json",
+				"icon": {
+					"dark": "./assets/uc-icon-dark.svg",
+					"light": "./assets/uc-icon-light.svg"
+				}
+			},
+			{
+				"id": "ini",
+				"extensions": [
+					".ini",
+					".int"
+				],
+				"icon": {
+					"dark": "./assets/ini-icon-dark.svg",
+					"light": "./assets/ini-icon-light.svg"
+				}
 			}
 		],
 		"grammars": [
