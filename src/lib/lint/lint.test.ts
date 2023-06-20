@@ -709,6 +709,27 @@ test('format removes useless default int properties', () => { linting([
     '};',
 ]);});
 
+test('format removes useless default float properties', () => { linting([
+    'var float a,b,c;',
+    '',
+    'defaultproperties',
+    '{',
+    '    a=0',
+    '    b=0.85',
+    '    c=1.0',
+    '};',
+]).hasFormattedResult([
+    'var float a,b,c;',
+    '',
+    'defaultproperties',
+    '{',
+    '    ',  // check to see if line can be removed
+    '    b=0.85',
+    '    c=1.0',
+    '};',
+]);});
+
+
 test('checks class name to be filename', () => { linting([
     'class SomeClass extends Object;'
 ], undefined, './something/AnotherClass.uc').hasResult({

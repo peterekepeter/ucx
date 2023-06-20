@@ -64,7 +64,7 @@ export class RedundantDefaultValue implements AstBasedLinter
         switch (type){
         case 'string': return value.text === '""';
         case 'int': return Number.parseInt(value.text) === 0;
-        case 'float': return Number.parseInt(value.text) === 0;
+        case 'float': return Number.parseFloat(value.text) === 0;
         case 'bool': return value.textLower === 'false';
         default: return value.textLower === 'none';
         }
