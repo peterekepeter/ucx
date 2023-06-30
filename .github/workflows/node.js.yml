@@ -10,7 +10,7 @@ on:
     branches: [ "master" ]
 
 jobs:
-  checks:
+  basic-checks:
 
     runs-on: ubuntu-latest
 
@@ -26,7 +26,7 @@ jobs:
 
   build-vscode-extension:
 
-    depends-on: checks
+    needs: basic-checks
 
     runs-on: ubuntu-latest
 
@@ -46,7 +46,7 @@ jobs:
 
   build-cli-tool:
 
-    depends-on: checks
+    needs: basic-checks
 
     runs-on: ubuntu-latest
 
