@@ -10,19 +10,57 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
+  checks:
 
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+    - uses: actions/setup-node@v3
       with:
-        node-version: ${{ matrix.node-version }}
         cache: 'npm'
+
     - run: npm ci
     - run: npm run lint
     - run: npm run unittest
+
+  build-vscode-extension:
+
+    depends-on: checks
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        cache: 'npm'
+
+    - run: npm ci
     - run: npm run pack
+    - name: Upload vscode-extension artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: vscode-extension
+        path: ucx*.vsix
+
+  build-cli-tool:
+
+    depends-on: checks
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        cache: 'npm'
+
+    - run: npm ci
     - run: npm run esbuild-ucx
+    - name: Upload cli-tool artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: cli-tool
+        path: ./out/ucx.js
+
