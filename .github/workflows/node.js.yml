@@ -64,3 +64,15 @@ jobs:
         name: cli-tool
         path: ./out/ucx.js
 
+  test-cli-tool:
+
+    needs: build-cli-tool
+
+    steps:
+      - name: Download a single artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: cli-tool
+      - run: node out/ucx.js version
+      - run: ls
+      
