@@ -67,7 +67,7 @@ jobs:
 
   test-cli-tool:
 
-    name: Test Parse ${{ utversion }}
+    name: Test Parse
     needs: build-cli-tool
     runs-on: ubuntu-latest
 
