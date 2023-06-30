@@ -10,7 +10,7 @@ export function tokenizeLineIntoBuffer(input: string, result: LineToken[], regex
             position: regex.lastIndex - text.length,
             text
         });
+        
     }
-
     return result;
 }

@@ -135,6 +135,24 @@ test("tokenize operators", () => verifyTokens(`
     '~='
 ]));
 
+test("does suffer from catastropic backtracking on certain inputs", () => {
+    //  may produce catastrophic backtracking with the tokenizer
+    const input = `Resultset = HereWeHaveALongString$"\\changelevels\\"$SomeMoreStuffThatGoesHere;`;
+    expect(tokenize(input)).toBeTruthy();
+})
+
+test("correctly parses string with escaped backslash in front of string constant", () => verifyTokens(`
+    s = "\\\\test\\\\";
+`, [
+    's', '=', '"\\\\test\\\\"', ';'
+]));
+
+test("correctly parses string with escapte quotes inside preceeded by escaped backslash", () => verifyTokens(`
+    s = "some\\\\\\"thing";
+`, [
+    's', '=', '"some\\\\\\"thing"', ';'
+]))
+
 function verifyTokens(input: string, output: string[]){
     expect(tokenize(input)).toEqual(output);
 }
