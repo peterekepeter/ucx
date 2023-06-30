@@ -75,5 +75,5 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: cli-tool
-      - run: node out/ucx.js version
       - run: ls
+      - run: node ucx.js version
