@@ -68,6 +68,8 @@ jobs:
 
     needs: build-cli-tool
 
+    runs-on: ubuntu-latest
+
     steps:
       - name: Download a single artifact
         uses: actions/download-artifact@v3
@@ -75,4 +77,3 @@ jobs:
           name: cli-tool
       - run: node out/ucx.js version
       - run: ls
-      
