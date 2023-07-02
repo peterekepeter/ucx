@@ -100,9 +100,8 @@ function parseConfigOpenParen(parser: UcParser, token: Token) {
         parser.rootFn = parseClassConfigName;
         break;
     default:
-        parser.result.errors.push({token, message: "Expected '('"});
-        parser.rootFn = parseClassDecorators;
-        break;
+        parseClassDecorators(parser, token);
+        return;
     }
 }
 

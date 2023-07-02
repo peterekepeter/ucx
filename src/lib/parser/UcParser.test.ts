@@ -736,6 +736,11 @@ test("parse class custom config", () => { parsing(`
     .hasClassConfig('MyConfig');
 });
 
+test("parse class with config keyword but no parameter", () => { parsing(`
+    class CustomZone expands ZoneInfo config;
+    `)
+    .hasNoErrors();
+});
 
 test("parse exec instruction", () => { parsing(`
     #exec Texture Import File=Textures\NuRaRulesBG.pcx Name=NuRaRulesBG Group=Windows Mips=On Flags=2
