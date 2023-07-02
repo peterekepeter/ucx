@@ -36,6 +36,7 @@ function parseVarDeclaration(parser: UcParser, token: Token) {
     case 'config':
     case 'export':
     case 'travel':
+    case 'input':
     case 'native':
     case 'private':
         parser.modifiers.push(token);
@@ -229,6 +230,7 @@ function consumeAndProcessVariableModifiers(parser: UcParser, variable: UnrealCl
         case 'editconst': v.isEditConst = true; break;
         case 'const': v.isConst = true; break;
         case 'travel': v.isTravel = true; break;
+        case 'input': v.isInput = true; break;
         case 'globalconfig': v.isConfig = true; break;
         case 'config': v.isConfig = true; break;
         case 'native': v.isNative = true; break;

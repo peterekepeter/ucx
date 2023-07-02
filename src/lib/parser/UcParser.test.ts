@@ -991,6 +991,15 @@ test("parse localized var", () => { parsing(`
     .hasNoErrors();
 });
 
+test("parse input var", () => { parsing(`
+    var input float aMouseX, aMouseY;
+    var float v;
+    `)
+    .hasNoErrors()
+    .hasVariable(0, 'float', 'aMouseX', { isInput: true })
+    .hasVariable(2, 'float', 'v', { isInput: false })
+;});
+
 
 test("parse empty state", () => { parsing(`
     state MyState {}`)
@@ -1580,6 +1589,7 @@ interface ParserTestChecks
         array?:number, 
         travel?:boolean,
         localized?:boolean,
+        isInput?: boolean,
         export?: boolean,
         template?:string,
         arrayExpression?:ExpressionCheckObj
@@ -1651,7 +1661,7 @@ function parsing(input: string): ParserTestChecks {
         isSafeReplace: (flag: boolean) => checkEquals(flag, ast.isSafeReplace, "isSafeReplace should be " + flag),
         hasNativeReplication: (flag: boolean) => checkEquals(flag, ast.isNativeReplication, "hasNativeReplication should be " + flag),
         hasPerObjectConfig: (flag: boolean) => checkEquals(flag, ast.isPerObjectConfig, "isPerObjectConfig should be " + flag),
-        hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean, array?:number, localized?:boolean, travel?:boolean, export?:boolean, template?:string, arrayExpression?:ExpressionCheckObj }) => {
+        hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean, array?:number, localized?:boolean, isInput?:boolean, travel?:boolean, export?:boolean, template?:string, arrayExpression?:ExpressionCheckObj }) => {
             checkEquals(ast.variables[index]?.type?.text, type);
             checkEquals(ast.variables[index]?.name?.text, name);
             if (props?.transient != null) {
@@ -1677,6 +1687,9 @@ function parsing(input: string): ParserTestChecks {
             }
             if (props?.travel != null){
                 checkEquals(ast.variables[index]?.isTravel, props.travel);
+            }
+            if (props?.isInput != null){
+                checkEquals(ast.variables[index]?.isInput, props.isInput);
             }
             if (props?.template != null){
                 checkEquals(ast.variables[index]?.template?.text, props.template);
