@@ -79,6 +79,15 @@ test("parse variable declaration with group", () => { parsing(`
     .hasNoErrors();
 });
 
+test("parse variable with travel decorator", () => { parsing(`
+    var travel int               CTFRank;
+    var int               NotTravel;
+    `)
+    .hasVariable(0, 'int', 'CTFRank', { travel: true })
+    .hasVariable(1, 'int', 'NotTravel', { travel: false })
+    .hasNoErrors();}
+);
+
 test("parse enum declaration", () => { parsing(`
     enum ENetRole
     {
@@ -1569,6 +1578,7 @@ interface ParserTestChecks
         group?: string, 
         config?: boolean, 
         array?:number, 
+        travel?:boolean,
         localized?:boolean,
         export?: boolean,
         template?:string,
@@ -1641,7 +1651,7 @@ function parsing(input: string): ParserTestChecks {
         isSafeReplace: (flag: boolean) => checkEquals(flag, ast.isSafeReplace, "isSafeReplace should be " + flag),
         hasNativeReplication: (flag: boolean) => checkEquals(flag, ast.isNativeReplication, "hasNativeReplication should be " + flag),
         hasPerObjectConfig: (flag: boolean) => checkEquals(flag, ast.isPerObjectConfig, "isPerObjectConfig should be " + flag),
-        hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean, array?:number, localized?:boolean, export?:boolean, template?:string, arrayExpression?:ExpressionCheckObj }) => {
+        hasVariable: (index: number, type: string, name: string, props?: { transient?: boolean, const?: boolean, group?: string, config?: boolean, array?:number, localized?:boolean, travel?:boolean, export?:boolean, template?:string, arrayExpression?:ExpressionCheckObj }) => {
             checkEquals(ast.variables[index]?.type?.text, type);
             checkEquals(ast.variables[index]?.name?.text, name);
             if (props?.transient != null) {
@@ -1664,6 +1674,9 @@ function parsing(input: string): ParserTestChecks {
             }
             if (props?.localized != null){
                 checkEquals(ast.variables[index]?.localized, props.localized);
+            }
+            if (props?.travel != null){
+                checkEquals(ast.variables[index]?.isTravel, props.travel);
             }
             if (props?.template != null){
                 checkEquals(ast.variables[index]?.template?.text, props.template);
