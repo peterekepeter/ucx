@@ -1435,6 +1435,23 @@ test('parse private function', () => {parsing(`
     });
 });
 
+test('parse singular function', () => {parsing(`
+    singular function Bump(){}
+    function NotSingular(){}`)
+    .hasTokens(
+        ['singular', C.Keyword], 
+        ['function', C.Keyword], 
+        ['Bump', C.FunctionDeclaration])
+    .hasFunction(0, {
+        name: 'Bump',
+        isSingular: true,
+    })
+    .hasFunction(1, {
+        name: 'NotSingular',
+        isSingular: false,
+    })
+;});
+
 test('parse variable declaration combined with enum', () => { parsing(`
     var(Display) enum ERenderStyle
     {
@@ -1539,6 +1556,7 @@ interface ParserTestChecks
         isSimulated?: boolean,
         isFinal?: boolean
         isPrivate?: boolean,
+        isSingular?: boolean,
         isLatent?: boolean,
         native?: boolean,
         iterator?: boolean,
@@ -1672,6 +1690,7 @@ function parsing(input: string): ParserTestChecks {
                 isFinal: obj.isFinal,
                 isSimulated: obj.isSimulated,
                 isPrivate: obj.isPrivate,
+                isSingular: obj.isSingular,
                 isLatent: obj.isLatent,
                 native: obj.isNative,
                 iterator: obj.isIterator,

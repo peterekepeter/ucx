@@ -11,6 +11,7 @@ export function resolveFunctionModifiers(parser: UcParser): Partial<UnrealClassF
     let isLatent = false;
     let isNative = false;
     let isIterator = false;
+    let isSingular = false;
     for (const modifier of modifiers) {
         switch (modifier.textLower) {
         case "static":
@@ -34,9 +35,12 @@ export function resolveFunctionModifiers(parser: UcParser): Partial<UnrealClassF
         case "iterator":
             isIterator = true;
             break;
+        case "singular":
+            isSingular = true;
+            break;
         default:
             parser.result.errors.push({
-                message: 'Uknown function modifiers',
+                message: 'Unknown function modifiers',
                 token: modifier,
             });
             break;
@@ -50,5 +54,6 @@ export function resolveFunctionModifiers(parser: UcParser): Partial<UnrealClassF
         isLatent,
         isNative,
         isIterator,
+        isSingular,
     };
 }

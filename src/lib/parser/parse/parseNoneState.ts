@@ -44,6 +44,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
     case 'latent':
     case 'private':
     case 'iterator':
+    case 'singular':
         token.type = C.Keyword;
         parser.modifiers.push(token);
         break;
