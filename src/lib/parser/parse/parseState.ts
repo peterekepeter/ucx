@@ -31,6 +31,12 @@ export function parseStateBody(parser: UcParser, token: Token) {
     parser.currentlyInStateFunction = false;
     switch (token.textLower){
 
+    case 'ignores':
+        token.type = SemanticClass.Keyword;
+        parser.rootFn = parseStateIgnores;
+        break;
+
+    case 'simulated':
     case 'event':
     case 'function':
         parser.currentlyInStateFunction = true;
@@ -46,5 +52,78 @@ export function parseStateBody(parser: UcParser, token: Token) {
         parser.rootFn = parseStatement;
         parseStatement(parser, token);
         break;
+    }
+}
+
+export function parseStateIgnores(parser: UcParser, token: Token) {
+    const state = parser.currentClassState;
+    if (!state) {
+        parser.result.errors.push({
+            message: "Invalid parser state inside state ignores.",
+            token: token,
+        });
+        parseStateBody(parser, token);
+        return;
+    }
+    switch (token.textLower){
+
+    case 'simulated':
+    case 'event':
+    case 'function':
+        parser.result.errors.push({
+            message: "Unexpected token inside state ignores, missing semicolon?",
+            token: token,
+        });
+        parseStateBody(parser, token);
+        return;
+        
+    case "}":
+        parser.result.errors.push({
+            message: "Unexpected token inside state ignores, missing semicolon?",
+            token: token,
+        });
+        parseStateBody(parser, token);
+        return;
+    
+    case ";":
+        parser.rootFn = parseStateBody;
+        break;
+
+    default:
+        token.type = SemanticClass.FunctionReference;
+        state?.ignores.push(token);
+        parser.rootFn = parseStateIgnoresComma;
+        break;
+    }
+}
+
+export function parseStateIgnoresComma(parser: UcParser, token: Token) {
+    const state = parser.currentClassState;
+    if (!state) {
+        parser.result.errors.push({
+            message: "Invalid parser state inside state ignores.",
+            token: token,
+        });
+        parseStateBody(parser, token);
+        return;
+    }
+
+    switch(token.text)
+    {
+    case ',':
+        parser.rootFn = parseStateIgnores;
+        break;
+
+    case ';':
+        parser.rootFn = parseStateBody;
+        break;
+        
+    default:
+        parser.result.errors.push({
+            message: "Expected comma between ignored items.",
+            token: token,
+        });
+        parseStateIgnores(parser, token);
+        return;
     }
 }

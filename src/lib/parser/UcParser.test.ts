@@ -987,8 +987,56 @@ test("parse state functions does not crash", () => { parsing(`
             PlayIdleAnim();
         }
     }
-`).hasNoErrors();});
+`).hasNoErrors()
+    .hasState(0, { 
+        name:'Idle', 
+        functions: [{
+            name: 'AnimEnd'
+        }]
+    });
+});
 
+
+test("parse state with simulated function", () => { parsing(`
+    state ClientFiring
+    {
+        simulated function bool ClientAltFire(float Value)
+        {
+        }
+    }
+`).hasNoErrors()
+    .hasState(0, {
+        name: "ClientFiring",
+        functions: [{
+            name: 'ClientAltFire'
+        }]
+    });}
+);
+
+test("parse state with single ignore", () => { parsing(`
+    state NormalFire
+    {
+        ignores Fire;
+    }
+`).hasNoErrors()
+    .hasState(0, { 
+        name: "NormalFire", 
+        ignores: ["Fire"] 
+    })
+    .hasTokens(['ignores', C.Keyword], ['Fire', C.FunctionReference]);
+;});
+
+test("parse state with multiple ignores separated by comma", () => { parsing(`
+    state NormalFire
+    {
+        ignores Fire, AltFire, AnimEnd;
+    }
+`).hasNoErrors()
+    .hasState(0, { 
+        name: "NormalFire", 
+        ignores: ["Fire", "AltFire", "AnimEnd"] 
+    })
+;});
 
 test("parse state with latent instructions", () => { parsing(`
     auto state MyState
@@ -1003,7 +1051,6 @@ test("parse state with latent instructions", () => { parsing(`
     .hasTokens(['Log', C.FunctionReference], ['(', C.None], ['"MyState has just begun!"', C.LiteralString])
 ;
 });
-
 
 test("parse new object syntax", () => { parsing(`
     function F(){
@@ -1508,7 +1555,11 @@ interface ParserTestChecks
     hasDefaultProperty(index: number, props: { name?: string, value?: ExpressionCheckObj | string, arrayIndex?: string }): ParserTestChecks
     hasTokens(...expected: [string, C][]): ParserTestChecks,
     hasReplication(bodyIndex: number, statementIndex: number, props: { isReliable?: boolean, condition?: ExpressionCheckObj, targets?: string[] }): ParserTestChecks,
-    hasState(index: number, props: { name?:string }): ParserTestChecks
+    hasState(index: number, props: { 
+        name?:string,
+        functions?: { name: string }[],
+        ignores?: string[],
+    }): ParserTestChecks
     hasStruct(index: number, props: {
         name?: string,
         members?: {
@@ -1666,9 +1717,15 @@ function parsing(input: string): ParserTestChecks {
             expect(actual).toMatchObject(props);
             return checks;
         },
-        hasState(index: number, props: { name?:string }){
+        hasState(index: number, props: { name?:string, ignores?: string[], functions?: { name: string }[] }){
             const obj = ast.states[index];
-            expect({ name: obj?.name?.text } as typeof props).toMatchObject(props);
+            expect({ 
+                name: obj?.name?.text, 
+                functions: obj?.functions?.map(f => ({
+                    name: f.name?.text
+                })),
+                ignores: obj?.ignores?.map(i => i.text),
+            } as typeof props).toMatchObject(props);
             return checks;
         },
         hasStruct(index: number, props: { 

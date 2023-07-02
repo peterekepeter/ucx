@@ -88,6 +88,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
             name: null,
             functions: [],
             body: [],
+            ignores: [],
             bodyFirstToken: null,
             bodyLastToken: null,
         });
