@@ -9,6 +9,7 @@ import { ParserToken, SemanticClass as C, UnrealClass } from "../parser";
 import { blue, bold, cyan, gray, green, magenta, red, yellow } from "./terminal";
 
 type LintContext = {
+    successful: boolean;
     fileSeparator: string
     errorCount: number,
     warningCount: number,
@@ -31,11 +32,9 @@ export async function execLint(cmd: UcxCommand): Promise<void> {
     {
         await lintVisitPath(file, context);
     }
-    if (context.errorCount > 0) {
-        process.exit(1);
-    } else {
-        process.exit(0);
-    }
+    evalLintResult(context);
+    console.log(getStatusMessage(context));
+    process.exit(context.successful ? 0 : 1);
 }
 
 async function lintVisitPath(file: string, context: LintContext) {
@@ -231,5 +230,46 @@ function foramtToken(str: string, token: ParserToken): string {
         break;
     }
     return str;
+}
+
+function getStatusMessage(context: LintContext): string {
+    const err = context.errorCount;
+    const files = context.filesParsed;
+    const warn = context.warningCount;
+    const passed = context.successful;
+
+    const list = [
+        passed ? 'passed' : 'failed',
+        'with',
+    ];
+
+    if (files <= 0) {
+        return bold(red("no input files were found..."));
+    }
+
+    if (err > 0){
+        list.push(bold(red(`${err} error${err===1?'':'s'}`)));
+    }
+    else {
+        list.push('no errors');
+    }
+
+    list.push('and');
+
+    if (warn > 0){
+        list.push(bold(yellow(`${warn} warning${warn===1?'':'s'}`)));
+    }
+    else {
+        list.push('no warnings');
+    }
+
+    list.push("in");
+    list.push(bold(`${files} file${files===1?'':'s'}`));
+    
+    return list.join(' ');
+}
+
+function evalLintResult(context: LintContext) {
+    context.successful = context.errorCount <= 0 && context.filesParsed > 0;
 }
 
