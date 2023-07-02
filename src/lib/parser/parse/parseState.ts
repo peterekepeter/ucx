@@ -6,9 +6,27 @@ import { parseNoneState } from "./parseNoneState";
 import { parseStatement } from "./parseStatement";
 
 export function parseState(parser: UcParser, token: Token) {
+    if (token.text === '(')
+    {
+        // state()
+        parser.rootFn = parseStateParen;
+        return;
+    }
     parser.lastState.name = token;
     token.type = SemanticClass.StateDeclaration;
     parser.rootFn = parseStateOpenBody; 
+}
+
+export function parseStateParen(parser: UcParser, token: Token) {
+    // no idea what this paren is for
+    if (token.text === ')')
+    {
+        parser.rootFn = parseState;
+        return;
+    }
+    else {
+        // do nothing
+    }
 }
 
 function parseStateOpenBody(parser: UcParser, token: Token) {

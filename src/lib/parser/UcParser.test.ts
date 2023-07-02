@@ -1095,6 +1095,17 @@ test("parse state with multiple ignores separated by comma", () => { parsing(`
     })
 ;});
 
+test("parse state() with local var inside state function", () => { parsing(`
+    state() StandOpenTimed
+    {
+        function Attach( actor Other )
+        {
+            local pawn  P;
+        }
+    }`)
+    .hasNoErrors()
+;});
+
 test("parse state with latent instructions", () => { parsing(`
     auto state MyState
     {
