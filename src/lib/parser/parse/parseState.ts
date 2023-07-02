@@ -17,7 +17,7 @@ export function parseState(parser: UcParser, token: Token) {
     parser.rootFn = parseStateOpenBody; 
 }
 
-export function parseStateParen(parser: UcParser, token: Token) {
+function parseStateParen(parser: UcParser, token: Token) {
     // no idea what this paren is for
     if (token.text === ')')
     {
@@ -29,10 +29,32 @@ export function parseStateParen(parser: UcParser, token: Token) {
     }
 }
 
+function parseStateExtends(parser: UcParser, token: Token) {
+    if (token.text === "{")
+    {
+        parser.result.errors.push({ 
+            token, message: "Expected name of a state but found '{' instead."
+        });
+        parseStateOpenBody(parser, token);
+        return;
+    }
+    token.type = SemanticClass.StateReference;
+    const state = parser.lastState;
+    state.parentStateName = token;
+    parser.rootFn = parseStateOpenBody; 
+}
+
 function parseStateOpenBody(parser: UcParser, token: Token) {
+    if (token.textLower === 'extends' || token.textLower === 'expands')
+    {
+        token.type = SemanticClass.Keyword;
+        parser.rootFn = parseStateExtends;
+        return;
+    }
     if (token.text !== "{")
     {
         parser.result.errors.push({ token, message: "Expected '{'"});
+        return;
     }
     const state = parser.currentClassState;
     if (state){

@@ -7,6 +7,19 @@ export interface UnrealClassState {
     functions: UnrealClassFunction[];
     body: UnrealClassStatement[];
     ignores: Token[];
+    parentStateName: Token | null;
     bodyFirstToken: Token | null;
     bodyLastToken: Token | null;
+}
+
+export function createDefaultUnrealClassState(): UnrealClassState { 
+    return {
+        name: null,
+        functions: [],
+        body: [],
+        ignores: [],
+        parentStateName: null,
+        bodyFirstToken: null,
+        bodyLastToken: null,
+    };
 }

@@ -1120,6 +1120,23 @@ test("parse state with latent instructions", () => { parsing(`
 ;
 });
 
+test("parse state extends state", () => { parsing(`
+    state EEDDAA extends DDAA
+    {
+            function f();
+    }
+    state DDAA {}`)
+    .hasTokens(
+        ['state', C.Keyword],
+        ['EEDDAA', C.StateDeclaration],
+        ['extends', C.Keyword],
+        ['DDAA', C.StateReference]
+    )
+    .hasNoErrors()
+    .hasState(0, { name: 'EEDDAA', parentState: 'DDAA' })
+    .hasState(1, { name: 'DDAA' })
+;});
+
 test("parse new object syntax", () => { parsing(`
     function F(){
         r1 = new class'NodeReplacer';
@@ -1649,6 +1666,7 @@ interface ParserTestChecks
         name?:string,
         functions?: { name: string }[],
         ignores?: string[],
+        parentState?: string,
     }): ParserTestChecks
     hasStruct(index: number, props: {
         name?: string,
@@ -1817,7 +1835,7 @@ function parsing(input: string): ParserTestChecks {
             expect(actual).toMatchObject(props);
             return checks;
         },
-        hasState(index: number, props: { name?:string, ignores?: string[], functions?: { name: string }[] }){
+        hasState(index: number, props: { name?:string, ignores?: string[], functions?: { name: string }[], parentState?: string }){
             const obj = ast.states[index];
             expect({ 
                 name: obj?.name?.text, 
@@ -1825,6 +1843,7 @@ function parsing(input: string): ParserTestChecks {
                     name: f.name?.text
                 })),
                 ignores: obj?.ignores?.map(i => i.text),
+                parentState: obj?.parentStateName?.text,
             } as typeof props).toMatchObject(props);
             return checks;
         },

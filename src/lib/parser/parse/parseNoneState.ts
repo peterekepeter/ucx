@@ -12,6 +12,7 @@ import { clearModifiers, isModifier, parseModifier } from "./parseModifiers";
 import { parseReplicationBlockBegin } from "./parseReplication";
 import { parseVarBegin } from "./parseVar";
 import { parseStructBegin } from "./parseStruct";
+import { createDefaultUnrealClassState } from "../ast";
 
 
 export function parseNoneState(parser: UcParser, token: Token) {
@@ -79,14 +80,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
         break;
 
     case 'state':
-        parser.result.states.push({
-            name: null,
-            functions: [],
-            body: [],
-            ignores: [],
-            bodyFirstToken: null,
-            bodyLastToken: null,
-        });
+        parser.result.states.push(createDefaultUnrealClassState());
         parser.rootFn = parseState;
         token.type = C.Keyword;
         clearModifiers(parser);

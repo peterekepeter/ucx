@@ -222,6 +222,7 @@ function foramtToken(str: string, token: ParserToken): string {
         break;
     case C.ObjectReferenceName:
     case C.StateDeclaration:
+    case C.StateReference:
     case C.StatementLabel:
     case C.StructDeclaration:
     case C.StructMember:
@@ -265,7 +266,7 @@ function getStatusMessage(context: LintContext): string {
 
     list.push("in");
     list.push(bold(`${files} file${files===1?'':'s'}`));
-    
+
     return list.join(' ');
 }
 
