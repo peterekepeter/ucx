@@ -51,6 +51,8 @@ describe("operators", () => {
     verify("cross", C.Operator);
     verify("Cross", C.Operator);
     verify("CROSS", C.Operator);
+    verify("@", C.Operator);
+    verify("$", C.Operator);
 });
 
 describe("new is keyword", () => {

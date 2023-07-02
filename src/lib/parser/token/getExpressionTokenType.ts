@@ -1,15 +1,6 @@
 import { Token } from "../types";
 import { SemanticClass } from "./SemanticClass";
 
-type DetectedExpressionTypes 
-    = SemanticClass.LiteralString   
-    | SemanticClass.LiteralNumber
-    | SemanticClass.LiteralName
-    | SemanticClass.Identifier
-    | SemanticClass.Operator
-    | SemanticClass.LanguageConstant
-    | SemanticClass.None;
-
 export function getExpressionTokenType(token: Token): DetectedExpressionTypes {
     const text = token.text;
     if (text.startsWith('"')) {
@@ -18,22 +9,33 @@ export function getExpressionTokenType(token: Token): DetectedExpressionTypes {
     else if (text.startsWith("'")) {
         return SemanticClass.LiteralName;
     }
-    else if (/^[+-]?[0-9]/.test(text)) {
+    else if (NUMERIC.test(text)) {
         return SemanticClass.LiteralNumber;
     }
-    else if (/^(true|false|none)$/i.test(text)) {
+    else if (LANGUAGE_CONSTANTS.test(text)) {
         return SemanticClass.LanguageConstant;
     }
-    else if(/^new$/i.test(text)) {
+    else if (OPERATORS.test(text)){
         return SemanticClass.Operator;
     }
-    else if (/^[-+=*/<>!]|[<>=!~]=|\+\+|--|\&\&|\|\||dot|cross$/i.test(text)){
-        return SemanticClass.Operator;
-    }
-    else if (/^[a-z_]/i.test(text)) {
+    else if (IDENTIFIERS.test(text)) {
         return SemanticClass.Identifier;
     }
     else {
         return SemanticClass.None;
     }
 }
+
+const NUMERIC = /^[+-]?[0-9]/;
+const LANGUAGE_CONSTANTS = /^(true|false|none)$/i;
+const OPERATORS = /^(?:[-+=*/<>!@$]|[<>=!~]=|\+\+|--|&&|\|\||new|dot|cross)$/i;
+const IDENTIFIERS = /^[a-z_]/i;
+
+type DetectedExpressionTypes 
+    = SemanticClass.LiteralString   
+    | SemanticClass.LiteralNumber
+    | SemanticClass.LiteralName
+    | SemanticClass.Identifier
+    | SemanticClass.Operator
+    | SemanticClass.LanguageConstant
+    | SemanticClass.None;
