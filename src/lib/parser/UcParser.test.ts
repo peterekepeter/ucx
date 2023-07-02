@@ -1013,6 +1013,22 @@ test("parse state with simulated function", () => { parsing(`
     });}
 );
 
+test("parse state with singular function", () => { parsing(`
+    state SomeState
+    {
+        singular event BaseChange()
+        {
+        }
+    }
+`).hasNoErrors()
+    .hasState(0, {
+        name: "SomeState",
+        functions: [{
+            name: 'BaseChange'
+        }]
+    });}
+);
+
 test("parse state with single ignore", () => { parsing(`
     state NormalFire
     {

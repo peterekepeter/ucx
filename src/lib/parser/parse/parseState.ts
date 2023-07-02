@@ -1,6 +1,7 @@
 import { SemanticClass, UcParser } from "..";
 import { Token } from "../types";
 import { parseFnBegin } from "./parseFunction";
+import { isModifier, parseModifier } from "./parseModifiers";
 import { parseNoneState } from "./parseNoneState";
 import { parseStatement } from "./parseStatement";
 
@@ -29,6 +30,13 @@ export function parseStateBody(parser: UcParser, token: Token) {
         state.bodyLastToken = token;
     }
     parser.currentlyInStateFunction = false;
+
+    if (isModifier(token))
+    {
+        parseModifier(parser, token);
+        return;
+    }
+
     switch (token.textLower){
 
     case 'ignores':
@@ -36,7 +44,6 @@ export function parseStateBody(parser: UcParser, token: Token) {
         parser.rootFn = parseStateIgnores;
         break;
 
-    case 'simulated':
     case 'event':
     case 'function':
         parser.currentlyInStateFunction = true;
@@ -65,9 +72,18 @@ export function parseStateIgnores(parser: UcParser, token: Token) {
         parseStateBody(parser, token);
         return;
     }
+
+    if (isModifier(token)){
+        parser.result.errors.push({
+            message: "Unexpected token inside state ignores, missing semicolon?",
+            token: token,
+        });
+        parseStateBody(parser, token);
+        return;
+    }
+    
     switch (token.textLower){
 
-    case 'simulated':
     case 'event':
     case 'function':
         parser.result.errors.push({

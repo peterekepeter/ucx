@@ -3,7 +3,7 @@ import { createEmptyStruct } from "../ast/UnrealClassStruct";
 import { createEmptyUnrealClassVariable } from "../ast/UnrealClassVariable";
 import { SemanticClass as C } from "../token";
 import { Token } from "../types";
-import { clearModifiers } from "./clearModifiers";
+import { clearModifiers } from "./parseModifiers";
 import { parseNoneState } from "./parseNoneState";
 
 

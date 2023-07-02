@@ -1,7 +1,7 @@
 import { SemanticClass as C } from "../token";
 import { Token } from "../types";
 import { UcParser } from "../UcParser";
-import { clearModifiers } from "./clearModifiers";
+import { clearModifiers } from "./parseModifiers";
 import { parseNoneState } from "./parseNoneState";
 import { resolveExpression } from "./resolveExpression";
 

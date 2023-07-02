@@ -2,7 +2,7 @@ import { ParserToken as Token } from "../";
 import { createEmptyUnrealClassVariable, UnrealClassVariable } from "../ast/UnrealClassVariable";
 import { SemanticClass as C } from "../token/SemanticClass";
 import { UcParser } from "../UcParser";
-import { clearModifiers } from "./clearModifiers";
+import { clearModifiers } from "./parseModifiers";
 import { parseEnumBegin } from "./parseEnum";
 import { parseNoneState } from "./parseNoneState";
 import { resolveExpression } from "./resolveExpression";

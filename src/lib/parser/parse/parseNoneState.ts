@@ -8,7 +8,7 @@ import { UcParser } from "../UcParser";
 import { parseDefaultProperties } from "./parseDefaultProperties";
 import { parseExec } from "./parseExec";
 import { parseState, parseStateBody } from "./parseState";
-import { clearModifiers } from "./clearModifiers";
+import { clearModifiers, isModifier, parseModifier } from "./parseModifiers";
 import { parseReplicationBlockBegin } from "./parseReplication";
 import { parseVarBegin } from "./parseVar";
 import { parseStructBegin } from "./parseStruct";
@@ -29,24 +29,18 @@ export function parseNoneState(parser: UcParser, token: Token) {
         token.type = C.ExecInstruction;
         return;
     }
+
+    if (isModifier(token)){
+        parseModifier(parser, token);
+        return;
+    }
+    
     switch (token.textLower) {
 
     case 'native':
         token.type = C.Keyword;
         parser.modifiers.push(token);
         parser.rootFn = parseNativeModifier;
-        break;
-
-    case 'auto':
-    case 'final':
-    case 'simulated':
-    case 'static':
-    case 'latent':
-    case 'private':
-    case 'iterator':
-    case 'singular':
-        token.type = C.Keyword;
-        parser.modifiers.push(token);
         break;
 
     case 'class':

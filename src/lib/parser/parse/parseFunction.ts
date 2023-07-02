@@ -1,7 +1,7 @@
 import { SemanticClass as C, ParserToken, SemanticClass, UcParser } from "..";
 import { createEmptyUnrealClassFunction, UnrealClassFunctionArgument } from "../ast/UnrealClassFunction";
 import { Token } from "../types";
-import { clearModifiers } from "./clearModifiers";
+import { clearModifiers } from "./parseModifiers";
 import { parseNoneState } from "./parseNoneState";
 import { parseStatement } from "./parseStatement";
 import { resolveFunctionModifiers } from "./resolveFunctionModifiers";

@@ -1,7 +1,7 @@
 import { ParserToken as Token } from "../";
 import { SemanticClass as C } from "../";
 import { UcParser } from "../UcParser";
-import { clearModifiers } from "./clearModifiers";
+import { clearModifiers } from "./parseModifiers";
 import { parseNoneState } from "./parseNoneState";
 import { continueVarDelcarationFromTypeDeclaration, hasIncompleteVarDeclaration } from "./parseVar";
 
