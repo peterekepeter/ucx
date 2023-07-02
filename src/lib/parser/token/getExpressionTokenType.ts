@@ -12,9 +12,6 @@ type DetectedExpressionTypes
 
 export function getExpressionTokenType(token: Token): DetectedExpressionTypes {
     const text = token.text;
-    if (text === 'dot') {
-        return SemanticClass.Operator;
-    }
     if (text.startsWith('"')) {
         return SemanticClass.LiteralString;
     }
@@ -30,7 +27,7 @@ export function getExpressionTokenType(token: Token): DetectedExpressionTypes {
     else if(/^new$/i.test(text)) {
         return SemanticClass.Operator;
     }
-    else if (/^[-+=*/<>!]|[<>=!~]=|\+\+|--|\&\&|\|\||[dD][oO][tT]$/.test(text)){
+    else if (/^[-+=*/<>!]|[<>=!~]=|\+\+|--|\&\&|\|\||dot|cross$/i.test(text)){
         return SemanticClass.Operator;
     }
     else if (/^[a-z_]/i.test(text)) {

@@ -48,6 +48,9 @@ describe("operators", () => {
     verify("dot", C.Operator);
     verify("Dot", C.Operator);
     verify("DOT", C.Operator);
+    verify("cross", C.Operator);
+    verify("Cross", C.Operator);
+    verify("CROSS", C.Operator);
 });
 
 describe("new is keyword", () => {
