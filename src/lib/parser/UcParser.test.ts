@@ -766,6 +766,16 @@ test("parse simulated function", () => { parsing(`
 });
 
 
+test("parse exec function", () => { parsing(`
+    exec function Fire( optional float F ) {}
+    function NotExec( optional float F ) {}
+    `)
+    .hasNoErrors()
+    .hasFunction(0, { name: "Fire", isExec: true })
+    .hasFunction(1, { name: "NotExec", isExec: false })
+    .hasTokens(['exec', C.Keyword], ['function', C.Keyword], ['Fire', C.FunctionDeclaration]);
+});
+
 test("parse optional function parameter", () => { parsing(`
     function PrintError(optional string message){}
     `)
@@ -1572,6 +1582,7 @@ interface ParserTestChecks
         isSimulated?: boolean,
         isFinal?: boolean
         isPrivate?: boolean,
+        isExec?: boolean,
         isSingular?: boolean,
         isLatent?: boolean,
         native?: boolean,
@@ -1681,7 +1692,8 @@ function parsing(input: string): ParserTestChecks {
                 body?:StatementCheckObj[],
                 isStatic?: boolean,
                 isSimulated?: boolean,
-                isFinal?: boolean
+                isFinal?: boolean,
+                isExec?: boolean,
                 isLatent?: boolean,
                 native?: boolean,
                 iterator?: boolean,
@@ -1706,6 +1718,7 @@ function parsing(input: string): ParserTestChecks {
                 isFinal: obj.isFinal,
                 isSimulated: obj.isSimulated,
                 isPrivate: obj.isPrivate,
+                isExec: obj.isExec,
                 isSingular: obj.isSingular,
                 isLatent: obj.isLatent,
                 native: obj.isNative,

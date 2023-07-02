@@ -7,7 +7,7 @@ export function clearModifiers(parser: UcParser) {
     }
 }
 
-const modifierRegex = /^(?:auto|final|simulated|static|latent|private|iterator|singular)$/i;
+const modifierRegex = /^(?:auto|exec|final|simulated|static|latent|private|iterator|singular)$/i;
 
 export function isModifier(token: ParserToken): boolean {
     return modifierRegex.test(token.text);

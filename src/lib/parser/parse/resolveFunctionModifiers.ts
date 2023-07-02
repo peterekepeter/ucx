@@ -12,8 +12,12 @@ export function resolveFunctionModifiers(parser: UcParser): Partial<UnrealClassF
     let isNative = false;
     let isIterator = false;
     let isSingular = false;
+    let isExec = false;
     for (const modifier of modifiers) {
         switch (modifier.textLower) {
+        case "exec":
+            isExec = true;
+            break;
         case "static":
             isStatic = true;
             break;
@@ -47,6 +51,7 @@ export function resolveFunctionModifiers(parser: UcParser): Partial<UnrealClassF
         }
     }
     return {
+        isExec, 
         isStatic,
         isSimulated,
         isFinal,

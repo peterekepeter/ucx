@@ -11,6 +11,7 @@ export interface UnrealClassFunction {
     isSimulated: boolean;
     isFinal: boolean;
     isPrivate: boolean;
+    isExec: boolean;
     isSingular: boolean;
     isLatent: boolean;
     isNative: boolean,
@@ -32,6 +33,7 @@ export function createEmptyUnrealClassFunction(): UnrealClassFunction {
         isSimulated: false,
         isFinal: false,
         isPrivate: false,
+        isExec: false,
         isSingular: false,
         isLatent: false,
         isNative: false,
