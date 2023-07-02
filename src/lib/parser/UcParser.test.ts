@@ -11,6 +11,7 @@ test("parse basic class declration", () => {
         .isAbstract(false)
         .isNative(false)
         .isNoExport(false)
+        .isTransient(false)
         .isSafeReplace(false)
         .hasNativeReplication(false)
         .hasPerObjectConfig(false)
@@ -41,6 +42,13 @@ test("parse class declaration with noexport", () => {
         .hasParentClassName(null)
         .isNoExport(true)
         .isNative(true);
+});
+
+test("parse class declaration with noexport", () => { 
+    parsing(`class InternetInfo extends Info native transient;`)
+        .hasNoErrors()
+        .hasClassName('InternetInfo')
+        .isTransient(true);
 });
 
 test("parse class declaration with safereplace", () => { 
@@ -1577,6 +1585,7 @@ interface ParserTestChecks
     hasNoErrors(): ParserTestChecks
     isAbstract(flag: boolean): ParserTestChecks
     isNative(flag: boolean): ParserTestChecks
+    isTransient(flag: boolean): ParserTestChecks
     isSafeReplace(flag: boolean): ParserTestChecks
     isNoExport(flag: boolean): ParserTestChecks
     hasNativeReplication(flag: boolean): ParserTestChecks
@@ -1658,6 +1667,7 @@ function parsing(input: string): ParserTestChecks {
         isAbstract: (flag: boolean) => checkEquals(flag, ast.isAbstract, "isAbstract should be " + flag),
         isNative: (flag: boolean) => checkEquals(flag, ast.isNative, "isNative should be " + flag),
         isNoExport: (flag: boolean) => checkEquals(flag, ast.isNoExport, "isNoExport should be " + flag),
+        isTransient: (flag: boolean) => checkEquals(flag, ast.isTransient, "isTransient should be " + flag),
         isSafeReplace: (flag: boolean) => checkEquals(flag, ast.isSafeReplace, "isSafeReplace should be " + flag),
         hasNativeReplication: (flag: boolean) => checkEquals(flag, ast.isNativeReplication, "hasNativeReplication should be " + flag),
         hasPerObjectConfig: (flag: boolean) => checkEquals(flag, ast.isPerObjectConfig, "isPerObjectConfig should be " + flag),

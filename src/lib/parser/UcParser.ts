@@ -1,4 +1,4 @@
-import { UnrealClass } from "./ast/UnrealClass";
+import { UnrealClass, createDefaultUnrealClass } from "./ast/UnrealClass";
 import { UnrealExecInstruction } from "./ast/UnrealExecInstruction";
 import { UnrealClassState } from "./ast/UnrealClassState";
 import { UnrealClassFunction, UnrealClassFunctionLocal, UnrealClassStatement } from "./ast/UnrealClassFunction";
@@ -19,28 +19,7 @@ export class UcParser{
 
     rootFn: ParserFn = parseNoneState;
 
-    result: UnrealClass = {
-        name: null,
-        parentName: null, 
-        isAbstract: false,
-        isNoExport: false,
-        isSafeReplace: false,
-        isNative: false,
-        isNativeReplication: false,
-        isPerObjectConfig: false,
-        errors: [],
-        variables: [],
-        execInstructions: [],
-        enums: [],
-        tokens: [],
-        constants: [],
-        functions: [],
-        textLines: [],
-        structs: [],
-        defaultProperties: [],
-        states:[],
-        replicationBlocks: [],
-    };
+    result = createDefaultUnrealClass();
     
     expressionTokens: Token[] = [];
     expressionSplitter = new ExpressionSplitter();

@@ -62,6 +62,12 @@ function parseClassDecorators(parser: UcParser, token: Token) {
         parser.result.isPerObjectConfig = true;
         token.type = SemanticClass.Keyword;
         break;
+
+    case 'transient':
+        parser.result.classDeclarationLastToken = token;
+        parser.result.isTransient = true;
+        token.type = SemanticClass.Keyword;
+        break;
     
     case 'config':
         token.type = SemanticClass.Keyword;

@@ -22,6 +22,7 @@ export interface UnrealClass {
     isAbstract: boolean;
     isNative: boolean;
     isNoExport: boolean;
+    isTransient: boolean;
     isSafeReplace: boolean;
     isNativeReplication: boolean;
     isPerObjectConfig: boolean;
@@ -41,5 +42,28 @@ export interface UnrealClass {
     replicationBlocks: UnrealClassReplicationBlock[];
 }
 
-
-
+export function createDefaultUnrealClass(): UnrealClass {
+    return {
+        name: null,
+        parentName: null, 
+        isAbstract: false,
+        isNoExport: false,
+        isSafeReplace: false,
+        isTransient: false,
+        isNative: false,
+        isNativeReplication: false,
+        isPerObjectConfig: false,
+        errors: [],
+        variables: [],
+        execInstructions: [],
+        enums: [],
+        tokens: [],
+        constants: [],
+        functions: [],
+        textLines: [],
+        structs: [],
+        defaultProperties: [],
+        states:[],
+        replicationBlocks: [],
+    };
+}
