@@ -13,6 +13,7 @@ vsc-extension-quickstart.md
 **/*.vsix
 syntaxes/
 .github/
-uc.language.configuration.json
-
+uc.language-configuration.json
+.vscodeignore
+assets/**
 out/extension.js
