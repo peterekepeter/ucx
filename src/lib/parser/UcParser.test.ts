@@ -658,6 +658,24 @@ test("parse function argument out", () => { parsing(`
     });
 });
 
+test("parse function argument array", () => { parsing(`
+    native function bool SendBinary( IpAddr Addr, int Count, byte B[255] );
+    `)
+    .hasFunction(0, {
+        name: 'SendBinary',
+        fnArgs: [{
+            type: 'IpAddr',
+            name: 'Addr',
+        }, {
+            type: 'int',
+            name: 'Count',
+        }, {
+            type: 'byte',
+            array: 255,
+            name: 'B',
+        }]
+    })
+;});
 
 test("parse variable with array", () => { parsing(`
     var string Items[32];
@@ -1654,6 +1672,7 @@ interface ParserTestChecks
             type?: string,
             template?: string,
             name?: string,
+            array?: number,
             isOut?: boolean,
             isOptional?: boolean,
             isCoerce?: boolean,
@@ -1771,6 +1790,7 @@ function parsing(input: string): ParserTestChecks {
                 fnArgs?: { 
                     type?: string,
                     name?: string,
+                    array?: number,
                     isOut?: boolean,
                     isOptional?: boolean,
                     isCoerce?: boolean,
@@ -1798,6 +1818,7 @@ function parsing(input: string): ParserTestChecks {
                     name:a.name?.text,
                     type: a.type?.text,
                     template: a.template?.text,
+                    array: a.arrayCount,
                     isOut: a.isOut, 
                     isOptional: a.isOptional,
                     isCoerce: a.isCoerce,

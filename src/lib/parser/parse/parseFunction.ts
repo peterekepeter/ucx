@@ -1,9 +1,10 @@
 import { SemanticClass as C, ParserToken, SemanticClass, UcParser } from "..";
-import { createEmptyUnrealClassFunction, UnrealClassFunctionArgument } from "../ast/UnrealClassFunction";
+import { createEmptyUnrealClassFunction, UnrealClassExpression, UnrealClassFunctionArgument } from "../ast/UnrealClassFunction";
 import { Token } from "../types";
 import { clearModifiers } from "./parseModifiers";
 import { parseNoneState } from "./parseNoneState";
 import { parseStatement } from "./parseStatement";
+import { resolveExpression } from "./resolveExpression";
 import { resolveFunctionModifiers } from "./resolveFunctionModifiers";
 
 
@@ -89,6 +90,33 @@ function parseFnParams(parser: UcParser, token: Token)
     }
 }
 function resolveFnArg(parser: UcParser, tokens: Token[]): UnrealClassFunctionArgument {
+    const length = tokens.length;
+    const last = length - 1;
+    let arrayCount: number|null = null;
+    let arrayCountToken: Token|null = null;
+    let arrayCountExpression: UnrealClassExpression|Token|null = null;
+    if (tokens[last].text === ']') {
+        for (let i=last; i>=0; i-=1){
+            if (tokens[i].text === '[')
+            {
+                const expr = tokens.slice(i+1, last);
+                tokens = tokens.slice(0, i);
+                arrayCountExpression = resolveExpression(expr);
+                if ('text' in arrayCountExpression && arrayCountExpression.type === C.LiteralNumber)
+                {
+                    arrayCountToken = arrayCountExpression;
+                    arrayCount = parseInt(arrayCountToken.text);
+                }
+                break;
+            }
+        }
+        if (!arrayCountExpression){
+            parser.result.errors.push({
+                message: "Unsupported array count expression",
+                token: tokens[last],
+            });
+        }
+    }
     const name = tokens.length >= 1 ? tokens[tokens.length - 1] : null;
     let type = tokens.length >= 2 ? tokens[tokens.length - 2] : null;
     let template: Token|null = null;
@@ -153,7 +181,17 @@ function resolveFnArg(parser: UcParser, tokens: Token[]): UnrealClassFunctionArg
             break;
         }
     }
-    return { name, type, isOut, isOptional, isCoerce, template };
+    return { 
+        name, 
+        type, 
+        isOut, 
+        isOptional, 
+        isCoerce, 
+        template, 
+        arrayCount, 
+        arrayCountExpression,
+        arrayCountToken
+    };
 }
 
 function parseFnAfterParameters(parser: UcParser, token: Token)
