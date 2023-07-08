@@ -151,7 +151,7 @@ test("correctly parses string with escapte quotes inside preceeded by escaped ba
     s = "some\\\\\\"thing";
 `, [
     's', '=', '"some\\\\\\"thing"', ';'
-]))
+]));
 
 function verifyTokens(input: string, output: string[]){
     expect(tokenize(input)).toEqual(output);

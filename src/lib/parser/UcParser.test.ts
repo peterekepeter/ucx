@@ -755,8 +755,29 @@ test("parse defaultproperties empty string", () => { parsing(`
     }
     `)
     .hasNoErrors()
-    .hasDefaultProperty(0, { name: "PrefixDictionary", value: '""' });
-});
+    .hasDefaultProperty(0, { name: "PrefixDictionary", value: '""' })
+;});
+
+test("parse defaultproperties with missing value", () => { parsing(`
+    defaultproperties {
+        ReducedDamageType=
+        ReducedDamagePct=0.500000
+    }`)
+    .hasNoErrors()
+    .hasDefaultProperty(0, { name: "ReducedDamageType" })
+    .hasDefaultProperty(1, { name: "ReducedDamagePct", value: "0.500000" })
+;});
+
+
+test("parse defaultproperties with unfinished name", () => { parsing(`
+    defaultproperties {
+        ReducedDamageType='
+        ReducedDamagePct=0.500000
+    }`)
+    .hasNoErrors()
+    .hasDefaultProperty(0, { name: "ReducedDamageType" })
+    .hasDefaultProperty(1, { name: "ReducedDamagePct", value: "0.500000" })
+;});
 
 
 test("parse event as function", () => { parsing(`

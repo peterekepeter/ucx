@@ -14,8 +14,8 @@ export function parseDefaultProperties(parser: UcParser, token: Token) {
         parser.rootFn = parseProperty;
         break;
     default: 
-        parser.rootFn = parseProperty;
         parser.result.errors.push({ token, message: 'Expected "{" after keyword'});
+        parseProperty(parser, token);
         break;
     }
 }
@@ -41,6 +41,10 @@ function parseProperty(parser: UcParser, token: Token) {
 function parseAfterPropertName(parser: UcParser, token: Token)
 {
     switch (token.text) {
+    case '}':
+        parser.result.errors.push({ token, message: "Expecting '=' or '(' to assign value" });
+        parser.rootFn = parseNoneState;
+        break;
     case '=':
         parser.rootFn = parsePropertyValue;
         token.type = C.Operator;
@@ -59,6 +63,10 @@ function parseAfterPropertName(parser: UcParser, token: Token)
 function parseArrayPropertyIndex(parser: UcParser, token: Token)
 {
     switch (token.text) {
+    case '}':
+        parser.result.errors.push({ token, message: "Expecting index number" });
+        parser.rootFn = parseNoneState;
+        break;
     default:
         parser.lastDefaultProperty.arrayIndex = token;
         parser.rootFn = parseArrayPropertyAfterIndex;
@@ -69,6 +77,10 @@ function parseArrayPropertyIndex(parser: UcParser, token: Token)
 function parseArrayPropertyAfterIndex(parser: UcParser, token: Token)
 {
     switch (token.text) {
+    case '}':
+        parser.result.errors.push({ token, message: "Expecting ')' to assign value" });
+        parser.rootFn = parseNoneState;
+        break;
     case ')':
         parser.rootFn = parsePropertyEquals;
         break;
@@ -83,6 +95,10 @@ function parseArrayPropertyAfterIndex(parser: UcParser, token: Token)
 function parsePropertyEquals(parser: UcParser, token: Token)
 {
     switch (token.text) {
+    case '}':
+        parser.result.errors.push({ token, message: "Expecting '=' to assign value" });
+        parser.rootFn = parseNoneState;
+        break;
     case '=':
         parser.rootFn = parsePropertyValue;
         token.type = C.Operator;
@@ -97,47 +113,35 @@ function parsePropertyEquals(parser: UcParser, token: Token)
 
 function parsePropertyValue(parser: UcParser, token: Token)
 {
-    let expression: UnrealClassExpression | Token | null;
     switch (token.text){
     case '}':
         parser.result.defaultPropertiesLastToken = token;
-        expression = tryResolveDefaultExpression(parser.expressionTokens);
-        if (expression != null){
-            parser.lastDefaultProperty.value = expression;
-        }
-        else {
-            console.log("here", token);
-            for(const token of parser.expressionTokens) {
-                parser.result.errors.push({
-                    token, message: 'Failed to parse default property value' 
-                });
-            }
-        }
-        parser.expressionTokens = [];
+        parser.lastDefaultProperty.value = resolveDefaultExpression(parser.expressionTokens);
+        parser.expressionTokens.length = 0;
         parser.rootFn = parseNoneState;
         break;
     default:
-        if (token.type === C.Identifier)
+        if (parser.lastDefaultProperty?.name?.line !== token.line)
         {
-            // token can be next default property name
-            const resolved = tryResolveDefaultExpression(parser.expressionTokens);
-            if (resolved){
-                parser.lastDefaultProperty.value = resolved;
-                parser.expressionTokens = [];
-                parser.rootFn = parseProperty;
-                parseProperty(parser,token);
-                return;
-            }
+            const resolved = resolveDefaultExpression(parser.expressionTokens);
+            parser.lastDefaultProperty.value = resolved;
+            parser.expressionTokens = [];
+            parser.rootFn = parseProperty;
+            parseProperty(parser,token);
         }
-        // could not resolve expression
-        parser.expressionTokens.push(token);
+        else {
+            parser.expressionTokens.push(token);
+        }
         break;
     }
 }
 
-function tryResolveDefaultExpression(tokens: Token[]): UnrealClassExpression | Token | null
+function resolveDefaultExpression(tokens: Token[]): UnrealClassExpression | Token | null
 {
-    if (tokens.length === 1) {
+    if (tokens.length === 0) {
+        return null; // empty 
+    }
+    else if (tokens.length === 1) {
         const token = tokens[0];
         switch (token.type) {
         case C.LiteralName:
