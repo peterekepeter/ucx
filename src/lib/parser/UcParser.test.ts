@@ -1548,6 +1548,25 @@ test('parse block statement termination also terminates single statement block',
     ]})
 ;});
 
+test('parse do until loop', () => { parsing(`
+    function Test(){
+        log("test");
+        do {
+            i++;
+            log("iteration "$i);
+            if(i==7||i==9||i>18)
+                continue;
+            log("...");
+        } until( i>20 );
+    }`)
+    .hasNoErrors()
+    .hasFunction(0, { name: "Test", body: [
+        { op:'log' },
+        { op:'do' },
+        { op:'until' },
+    ] })
+;});
+
 
 test('parse splits statements without relying on semicolon', () => {parsing(`
     function Test(){

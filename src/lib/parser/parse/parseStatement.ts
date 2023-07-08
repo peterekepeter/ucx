@@ -13,6 +13,8 @@ export function parseStatement(parser: UcParser, token: Token)
         parser.rootFn = parseFnLocalDeclaration;
         token.type = C.Keyword;
         break;
+    case "do":
+    case "until":
     case "else":
     case "for":
     case "while":
