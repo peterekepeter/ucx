@@ -2,6 +2,7 @@ import { UcParser } from "../UcParser";
 import { parseNoneState } from "./parseNoneState";
 import { SemanticClass as C } from "../token/SemanticClass";
 import { ParserToken as Token } from "..";
+import { resolveExpression } from "./resolveExpression";
 
 export function parseConstDeclaration(parser: UcParser, token: Token) {
     switch (token.text) {
@@ -23,7 +24,8 @@ export function parseConstDeclaration(parser: UcParser, token: Token) {
 function parseConstParsedName(parser: UcParser, token: Token) {
     switch (token.text) {
     case '=':
-        parser.rootFn = parseConstExpectValue;
+        parser.clearExpressionTokens();
+        parser.rootFn = parseConstValue;
         token.type = C.AssignmentOperator;
         break;
     default:
@@ -32,25 +34,52 @@ function parseConstParsedName(parser: UcParser, token: Token) {
         break;
     }
 }
-function parseConstExpectValue(parser: UcParser, token: Token) {
+function parseConstValue(parser: UcParser, token: Token) {
+    const constant = parser.lastConst;
     switch (token.text) {
+    case 'native':
+    case 'class':
+    case 'var':
+    case 'struct':
+    case 'enum':
+    case 'const':
+    case 'function':
+    case 'state':
+        parser.result.errors.push({ token, message: 'Expected ";" after constant declaration.' });
+        resolveConstExpressionAndClearExpressionTokens(parser);
+        parseNoneState(parser, token);
+        break;
     case ';':
-        parser.result.errors.push({ token, message: 'Expecting constant value.' });
+        resolveConstExpressionAndClearExpressionTokens(parser);
         parser.rootFn = parseNoneState;
         break;
     default:
-        const constant = parser.lastConst;
-        constant.value = token;
-        parser.rootFn = parseConstParsedValue;
+        parser.expressionTokens.push(token);
         break;
     }
 }
+
 function parseConstParsedValue(parser: UcParser, token: Token) {
     if (token.text === ';') {
         parser.rootFn = parseNoneState;
     } else {
-        parser.result.errors.push({ token, message: 'Expected ";" after constant declaration.' });
         // try to recover
         parseNoneState(parser, token);
     }
+}
+
+function resolveConstExpressionAndClearExpressionTokens(parser: UcParser){
+    const constant = parser.lastConst;
+    if (parser.expressionTokens.length === 0 && constant.name) {
+        parser.result.errors.push({ 
+            token: constant.name, 
+            message: 'Missing constant value.' 
+        });
+        return;
+    }
+    constant.valueExpression = resolveExpression(parser.expressionTokens);
+    if ('text' in constant.valueExpression){
+        constant.value = constant.valueExpression;
+    }
+    parser.expressionTokens.length = 0;
 }

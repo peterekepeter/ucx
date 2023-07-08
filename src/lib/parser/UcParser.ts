@@ -108,6 +108,19 @@ export class UcParser{
         this.rootFn(this, token);
     }
 
+    clearExpressionTokens() {
+        const parser = this;
+        if (parser.expressionTokens.length !== 0) {
+            for (const token of parser.expressionTokens) {
+                parser.result.errors.push({ 
+                    token: token, 
+                    message: "Unresolved expression."
+                });
+            }
+            parser.expressionTokens.length = 0;
+        }
+    }
+
     get lastVar() : UnrealClassVariable {
         return this.result.variables[this.result.variables.length - 1];
     }

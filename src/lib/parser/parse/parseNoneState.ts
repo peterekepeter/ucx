@@ -60,7 +60,8 @@ export function parseNoneState(parser: UcParser, token: Token) {
         parser.rootFn = parseConstDeclaration;
         parser.result.constants.push({
             name: null,
-            value: null
+            value: null,
+            valueExpression: null,
         });
         token.type = C.Keyword;
         clearModifiers(parser);

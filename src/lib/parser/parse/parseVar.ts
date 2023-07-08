@@ -198,6 +198,7 @@ function parseArrayCount(parser: UcParser, token:Token){
             variable.arrayCountToken = token;
             variable.arrayCount = parseInt(token.text);
         }
+        parser.expressionTokens.length = 0;
         parseAfterArrayCount(parser, token);
         break;
     

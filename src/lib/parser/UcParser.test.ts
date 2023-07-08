@@ -137,6 +137,13 @@ test("parse variable declaration with group", () => { parsing(`
     .hasNoErrors();
 });
 
+test("parse const delcaration with vector", () => { parsing(`
+    const Lotus=vect(1,2,3);
+    `)
+    .hasNoErrors()
+    .hasConstant(0, { name:'Lotus', expr: { op: 'vect' } })
+;});
+
 test("parse variable declaration with private/const/editconst modifiers", () => { parsing(`
     var native private const int ObjectInternal[6];
     var native const object Outer;
@@ -1699,7 +1706,11 @@ interface ParserTestChecks
         arrayExpression?:ExpressionCheckObj
     }): ParserTestChecks
     hasEnum(index: number, name: string, enumIndex: number, enumName: string): ParserTestChecks
-    hasConstant(index: number, props: { name?:string, value?:string }): ParserTestChecks
+    hasConstant(index: number, props: { 
+        name?:string, 
+        value?:string,
+        expr?: ExpressionCheckObj,
+    }): ParserTestChecks
     hasFunction(index: number, props: { 
         name?:string,
         locals?:{
@@ -1814,11 +1825,13 @@ function parsing(input: string): ParserTestChecks {
             checkEquals(ast.enums[index].enumeration[enumIndex].text, enumName);
             return checks;
         },
-        hasConstant(index: number, props: { name?:string, value?:string }){
+        hasConstant(index: number, props: { name?:string, value?:string, expr?:ExpressionCheckObj }){
             const obj = ast.constants[index];
+            const expr = obj?.valueExpression;
             checkMatches({ 
                 name: obj?.name?.text, 
-                value: obj?.value?.text 
+                value: obj?.value?.text,
+                expr: !expr || 'text' in expr ? expr : mapExpressionToCheck(expr),
             }, props);
             return checks;
         },

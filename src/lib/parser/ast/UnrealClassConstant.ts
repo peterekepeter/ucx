@@ -5,6 +5,7 @@ import { UnrealClassExpression } from "./UnrealClassFunction";
 export interface UnrealClassConstant {
     name: Token | null;
     value: Token | null;
+    valueExpression: UnrealClassExpression | Token | null;
 }
 
 
