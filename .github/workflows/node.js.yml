@@ -73,8 +73,10 @@ jobs:
 
     strategy:
       matrix:
-        utversion: [469b, 469a, 451b]
+        utversion: [436, 451b, 469b]
         include:
+          - utversion: 436
+            zip: https://unrealarchive.org/unrealscript/ut99v436/Unreal_Tournament_v436.zip
           - utversion: 469b
             repo: https://github.com/Slipyx/UT99.git
             commit: 769bd788cb2c06077a26ff7c3e4fced521a2169e
@@ -92,6 +94,9 @@ jobs:
           name: cli-tool
       - run: ls
       - run: node ucx.js version
-      - run: git clone ${{ matrix.repo }} --no-checkout ut
-      - run: cd ut && git checkout ${{ matrix.commit }}
+      - run: wget ${{ matrix.zip }} -O UT.zip && mkdir ut && cd ut && unzip ../UT.zip
+        if: matrix.zip
+      - run: git clone ${{ matrix.repo }} --no-checkout ut && cd ut && git checkout ${{ matrix.commit }}
+        if: matrix.repo
       - run: node ucx.js lint ut --quiet
+      
