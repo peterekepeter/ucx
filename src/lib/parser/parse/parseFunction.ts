@@ -158,6 +158,7 @@ function resolveFnArg(parser: UcParser, tokens: Token[]): UnrealClassFunctionArg
     let isOut = false;
     let isOptional = false;
     let isCoerce = false;
+    let isSkip = false;
     for (let i = modifiersStart; i < modifiersEnd; i+=1){
         const modifierToken = tokens[i];
         switch(modifierToken.textLower){
@@ -171,6 +172,10 @@ function resolveFnArg(parser: UcParser, tokens: Token[]): UnrealClassFunctionArg
             break;
         case "coerce":
             isCoerce = true;
+            modifierToken.type = C.Keyword;
+            break;
+        case "skip":
+            isSkip = true;
             modifierToken.type = C.Keyword;
             break;
         default:
@@ -187,6 +192,7 @@ function resolveFnArg(parser: UcParser, tokens: Token[]): UnrealClassFunctionArg
         isOut, 
         isOptional, 
         isCoerce, 
+        isSkip,
         template, 
         arrayCount, 
         arrayCountExpression,

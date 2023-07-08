@@ -73,6 +73,7 @@ export interface UnrealClassFunctionArgument {
     isOut: boolean;
     isOptional: boolean;
     isCoerce: boolean;
+    isSkip: boolean;
     arrayCountToken: Token | null;
     arrayCountExpression: Token | UnrealClassExpression | null;
     arrayCount: number | null;

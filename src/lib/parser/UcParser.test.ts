@@ -171,6 +171,19 @@ test("parse operator declarations", () => { parsing(`
     .hasFunction(5, { name: '--', returns: 'int' })
 ;});
 
+test("parse operator with skip-able parameters", () => { parsing(`
+    native(132) static final operator(32) bool  || ( bool A, skip bool B );
+    `)
+    .hasNoErrors()
+    .hasFunction(0, { name: '||', returns: 'bool', fnArgs: [{
+        name: 'A',
+        isSkip: false,
+    }, {
+        name: 'B',
+        isSkip: true,
+    }] })
+;});
+
 test("parse iterator function", () => { parsing(`
     native(304) final iterator function AllActors( class<actor> BaseClass, out actor Actor, optional name MatchTag );
     `)
@@ -1676,6 +1689,7 @@ interface ParserTestChecks
             isOut?: boolean,
             isOptional?: boolean,
             isCoerce?: boolean,
+            isSkip?: boolean,
         }[]
     }): ParserTestChecks,
     hasDefaultProperty(index: number, props: { name?: string, value?: ExpressionCheckObj | string, arrayIndex?: string }): ParserTestChecks
@@ -1794,6 +1808,7 @@ function parsing(input: string): ParserTestChecks {
                     isOut?: boolean,
                     isOptional?: boolean,
                     isCoerce?: boolean,
+                    isSkip?: boolean,
                 }[]
             }){
             const obj = ast.functions[index];
@@ -1822,6 +1837,7 @@ function parsing(input: string): ParserTestChecks {
                     isOut: a.isOut, 
                     isOptional: a.isOptional,
                     isCoerce: a.isCoerce,
+                    isSkip: a.isSkip,
                 }))
             }, props);
             return checks;
