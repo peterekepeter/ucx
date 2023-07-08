@@ -1261,6 +1261,30 @@ test('parse struct extending another struct', () => { parsing(`
     // todo assert parent
 ;});
 
+test('parse struct where member has inline enum definition', () => { parsing(`
+    struct Scale
+    {
+        var() config vector Scale;
+        var() config float SheerRate;
+        var() config enum ESheerAxis
+        {
+            SHEER_None,
+            SHEER_XY,
+            SHEER_XZ,
+            SHEER_YX,
+            SHEER_YZ,
+            SHEER_ZX,
+            SHEER_ZY,
+        } SheerAxis;
+    };`)
+    .hasNoErrors()
+    .hasStruct(0, { name: 'Scale', members: [
+        { name: 'Scale' },
+        { name: 'SheerRate' },
+        { name: 'SheerAxis', type: 'ESheerAxis' }
+    ]})
+;});
+
 
 test('parse array declaration with parse array count expression', () => { parsing(`
     var string GameModeName[ArrayCount(RuleList)];

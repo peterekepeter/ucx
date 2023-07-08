@@ -3,6 +3,7 @@ import { createEmptyStruct } from "../ast/UnrealClassStruct";
 import { createEmptyUnrealClassVariable } from "../ast/UnrealClassVariable";
 import { SemanticClass as C } from "../token";
 import { Token } from "../types";
+import { parseEnumKeyword } from "./parseEnum";
 import { clearModifiers } from "./parseModifiers";
 import { parseNoneState } from "./parseNoneState";
 
@@ -96,6 +97,10 @@ function parseStructVar(parser: UcParser, token: Token) {
         member.isConfig = true;
         token.type = C.Keyword;
         break;
+    case 'enum':
+        parser.typedefReturnFn = parseReturnFromEnum;
+        parseEnumKeyword(parser, token);
+        break;
     case '(':
         parser.rootFn = parseStructVarGroup;
         break;
@@ -125,4 +130,11 @@ function parseStructVarName(parser: UcParser, token: Token) {
     member.name = token;
     parser.rootFn = parseStructBody;
     token.type = C.StructMemberDeclaration;
+}
+
+function parseReturnFromEnum(parser: UcParser, token: Token) {
+    parser.typedefReturnFn = null;
+    const member = parser.lastStructMember;
+    member.type = parser.lastEnum.name;
+    parseStructVarName(parser, token);
 }

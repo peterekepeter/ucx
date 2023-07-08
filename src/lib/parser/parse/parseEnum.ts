@@ -5,7 +5,7 @@ import { clearModifiers } from "./parseModifiers";
 import { parseNoneState } from "./parseNoneState";
 import { continueVarDelcarationFromTypeDeclaration, hasIncompleteVarDeclaration } from "./parseVar";
 
-export function parseEnumBegin(parser: UcParser, token: Token)
+export function parseEnumKeyword(parser: UcParser, token: Token)
 {
     parser.rootFn = parseEnumDeclaration;
     parser.result.enums.push({
@@ -67,12 +67,17 @@ function parseEnumBodyClosed(parser: UcParser, token: Token) {
         parser.rootFn = parseNoneState;
         break;
     default: 
-        parser.result.errors.push({
-            message: 'Expected semicolon after enum body.',
-            token,
-        });
-        parser.rootFn = parseNoneState;
-        parseNoneState(parser, token);
+        if (parser.typedefReturnFn) {
+            parser.typedefReturnFn(parser, token);
+        }
+        else {
+            parser.result.errors.push({
+                message: 'Expected semicolon after enum body.',
+                token,
+            });
+            parser.rootFn = parseNoneState;
+            parseNoneState(parser, token);
+        }
         break;
     }
 }

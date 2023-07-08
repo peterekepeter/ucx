@@ -3,7 +3,7 @@ import { createEmptyUnrealClassVariable, UnrealClassVariable } from "../ast/Unre
 import { SemanticClass as C } from "../token/SemanticClass";
 import { UcParser } from "../UcParser";
 import { clearModifiers } from "./parseModifiers";
-import { parseEnumBegin } from "./parseEnum";
+import { parseEnumKeyword } from "./parseEnum";
 import { parseNoneState } from "./parseNoneState";
 import { resolveExpression } from "./resolveExpression";
 
@@ -48,7 +48,7 @@ function parseVarDeclaration(parser: UcParser, token: Token) {
     case 'enum':
         consumeAndProcessVariableModifiers(parser, variable);
         token.type = C.Keyword;
-        parseEnumBegin(parser, token);
+        parseEnumKeyword(parser, token);
         break;
     default:
         consumeAndProcessVariableModifiers(parser, variable);

@@ -21,6 +21,7 @@ export class UcParser{
 
     result = createDefaultUnrealClass();
     
+    typedefReturnFn: ParserFn|null = null;
     expressionTokens: Token[] = [];
     expressionSplitter = new ExpressionSplitter();
     codeBlockStack: UnrealClassStatement[] = [];
@@ -42,7 +43,7 @@ export class UcParser{
         if (this.rootFn !== parseNoneState){
             this.result.errors.push({ 
                 token, 
-                message: this.eofErrorMessageFrom(this.rootFn)
+                message: this.getEofErrorMessage()
             });
         }
         if (this.result.classFirstToken){
@@ -52,13 +53,20 @@ export class UcParser{
         resolveArrayCountExpressions(this.result);
     }
 
-    eofErrorMessageFrom(fn: ParserFn): string {
+    getEofErrorMessage(): string {
+        const fn = this.rootFn;
         let detail = '';
         if (isParsingClassFn(fn)){
             detail = "Forgot to finish class declaration.";
         }
-        if (this.isInsideEnum()) {
+        else if (this.typedefReturnFn) {
+            detail = "A type definition was left unfinished.";
+        }
+        else if (this.isInsideEnum()) {
             detail = "Forgot to close the enum?";
+        }
+        else {
+            detail = "";
         }
         let message = "File ended too soon.";
         if (detail) {
