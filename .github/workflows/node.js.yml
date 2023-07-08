@@ -80,9 +80,6 @@ jobs:
           - utversion: 469b
             repo: https://github.com/Slipyx/UT99.git
             commit: 769bd788cb2c06077a26ff7c3e4fced521a2169e
-          - utversion: 469a
-            repo: https://github.com/Slipyx/UT99.git
-            commit: f2ebd703845075a2d667e8e3f2f71a5e7f187610
           - utversion: 451b
             repo: https://github.com/Slipyx/UT99.git
             commit: a26a3359704873df5a24d0b241a32ca5fc36a8b7
