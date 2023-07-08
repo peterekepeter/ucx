@@ -3,7 +3,6 @@ import { SemanticClass as C } from "../";
 import { UcParser } from "../UcParser";
 import { clearModifiers } from "./parseModifiers";
 import { parseNoneState } from "./parseNoneState";
-import { continueVarDelcarationFromTypeDeclaration, hasIncompleteVarDeclaration } from "./parseVar";
 
 export function parseEnumKeyword(parser: UcParser, token: Token)
 {
@@ -46,22 +45,6 @@ function parseEnumBody(parser: UcParser, token: Token) {
 }
 
 function parseEnumBodyClosed(parser: UcParser, token: Token) {
-    if (hasIncompleteVarDeclaration(parser)){
-        const typename = parser.lastEnum.name;
-        if (!typename )
-        {
-            parser.result.errors.push({ 
-                message: 'Enum typename not found!',
-                token
-            });
-            parser.rootFn = parseNoneState;
-            return;
-        }
-        else {
-            continueVarDelcarationFromTypeDeclaration(parser, typename, token);
-            return;
-        }
-    }
     switch (token.text) {
     case ';':
         parser.rootFn = parseNoneState;

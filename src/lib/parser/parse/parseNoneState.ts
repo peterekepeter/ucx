@@ -11,7 +11,7 @@ import { parseState, parseStateBody } from "./parseState";
 import { clearModifiers, isModifier, parseModifier } from "./parseModifiers";
 import { parseReplicationBlockBegin } from "./parseReplication";
 import { parseVarBegin } from "./parseVar";
-import { parseStructBegin } from "./parseStruct";
+import { parseStructKeyword } from "./parseStruct";
 import { createDefaultUnrealClassState } from "../ast";
 
 
@@ -53,7 +53,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
         break;
 
     case 'var': parseVarBegin(parser, token); break;
-    case 'struct': parseStructBegin(parser, token); break;
+    case 'struct': parseStructKeyword(parser, token); break;
     case 'enum': parseEnumKeyword(parser, token); break;
 
     case 'const':

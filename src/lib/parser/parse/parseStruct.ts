@@ -8,7 +8,7 @@ import { clearModifiers } from "./parseModifiers";
 import { parseNoneState } from "./parseNoneState";
 
 
-export function parseStructBegin(parser: UcParser, token: Token){
+export function parseStructKeyword(parser: UcParser, token: Token){
     parser.rootFn = parseStructDeclaration;
     parser.result.structs.push(createEmptyStruct(token));
     token.type = C.Keyword;
@@ -64,6 +64,10 @@ function parseStructBody(parser: UcParser, token: Token) {
 }
 
 function parseStructBodyClosed(parser: UcParser, token: Token) {
+    if (parser.typedefReturnFn != null){
+        parser.typedefReturnFn(parser, token);
+        return;
+    }
     parser.rootFn = parseNoneState;
     if (token.text !== ';')
     {

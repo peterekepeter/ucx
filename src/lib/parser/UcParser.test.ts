@@ -1039,6 +1039,18 @@ test("parse input var", () => { parsing(`
     .hasVariable(2, 'float', 'v', { isInput: false })
 ;});
 
+test("parse var with inline struct declaration", () => { parsing(`
+    var struct BeaconInfo
+    {
+        var IpAddr      Addr;
+        var float       Time;
+        var string      Text;
+    } Beacons[32];`)
+    .hasStruct(0, { name: 'BeaconInfo' })
+    .hasVariable(0, 'BeaconInfo', 'Beacons', { array: 32 })
+    .hasNoErrors();
+;});
+
 
 test("parse empty state", () => { parsing(`
     state MyState {}`)

@@ -6,6 +6,7 @@ import { clearModifiers } from "./parseModifiers";
 import { parseEnumKeyword } from "./parseEnum";
 import { parseNoneState } from "./parseNoneState";
 import { resolveExpression } from "./resolveExpression";
+import { parseStructKeyword } from "./parseStruct";
 
 export function parseVarBegin(parser: UcParser, token: Token)
 {
@@ -45,9 +46,14 @@ function parseVarDeclaration(parser: UcParser, token: Token) {
     case '(':
         parser.rootFn = parseVarGroup;
         break;
+    case 'struct':
+        consumeAndProcessVariableModifiers(parser, variable);
+        parser.typedefReturnFn = returnFromStructDeclaration;
+        parseStructKeyword(parser, token);
+        break;
     case 'enum':
         consumeAndProcessVariableModifiers(parser, variable);
-        token.type = C.Keyword;
+        parser.typedefReturnFn = returnFromEnumDeclaration;
         parseEnumKeyword(parser, token);
         break;
     default:
@@ -254,13 +260,23 @@ export function hasIncompleteVarDeclaration(parser: UcParser)
     return lastVar && !lastVar.name;
 }
 
-export function continueVarDelcarationFromTypeDeclaration(
+function returnFromEnumDeclaration(
     parser: UcParser, 
-    type: Token, 
     token: Token
 ) {
-    const lastVar = parser.lastVar;
-    lastVar.type = type;
+    parser.typedefReturnFn = null;
+    parser.lastVar.type = parser.lastEnum.name;
     parser.rootFn = parseVarName;
     parseVarName(parser, token);
 }
+
+function returnFromStructDeclaration(
+    parser: UcParser, 
+    token: Token
+) {
+    parser.typedefReturnFn = null;
+    parser.lastVar.type = parser.lastStruct.name;
+    parser.rootFn = parseVarName;
+    parseVarName(parser, token);
+}
+
