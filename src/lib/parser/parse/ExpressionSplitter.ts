@@ -30,7 +30,7 @@ export class ExpressionSplitter
                 const l = this.tokens.length;
                 if (this.tokens[l - 1].text === ')')
                 {
-                    for (let i = l - 3; i > 0; i-=1) {
+                    for (let i = l - 2; i > 0; i-=1) {
                         if (this.tokens[i].text === '(' &&
                             this.tokens[i - 1].textLower === 'new')
                         {

@@ -1218,6 +1218,25 @@ test("parse new object syntax with arguments", () => { parsing(`
     // TODO assert AST syntax
 });
 
+test('parse all variant of new() syntax', () => { parsing(`
+    function BeginPlay()
+    {
+        to = new class'TestObj';
+        to = new()class'TestObj';
+        to = new(self)class'TestObj';
+        to = new(self,'')class'TestObj';
+        to = new(self,'',0)class'TestObj';
+    }`)
+    .hasNoErrors()
+    .hasFunction(0, { name: "BeginPlay", body: [
+        {}, // new class'TestObj';
+        {}, // new()class'TestObj';
+        {}, // new(self)class'TestObj';
+        {}, // new(self,'')class'TestObj';
+        {}, // new(self,'',0)class'TestObj';
+    ] })
+;});
+
 test("parse super call", () => { parsing(`
     function F(){
         super.F();

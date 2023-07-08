@@ -102,6 +102,14 @@ test('does not split new(self) operator', () => {
         ]);
 });
 
+test('does not split new() operator', () => {
+    parsing("a=new() class'T'")
+        .yieldsGroups([
+            // ignore the fact that it removes a space
+            "a=new()class'T'",
+        ]);
+});
+
 test('does not split multiparameter new() operator', () => {
     parsing("Conf = new (class'UcxConfig', 'UcxConfig') class'UcxConfig'")
         .yieldsGroups([
