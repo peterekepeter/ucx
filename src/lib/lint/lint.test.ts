@@ -469,6 +469,20 @@ test('lint None formatting correction', () => { lintingStatements(
     'x = None;'
 ));});
     
+test('format string remove space between string concat operator', () => { lintingStatements(
+    'a = "test"$i;',
+    'a = "test" $ i;',
+    'a = i $ "test";',
+    'a = "test" @ i;',
+    'a = i @ "test";',
+).hasFormattedResult(statementWrapper(
+    'a = "test"$i;',
+    'a = "test"$i;',
+    'a = i$"test";',
+    'a = "test"@i;',
+    'a = i@"test";',
+));});
+
 
 test('lint None is correctly formatted', () => { lintingStatements(
     'x = None;'
@@ -728,6 +742,7 @@ test('format removes useless default float properties', () => { linting([
     '    c=1.0',
     '};',
 ]);});
+
 
 
 test('checks class name to be filename', () => { linting([
