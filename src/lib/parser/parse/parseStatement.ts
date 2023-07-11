@@ -307,7 +307,7 @@ function resolveStatementExpressionAndApplyLabel(parser: UcParser): UnrealClassS
         parser.expressionTokens = [];
     }
     else 
-    {
+    { 
         result = resolveStatementExpression(parser.expressionSplitter.getTokens());
         parser.expressionSplitter.clear();
     }
@@ -340,7 +340,8 @@ function endCurrentStatementOrFunctionBlock(parser: UcParser, endingToken: Token
 }
 
 function endCurrentStatementBlock(parser: UcParser, endingToken: Token){
-    const popped = parser.codeBlockStack.pop();
+    const stack = parser.codeBlockStack;
+    const popped = stack.pop();
     if (!popped){
         parser.result.errors.push({
             token: endingToken, 
@@ -351,6 +352,17 @@ function endCurrentStatementBlock(parser: UcParser, endingToken: Token){
     popped.bodyLastToken = endingToken;
     if (!popped.bodyFirstToken) {
         popped.bodyFirstToken = endingToken;
+    }
+    // terminate all single statement blocks
+    while (stack.length > 0 && stack[stack.length - 1].singleStatementBody)
+    {
+        const popped = parser.codeBlockStack.pop();
+        if (popped){
+            popped.bodyLastToken = endingToken;
+            if (!popped.bodyFirstToken) {
+                popped.bodyFirstToken = endingToken;
+            }
+        }
     }
 }
 

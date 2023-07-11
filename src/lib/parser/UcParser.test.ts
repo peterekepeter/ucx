@@ -1010,7 +1010,6 @@ test("parse single statement foreach", () =>{ parsing(`
     });
 });
 
-
 test("parse type variable", () => { parsing(`
     var class<actor> EnterActor;
     `)
@@ -1586,6 +1585,17 @@ test('parse block statement termination also terminates single statement block',
             { op: 'DoOtherStuff' }
         ]}
     ]})
+;});
+
+test('parse single statement if with empty statement for', () => { parsing(`
+    function Test(){
+        i = 0;
+        if(i == -1)
+            for(i = 0; i<50 && Level.Game.IPPolicies[i] != ""; i++);
+        Log(""$i);
+    }
+    `)
+    .hasNoErrors()
 ;});
 
 test('parse do until loop', () => { parsing(`
