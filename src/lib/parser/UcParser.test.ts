@@ -779,6 +779,21 @@ test("parse defaultproperties with unfinished name", () => { parsing(`
     .hasDefaultProperty(1, { name: "ReducedDamagePct", value: "0.500000" })
 ;});
 
+test("parse default property with semicolon is not an error", () => { parsing(`
+    defaultproperties {
+        Misc=Class'Engine.GameInfo';
+        Other=Texture'SomePack.DirtTex0';
+    }`)
+    .hasNoErrors()
+    .hasDefaultProperty(0, { 
+        name: 'Misc', 
+        value: { op: 'Class', args:["'Engine.GameInfo'"] }
+    })
+    .hasDefaultProperty(1, { 
+        name: 'Other', 
+        value: { op: 'Texture', args:["'SomePack.DirtTex0'"] }
+    })
+;});
 
 test("parse event as function", () => { parsing(`
     event ActorEntered( actor Other )

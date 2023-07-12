@@ -114,6 +114,12 @@ function parsePropertyEquals(parser: UcParser, token: Token)
 function parsePropertyValue(parser: UcParser, token: Token)
 {
     switch (token.text){
+    case ';':
+        parser.result.defaultPropertiesLastToken = token;
+        parser.lastDefaultProperty.value = resolveDefaultExpression(parser.expressionTokens);
+        parser.expressionTokens.length = 0;
+        parser.rootFn = parseProperty;
+        break;
     case '}':
         parser.result.defaultPropertiesLastToken = token;
         parser.lastDefaultProperty.value = resolveDefaultExpression(parser.expressionTokens);

@@ -2,7 +2,7 @@
 	"name": "ucx",
 	"displayName": "ucx",
 	"description": "UnrealScript Extensions",
-	"version": "0.9.6",
+	"version": "0.9.7",
 	"repository": "https://github.com/peterekepeter/ucx",
 	"publisher": "peterekepeter",
 	"engines": {
