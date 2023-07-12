@@ -599,6 +599,19 @@ test('lint operator spacing does not suggest adding space in defaultproperties',
     '}'
 ]).hasNoLintResults();});
 
+// TODO for later
+test.skip('formatting defaultproperties removes semicolons', () => { linting([
+    'defaultproperties',
+    '{',
+    '    Count=0;',
+    '}'
+]).hasFormattedResult([
+    'defaultproperties',
+    '{',
+    '    Count=0',
+    '}'
+]);});
+
 test('lint class name reference can contain dot', () => { lintingStatements(
     "c = class'Engine.Weapon';"
 ).hasNoLintResults();});
