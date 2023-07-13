@@ -45,6 +45,12 @@ function parseClassDecorators(parser: UcParser, token: Token) {
         token.type = SemanticClass.Keyword;
         break;
 
+    case 'intrinsic':
+        parser.result.classDeclarationLastToken = token;
+        parser.result.isIntrinsic = true;
+        token.type = SemanticClass.Keyword;
+        break;
+
     case 'noexport':
         parser.result.classDeclarationLastToken = token;
         parser.result.isNoExport = true;

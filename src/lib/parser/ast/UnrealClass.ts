@@ -26,6 +26,7 @@ export interface UnrealClass {
     isSafeReplace: boolean;
     isNativeReplication: boolean;
     isPerObjectConfig: boolean;
+    isIntrinsic: boolean;
     errors: ParserError[];
     constants: UnrealClassConstant[];
     variables: UnrealClassVariable[];
@@ -53,6 +54,7 @@ export function createDefaultUnrealClass(): UnrealClass {
         isNative: false,
         isNativeReplication: false,
         isPerObjectConfig: false,
+        isIntrinsic: false,
         errors: [],
         variables: [],
         execInstructions: [],

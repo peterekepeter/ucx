@@ -60,6 +60,13 @@ test("parse class declaration with safereplace", () => {
         .isNative(true);
 });
 
+test("parse class declaration with intrinsic", () => { parsing(`
+        class Line expands Actor intrinsic;
+    `)
+    .hasNoErrors()
+    .hasClassName('Line')
+;});
+
 test("parse variable declaration", () => { parsing(`
     var bool bDynamicLight;
     `)
