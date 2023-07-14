@@ -483,6 +483,17 @@ test('format string remove space between string concat operator', () => { lintin
     'a = i@"test";',
 ));});
 
+test.skip('lint operator subtract and add should have space', () => { lintingStatements(
+    'x = a+list[i];',
+    'x = a-list[i];',
+    'x = a-1;',
+    'x = a+1;'
+).hasFormattedResult(statementWrapper(
+    'x = a + list[i];',
+    'x = a - list[i];',
+    'x = a - 1;',
+    'x = a + 1;'
+));});
 
 test('lint None is correctly formatted', () => { lintingStatements(
     'x = None;'
