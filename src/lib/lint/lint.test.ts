@@ -94,8 +94,8 @@ test('linting indent if inside if but first if has no brackets', () => {
     linting([
         'function Init()',
         '{',
-        '    if (bVerify)',
-        '        if (bEnabled)',
+        '    if ( bVerify )',
+        '        if ( bEnabled )',
         '        {',
         '            Count = 0;',
         '        }',
@@ -140,7 +140,7 @@ test('expression closing paranthesis is not indented', () => {
 test('lint indent only increases once when multiple scopes combine on same line', () => {
     linting([
         'function Init() {',
-        '    if (c < 10) { if (c > 5) {',
+        '    if ( c < 10 ) { if ( c > 5 ) {',
         '        Log("test");',
         '    }}',
         '}'
@@ -153,7 +153,7 @@ test('lint indent single statement if without braces', () => {
     linting([
         'function Init()',
         '{',
-        '    if (bFirstRun)',
+        '    if ( bFirstRun )',
         '        SaveConfig();',
         '}'
     ]).hasNoFormattedResult();
@@ -175,7 +175,7 @@ test('lint indent if with function call in condition', () => {
     linting([
         'function Init()',
         '{',
-        '    if (CheckSomething())',
+        '    if ( CheckSomething() )',
         '    {',
         '        SaveConfig();',
         '    }',
@@ -518,42 +518,42 @@ test('lint True/False formatting correction', () => { lintingStatements(
 ));});
 
 test('lint newline before {', () => { lintingStatements(
-    'if (bFirst){',
+    'if ( bFirst ){',
     '}'
 ).hasFormattedResult(statementWrapper(
-    'if (bFirst)',
+    'if ( bFirst )',
     '{',
     '}'
 ));});
 
 test('lint newline after {', () => { lintingStatements(
-    'if (bFirst)',
+    'if ( bFirst )',
     '{x = True;',
     '}'
 ).hasFormattedResult(statementWrapper(
-    'if (bFirst)',
+    'if ( bFirst )',
     '{',
     '    x = True;',
     '}'
 ));});
 
 test('lint newline before }', () => { lintingStatements({ indentEnabled: false },
-    'if (bFirst)',
+    'if ( bFirst )',
     '{',
     '    x = False;}'
 ).hasFormattedResult(statementWrapper(
-    'if (bFirst)',
+    'if ( bFirst )',
     '{',
     '    x = False;',
     '}'
 ));});
 
 test('lint newline after }', () => { lintingStatements(
-    'if (bFirst)',
+    'if ( bFirst )',
     '{',
     '}x = 4;'
 ).hasFormattedResult(statementWrapper(
-    'if (bFirst)',
+    'if ( bFirst )',
     '{',
     '}',
     'x = 4;'
@@ -674,12 +674,12 @@ test('lint struct indentation', () => { linting([
 ]);});
 
 test('format negation operator spacing', () => { lintingStatements(
-    'if ( ! ShouldApplyTo(Game))',
+    'if (! ShouldApplyTo(Game))',
     '{',
     '    enabled = ! enabled;',
     '}'
 ).hasFormattedResult(statementWrapper(
-    'if (!ShouldApplyTo(Game))',
+    'if ( !ShouldApplyTo(Game) )',
     '{',
     '    enabled = !enabled;',
     '}'
@@ -766,6 +766,16 @@ test('format removes useless default float properties', () => { linting([
     '    c=1.0',
     '};',
 ]);});
+
+test('format if control condition spacing', () => { lintingStatements(
+    "if (bDebug)",
+    "{",
+    "}",
+).hasFormattedResult(statementWrapper(
+    "if ( bDebug )",
+    "{",
+    "}",
+));});
 
 
 

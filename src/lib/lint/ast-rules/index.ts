@@ -3,6 +3,7 @@ import { AstBasedLinter } from "../AstBasedLinter";
 import { LintResult } from "../LintResult";
 import { AstIndentRule } from "./AstIndentRule";
 import { ClassNamingRule } from "./ClassNamingRule";
+import { ControlConditionSpacing } from "./ControlConditionSpacing";
 import { EmptyLineBeforeFunction } from "./EmptyLineBeforeFunction";
 import { OperatorSpacing } from "./OperatorSpacing";
 import { RedundantDefaultValue } from "./RedundantDefaultValue";
@@ -16,6 +17,8 @@ export type AstLinterConfiguration =
     operatorSpacingEnabled: boolean,
     semicolorFixEnabled: boolean,
     classNamingRule: boolean,
+    controlConditionSpacing: boolean,
+    redundantDefaultValue: boolean,
 };
 
 export const DEFAULT_AST_LINTER_CONFIGURATION: AstLinterConfiguration = {
@@ -25,6 +28,8 @@ export const DEFAULT_AST_LINTER_CONFIGURATION: AstLinterConfiguration = {
     operatorSpacingEnabled: true,
     semicolorFixEnabled: true,
     classNamingRule: true,
+    controlConditionSpacing: true,
+    redundantDefaultValue: true,
 };
 
 export function buildAstLinter(partialConfig?: Partial<AstLinterConfiguration>): AstBasedLinter
@@ -59,7 +64,13 @@ export function buildAstLinter(partialConfig?: Partial<AstLinterConfiguration>):
         children.push(new ClassNamingRule());
     }
 
-    children.push(new RedundantDefaultValue);
+    if (config.controlConditionSpacing) {
+        children.push(new ControlConditionSpacing());
+    }
+
+    if (config.redundantDefaultValue) {
+        children.push(new RedundantDefaultValue);
+    }
 
     return {
         lint: (ast) => {
