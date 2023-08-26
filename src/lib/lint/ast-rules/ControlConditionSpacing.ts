@@ -23,6 +23,7 @@ export class ControlConditionSpacing implements AstBasedLinter
                     statement.argsLastToken?.text === ')' &&
                     (keyword === 'for' || keyword === 'if' || keyword === 'while'))
                 {
+
                     // check space after open before first
                     const open = statement.argsFirstToken;
                     const first = ast.tokens[open.index+1];
@@ -38,6 +39,7 @@ export class ControlConditionSpacing implements AstBasedLinter
                             source: 'linter'
                         });
                     }
+
                     // check space before close after last
                     const close = statement.argsLastToken;
                     const last = ast.tokens[close.index-1];
@@ -53,8 +55,7 @@ export class ControlConditionSpacing implements AstBasedLinter
                             source: 'linter'
                         });
                     }
-
-                    console.log({open, close, first, last, sameLine: open.line === first.line, });
+                    
                 }
             }
         }

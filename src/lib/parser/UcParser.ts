@@ -105,9 +105,7 @@ export class UcParser{
             return;
         }
         
-        // const beforeFn = this.rootFn;
         this.rootFn(this, token);
-        // console.log(`[${token.text}] ${beforeFn.name} -> ${this.rootFn.name}`);
     }
 
     clearExpressionTokens() {

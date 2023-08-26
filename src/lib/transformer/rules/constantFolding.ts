@@ -4,8 +4,6 @@ import { UnrealClassStatement } from "../../parser/ast/UnrealClassFunction";
 import { SourceEditor } from "../SourceEditor";
 import { SourceTransformer } from "../SourceTransformer";
 
-const log = console.log;
-
 export const foldConstants: SourceTransformer = (editor, uc) => {
     foldVariableDeclarations(editor, uc);
     foldFunctions(editor, uc);

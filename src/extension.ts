@@ -325,7 +325,6 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(diagnosticCollection);
 
     vscode.workspace.onDidChangeTextDocument(event => { 
-        console.log('change!');
         if (event.document.languageId === 'unrealscript'){
             const diagnositcs = [...getDiagnostics(event.document)];
             diagnosticCollection.set(event.document.uri, diagnositcs);
