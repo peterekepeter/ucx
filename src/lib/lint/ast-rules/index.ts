@@ -11,6 +11,7 @@ import { SemicolonAutoFixer } from "./SemicolonAutoFixer";
 
 export type AstLinterConfiguration =
 {
+    linterEnabled: boolean,
     indentType: IndentationType,
     indentEnabled: boolean,
     emptyLineBeforeFunctionEnabled: boolean,
@@ -22,6 +23,7 @@ export type AstLinterConfiguration =
 };
 
 export const DEFAULT_AST_LINTER_CONFIGURATION: AstLinterConfiguration = {
+    linterEnabled: true,
     emptyLineBeforeFunctionEnabled: true,
     indentEnabled: true,
     indentType: '\t',

@@ -7,6 +7,14 @@ export type FullLinterConfig = TokenBasedLinterConfiguration & AstLinterConfigur
 
 export function buildFullLinter(partialConfig?: Partial<FullLinterConfig>){
 
+    if (partialConfig?.linterEnabled === false) {
+        return {
+            lint(): LintResult[] { 
+                return [];
+            }
+        };
+    }
+
     const astLinter = buildAstLinter(partialConfig);
     const tokenLinter = buildTokenBasedLinter(partialConfig);
 

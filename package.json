@@ -69,7 +69,7 @@
 				"ucx.linter.semicolonFix.enabled": {
 					"type": "boolean",
 					"description": "Automatically add missing semicolons when formatting code. (experimental)",
-					"default": true
+					"default": false
 				},
 				"ucx.linter.classNamingRule.enabled": {
 					"type": "boolean",

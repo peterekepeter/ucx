@@ -4,9 +4,12 @@ import * as vscode from 'vscode';
 import { ucTokenizeLine } from './lib/tokenizer/ucTokenizeLine';
 import { ParserToken, SemanticClass, UcParser, UnrealClass } from './lib/parser';
 import { LintResult } from './lib/lint/LintResult';
-import { buildFullLinter } from './lib/lint/buildFullLinter';
+import { FullLinterConfig, buildFullLinter } from './lib/lint/buildFullLinter';
 import { ParserError } from './lib/parser/types';
 import { lintAst } from './lib/lint';
+import { AstLinterConfiguration, DEFAULT_AST_LINTER_CONFIGURATION as DEFAULT_A } from './lib/lint/ast-rules';
+import { IndentationType } from './lib/indentation/IndentationType';
+import { DEFAULT_TOKEN_BASED_LINTER_CONFIGURATION as DEFAULT_T } from './lib/lint/token-rules';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -29,8 +32,10 @@ export function activate(context: vscode.ExtensionContext) {
     // formatter implemented using API
     vscode.languages.registerDocumentFormattingEditProvider('unrealscript', {
         provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.TextEdit[] {
+            const vscodeConfig = vscode.workspace.getConfiguration("ucx");
+            const config = parseConfiguration(vscodeConfig);
             const edits = new Array<vscode.TextEdit>();
-            processFormattingRules(document, edits);
+            processFormattingRules(document, edits, config);
             // insertSemicolonEndOfLine(document, edits);
             return edits;
         }
@@ -334,11 +339,14 @@ export function deactivate() {}
 
 function* getDiagnostics(document: vscode.TextDocument): Iterable<vscode.Diagnostic> {
     
-    const cfg = vscode.workspace.getConfiguration("ucx");
-    let reportParserErrors = !!cfg.get('reportParserErrors') ?? false;
+    const vscodeConfig = vscode.workspace.getConfiguration("ucx");
+    const config = parseConfiguration(vscodeConfig);
 
-    for (const lintResult of processLinterRules(document)){
-        if (lintResult.source === 'parser' && !reportParserErrors) {
+    for (const lintResult of processLinterRules(document, config)){
+        if (!config.showErrors && lintResult.severity === 'error') {
+            continue;
+        }
+        if (!config.showWarnings && lintResult.severity !== 'error') {
             continue;
         }
         if (lintResult.message != null && 
@@ -360,9 +368,9 @@ function* getDiagnostics(document: vscode.TextDocument): Iterable<vscode.Diagnos
     }
 }
 
-function processLinterRules(document: vscode.TextDocument): Iterable<LintResult> {
+function processLinterRules(document: vscode.TextDocument, config: ExtensionConfiguration): Iterable<LintResult> {
     const ast = getVsCodeDocumentAst(document);
-    return lintAst(ast);
+    return lintAst(ast, config.linterConfiguration);
 }
 
 function getVsCodeDocumentAst(document: vscode.TextDocument): UnrealClass {
@@ -383,8 +391,8 @@ function getVsCodeDocumentAst(document: vscode.TextDocument): UnrealClass {
     return ast;
 }
 
-function processFormattingRules(document: vscode.TextDocument, edits: vscode.TextEdit[]){
-    for (const result of processLinterRules(document)){
+function processFormattingRules(document: vscode.TextDocument, edits: vscode.TextEdit[], configuration: ExtensionConfiguration){
+    for (const result of processLinterRules(document, configuration)){
         if (result.fixedText == null || result.position == null || result.line == null || result.length == null){
             continue;
         }
@@ -479,3 +487,70 @@ function getAst(document: vscode.TextDocument, cancellation: vscode.Cancellation
     return parser.getAst();
 }
 
+type ExtensionConfiguration =
+{
+    showErrors: boolean,
+    showWarnings: boolean,
+    linterConfiguration: FullLinterConfig,
+};
+
+function parseConfiguration(cfg: vscode.WorkspaceConfiguration): ExtensionConfiguration {
+    return {
+        showErrors: 
+            cfg.get('showErrors') ?? true,
+        showWarnings: 
+            cfg.get('showWarnings') ?? true,
+        linterConfiguration: {
+            linterEnabled: 
+                cfg.get('linter.enabled') ?? DEFAULT_A.linterEnabled,
+            classNamingRule: 
+                cfg.get('linter.classNamingRule.enabled') ?? DEFAULT_A.classNamingRule,
+            controlConditionSpacing: 
+                cfg.get('linter.controlConditionSpacing.enabled') ?? DEFAULT_A.controlConditionSpacing,
+            emptyLineBeforeFunctionEnabled:
+                cfg.get('linter.emptyLineBeforeFunction.enabled') ?? DEFAULT_A.emptyLineBeforeFunctionEnabled,
+            indentEnabled:
+                cfg.get('linter.indentation.enabled') ?? DEFAULT_A.indentEnabled,
+            indentType:
+                parseIndentationType(cfg.get<string>('linter.indentation.style')) ?? DEFAULT_A.indentType,
+            operatorSpacingEnabled:
+                cfg.get('linter.operatorSpacing.enabled') ?? DEFAULT_A.operatorSpacingEnabled,
+            redundantDefaultValue:
+                cfg.get('linter.redundantDefaultValue.enabled') ?? DEFAULT_A.redundantDefaultValue,
+            semicolorFixEnabled:
+                cfg.get('linter.semicolonFix.enabled') ?? DEFAULT_A.semicolorFixEnabled,
+            enableBracketSpacingRule:
+                cfg.get('linter.xxx.enabled') ?? DEFAULT_T.enableBracketSpacingRule,
+            enableKeywordCasingRule:
+                cfg.get('linter.xxx.enabled') ?? DEFAULT_T.enableKeywordCasingRule,
+            enableValidateNamesRule:
+                cfg.get('linter.xxx.enabled') ?? DEFAULT_T.enableValidateNamesRule,
+            enableValidateStringRule:
+                cfg.get('linter.xxx.enabled') ?? DEFAULT_T.enableValidateStringRule,
+        }
+    };
+}
+
+function parseIndentationType(value: string | undefined): IndentationType | undefined {
+    if  (!value) {
+        return undefined;
+    }
+    const number = Number.parseInt(value?.trim());
+    if (!isNaN(number)) {
+        switch (number){
+        case 1: return ' ';
+        case 2: return '  ';
+        case 3: return '   ';
+        case 4: return '    ';
+        case 5: return '     ';
+        case 6: return '      ';
+        case 7: return '       ';
+        case 8: return '        ';
+        default: return '    ';
+        }
+    }
+    if (value?.trim() === '\\t') {
+        return '\t';
+    }
+    return undefined;
+}

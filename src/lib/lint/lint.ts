@@ -1,13 +1,13 @@
 import { UnrealClass } from "../parser";
 import { ParserError } from "../parser/types";
-import { buildFullLinter } from "./buildFullLinter";
+import { buildFullLinter, FullLinterConfig } from "./buildFullLinter";
 import { LintResult } from "./LintResult";
 
-export function* lintAst(ast: UnrealClass): Iterable<LintResult> {
+export function* lintAst(ast: UnrealClass, config?: Partial<FullLinterConfig>): Iterable<LintResult> {
     for (const parseError of ast.errors){
         yield mapAstErrorToLintResult(parseError);
     }
-    const linter = buildFullLinter();
+    const linter = buildFullLinter(config);
     const results = linter.lint(ast);
     for (const item of results){
         yield item;

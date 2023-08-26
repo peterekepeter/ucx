@@ -27,6 +27,7 @@ export async function execLint(cmd: UcxCommand): Promise<void> {
         errorCount: 0,
         filesParsed: 0,
         warningCount: 0,
+        successful: true,
     };
     for (const file of cmd.files)
     {
