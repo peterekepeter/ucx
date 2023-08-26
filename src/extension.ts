@@ -520,13 +520,13 @@ function parseConfiguration(cfg: vscode.WorkspaceConfiguration): ExtensionConfig
             semicolorFixEnabled:
                 cfg.get('linter.semicolonFix.enabled') ?? DEFAULT_A.semicolorFixEnabled,
             enableBracketSpacingRule:
-                cfg.get('linter.xxx.enabled') ?? DEFAULT_T.enableBracketSpacingRule,
-            enableKeywordCasingRule:
-                cfg.get('linter.xxx.enabled') ?? DEFAULT_T.enableKeywordCasingRule,
-            enableValidateNamesRule:
-                cfg.get('linter.xxx.enabled') ?? DEFAULT_T.enableValidateNamesRule,
+                cfg.get('linter.bracketSpacingRule.enabled') ?? DEFAULT_T.enableBracketSpacingRule,
             enableValidateStringRule:
-                cfg.get('linter.xxx.enabled') ?? DEFAULT_T.enableValidateStringRule,
+                cfg.get('linter.validateStringRule.enabled') ?? DEFAULT_T.enableKeywordCasingRule,
+            enableValidateNamesRule:
+                cfg.get('linter.validateNamesRule.enabled') ?? DEFAULT_T.enableValidateNamesRule,
+            enableKeywordCasingRule:
+                cfg.get('linter.keywordCasingRule.enabled') ?? DEFAULT_T.enableValidateStringRule,
         }
     };
 }

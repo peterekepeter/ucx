@@ -2,7 +2,7 @@
 	"name": "ucx",
 	"displayName": "ucx",
 	"description": "UnrealScript Extensions",
-	"version": "0.9.7",
+	"version": "0.10.0",
 	"repository": "https://github.com/peterekepeter/ucx",
 	"publisher": "peterekepeter",
 	"engines": {
@@ -84,6 +84,26 @@
 				"ucx.linter.redundantDefaultValue.enabled": {
 					"type": "boolean",
 					"description": "Enable detection and removal of redundant default values.",
+					"default": true
+				},
+				"ucx.linter.bracketSpacingRule.enabled": {
+					"type": "boolean",
+					"description": "Enable formatting rules for brackets {}",
+					"default": true
+				},
+				"ucx.linter.validateStringRule.enabled": {
+					"type": "boolean",
+					"description": "Check for common errors inside string values",
+					"default": true
+				},
+				"ucx.linter.validateNamesRule.enabled": {
+					"type": "boolean",
+					"description": "Check for usage errors inside names.",
+					"default": true
+				},
+				"ucx.linter.keywordCasingRule.enabled": {
+					"type": "boolean",
+					"description": "Enforce formatting rules for keywords.",
 					"default": true
 				}
 			}
