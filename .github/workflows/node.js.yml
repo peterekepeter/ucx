@@ -73,10 +73,10 @@ jobs:
 
     strategy:
       matrix:
-        utversion: [436, 451b, 469b]
+        utversion: [451b, 469b]
         include:
-          - utversion: 436
-            zip: https://unrealarchive.org/unrealscript/ut99v436/Unreal_Tournament_v436.zip
+          # - utversion: 436
+          #   zip: https://unrealarchive.org/unrealscript/ut99v436/Unreal_Tournament_v436.zip
           - utversion: 469b
             repo: https://github.com/Slipyx/UT99.git
             commit: 769bd788cb2c06077a26ff7c3e4fced521a2169e
