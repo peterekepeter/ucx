@@ -24,14 +24,67 @@
 		"configuration": {
 			"title": "ucx",
 			"properties": {
-				"ucx.reportParserErrors": {
+				"ucx.showErrors": {
+					"title": "Report Errors",
 					"type": "boolean",
-					"default": "false",
-					"description": "Reports parser errors. (useful for parser development)"
+					"default": true,
+					"description": "Show problems that have 'error' level of severity. These are usually compiler errors that would prevent the project from working.",
+					"order": -102
 				},
-				"ucx.uccPath": {
+				"ucx.showWarnings": {
+					"title": "Report Warnings",
+					"type": "boolean",
+					"default": true,
+					"description": "Show problems that have 'warning' level of severity. These are usually formatting and should be enabled to maintain code cleanliness.",
+					"order": -101
+				},
+				"ucx.linter.enabled": {
+					"type": "boolean",
+					"description": "Enable linter. These are additional checks that help detect problems early in development and help keep the codebase clean by enforcing formatting rules.",
+					"default": true,
+					"order": -100
+				},
+				"ucx.linter.indentation.enabled": {
+					"type": "boolean",
+					"markdownDescription": "Check and format code indetation. Use ucx.linter.indentation.style to configure desired indentation style.",
+					"default": true,
+					"order": -1
+				},
+				"ucx.linter.indentation.style": {
 					"type": "string",
-					"description": "Path to UCC"
+					"description": "Possible values: use \\t for tab and number 2, 4 for spaces. (default: \\t)",
+					"default": "\\t",
+					"order": -1
+				},
+				"ucx.linter.emptyLineBeforeFunction.enabled": {
+					"type": "boolean",
+					"description": "Check and format spacing requirements between function blocks.",
+					"default": true
+				},
+				"ucx.linter.operatorSpacing.enabled": {
+					"type": "boolean",
+					"description": "Check and format for operations inside code expressions.",
+					"default": true
+				},
+				"ucx.linter.semicolonFix.enabled": {
+					"type": "boolean",
+					"description": "Automatically add missing semicolons when formatting code. (experimental)",
+					"default": true
+				},
+				"ucx.linter.classNamingRule.enabled": {
+					"type": "boolean",
+					"description": "Verify that classes have same name as the file.",
+					"default": true
+				},
+				"ucx.linter.controlConditionSpacing.enabled": {
+					"type": "boolean",
+					"description": "Enable formatting rule for conditions in control structures.",
+					"default": true
+				},
+				"ucx.linter.redundantDefaultValue.enabled": {
+					"type": "boolean",
+					"description": "Enable detection and removal of redundant default values.",
+					"default": true
 				}
 			}
 		},
