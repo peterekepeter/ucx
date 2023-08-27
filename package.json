@@ -22,7 +22,7 @@
 			}
 		],
 		"configuration": {
-			"title": "ucx",
+			"title": "UCX",
 			"properties": {
 				"ucx.showErrors": {
 					"title": "Report Errors",
