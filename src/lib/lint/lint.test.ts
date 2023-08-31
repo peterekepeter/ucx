@@ -646,26 +646,28 @@ test('lint multiline boolean condition', () => { lintingStatements(
     "    && PlayerPawn.Weapon.Class == Weapons.GetWeaponClass(WeaponIndex);" // missing indent
 ).hasNoFormattedResult();});
 
-test.skip('linting multiline variable declaration', () => { 
+test('linting multiline variable declaration', () => { 
     linting([
-        /*0*/'// Light properties.',
-        /*1*/'var(Lighting) byte',
-        /*2*/'LightRadius,',
-        /*3*/'LightPeriod,',
-        /*4*/'LightPhase,',
-        /*5*/'LightCone,',
-        /*6*/'VolumeBrightness,',
-        /*7*/'VolumeRadius,',
-        /*8*/'VolumeFog;',
-    ])
-        .hasResult({ line: 2, position: 0, originalText: '', fixedText: '    ' })
-        .hasResult({ line: 3, position: 0, originalText: '', fixedText: '    ' })
-        .hasResult({ line: 4, position: 0, originalText: '', fixedText: '    ' })
-        .hasResult({ line: 5, position: 0, originalText: '', fixedText: '    ' })
-        .hasResult({ line: 6, position: 0, originalText: '', fixedText: '    ' })
-        .hasResult({ line: 7, position: 0, originalText: '', fixedText: '    ' })
-        .hasResult({ line: 8, position: 0, originalText: '', fixedText: '    ' })
-    ;
+        '// Light properties.',
+        'var(Lighting) byte',
+        'LightRadius,',
+        'LightPeriod,',
+        'LightPhase,',
+        'LightCone,',
+        'VolumeBrightness,',
+        'VolumeRadius,',
+        'VolumeFog;',
+    ]).hasFormattedResult([
+        '// Light properties.',
+        'var(Lighting) byte',
+        '    LightRadius,',
+        '    LightPeriod,',
+        '    LightPhase,',
+        '    LightCone,',
+        '    VolumeBrightness,',
+        '    VolumeRadius,',
+        '    VolumeFog;',
+    ]);
 });
 
 test('lint struct indentation', () => { linting([

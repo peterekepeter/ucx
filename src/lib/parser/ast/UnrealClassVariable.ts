@@ -46,3 +46,15 @@ export function createEmptyUnrealClassVariable(): UnrealClassVariable {
         arrayCountExpression: null,
     };
 }
+
+export interface UnrealClassVariableDeclarationScope {
+    firstToken: Token | null;
+    lastToken: Token | null;
+}
+
+export function createEmptyUnrealClassVariableDeclarationScope(): UnrealClassVariableDeclarationScope {
+    return {
+        firstToken: null,
+        lastToken: null,
+    };
+}

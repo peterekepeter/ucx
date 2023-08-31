@@ -4,7 +4,7 @@ import { UnrealClassState } from "./ast/UnrealClassState";
 import { UnrealClassFunction, UnrealClassFunctionLocal, UnrealClassStatement } from "./ast/UnrealClassFunction";
 import { UnrealClassConstant, UnrealDefaultProperty } from "./ast/UnrealClassConstant";
 import { UnrealClassEnum } from "./ast/UnrealClassEnum";
-import { UnrealClassVariable } from "./ast/UnrealClassVariable";
+import { UnrealClassVariable, UnrealClassVariableDeclarationScope } from "./ast/UnrealClassVariable";
 import { isParsingClassFn } from "./parse/parseClass";
 import { ParserFn, Token } from "./types";
 import { LazyParserToken, ParserToken, SemanticClass } from "./token";
@@ -123,6 +123,10 @@ export class UcParser{
 
     get lastVar() : UnrealClassVariable {
         return this.result.variables[this.result.variables.length - 1];
+    }
+
+    get lastVarScope(): UnrealClassVariableDeclarationScope {
+        return this.result.variableScopes[this.result.variableScopes.length - 1];
     }
 
     get lastEnum() : UnrealClassEnum {

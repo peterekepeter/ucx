@@ -6,7 +6,7 @@ import { UnrealClassFunction } from "./UnrealClassFunction";
 import { UnrealClassReplicationBlock } from "./UnrealClassReplication";
 import { UnrealClassState } from "./UnrealClassState";
 import { UnrealClassStruct } from "./UnrealClassStruct";
-import { UnrealClassVariable } from "./UnrealClassVariable";
+import { UnrealClassVariable, UnrealClassVariableDeclarationScope } from "./UnrealClassVariable";
 import { UnrealExecInstruction } from "./UnrealExecInstruction";
 
 
@@ -30,6 +30,7 @@ export interface UnrealClass {
     errors: ParserError[];
     constants: UnrealClassConstant[];
     variables: UnrealClassVariable[];
+    variableScopes: UnrealClassVariableDeclarationScope[],
     structs: UnrealClassStruct[];
     enums: UnrealClassEnum[];
     tokens: Token[];
@@ -57,6 +58,7 @@ export function createDefaultUnrealClass(): UnrealClass {
         isIntrinsic: false,
         errors: [],
         variables: [],
+        variableScopes: [],
         execInstructions: [],
         enums: [],
         tokens: [],

@@ -1,5 +1,5 @@
 import { ParserToken as Token } from "../";
-import { createEmptyUnrealClassVariable, UnrealClassVariable } from "../ast/UnrealClassVariable";
+import { createEmptyUnrealClassVariable, createEmptyUnrealClassVariableDeclarationScope, UnrealClassVariable } from "../ast/UnrealClassVariable";
 import { SemanticClass as C } from "../token/SemanticClass";
 import { UcParser } from "../UcParser";
 import { clearModifiers } from "./parseModifiers";
@@ -12,11 +12,15 @@ export function parseVarBegin(parser: UcParser, token: Token)
 {
     if (token.textLower === 'var')
     {
+        const scope = createEmptyUnrealClassVariableDeclarationScope();
         const variable = createEmptyUnrealClassVariable();
         variable.firstToken = token;
+        scope.firstToken = token;
         variable.lastToken = token;
+        scope.lastToken = token;
         parser.rootFn = parseVarDeclaration;
         parser.result.variables.push(variable);
+        parser.result.variableScopes.push(scope);
         token.type = C.Keyword;
         clearModifiers(parser);
     }
@@ -100,6 +104,7 @@ function parseVarName(parser: UcParser, token: Token) {
         parser.result.errors.push({ token, message });
         parser.rootFn = parseNoneState;
         variable.lastToken = token;
+        parser.lastVarScope.lastToken = token;
         break;
     default:
         token.type = C.ClassVariable;
@@ -117,6 +122,7 @@ function parseTemplateName(parser: UcParser, token: Token) {
         parser.result.errors.push({ token, message });
         parser.rootFn = parseNoneState;
         variable.lastToken = token;
+        parser.lastVarScope.lastToken = token;
         break;
     case '>':
         parser.rootFn = parseVarName;
@@ -137,6 +143,7 @@ function parseAfterTemplateName(parser: UcParser, token: Token) {
         parser.result.errors.push({ token, message });
         parser.rootFn = parseNoneState;
         variable.lastToken = token;
+        parser.lastVarScope.lastToken = token;
         break;
     case '>':
         parser.rootFn = parseVarName;
@@ -162,6 +169,7 @@ function parseVarNext(parser: UcParser, token: Token) {
         break;
     case ';':
         variable.lastToken = token;
+        parser.lastVarScope.lastToken = token;
         parser.rootFn = parseNoneState;
         break;
     default:
@@ -216,6 +224,7 @@ function parseAfterArrayCount(parser: UcParser, token:Token){
         break;
     case ';':
         variable.lastToken = token;
+        parser.lastVarScope.lastToken = token;
         parser.rootFn = parseNoneState;
         parser.result.errors.push({ token, message: "Expected ']' before ';'"});
         break;
