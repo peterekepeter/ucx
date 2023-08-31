@@ -103,16 +103,24 @@ test('linting indent if inside if but first if has no brackets', () => {
     ]).hasNoLintResults();
 });
 
-test.skip('multiline argument indentation', () => {
+test('lint indent multiline argument expression', () => {
     linting([
         'function Init()',
         '{',
-        '    if (bEnabled && ',
-        '    bAnotherEnabled) ', // should have 2 indent
+        '    if ( bEnabled',
+        '    &&bAnotherEnabled )', // should have 2 indent
         '    {',
         '    }',
         '}'
-    ]).hasResult({ line: 3, originalText:'    ', fixedText: '        '});
+    ]).hasFormattedResult([
+        'function Init()',
+        '{',
+        '    if ( bEnabled',
+        '        && bAnotherEnabled )',
+        '    {',
+        '    }',
+        '}'
+    ]);
 });
 
 test('closing parenthesis is not indented', () => {

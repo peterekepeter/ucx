@@ -27,39 +27,39 @@ export class AstIndentRule implements AstBasedLinter
         this.indent.fill(0);
         
         this.paintScope(
-            ast.classDeclarationFirstToken, ast.classDeclarationLastToken);
+            ast, ast.classDeclarationFirstToken, ast.classDeclarationLastToken);
 
         for (const variable of ast.variables){
             this.paintScope(
-                variable.firstToken, variable.lastToken);
+                ast, variable.firstToken, variable.lastToken);
         }
         
         for (const e of ast.enums) {
-            this.paintScope(e.firstBodyToken, e.lastToken);
+            this.paintScope(ast, e.firstBodyToken, e.lastToken);
         }
 
         for (const fn of ast.functions){
             this.paintFunctionScopes(ast, fn);
         }
         
-        this.paintScope(
+        this.paintScope(ast, 
             ast.defaultPropertiesFirstToken, ast.defaultPropertiesLastToken);
 
         for (const block of ast.replicationBlocks){
-            this.paintScope(block.bodyFirstToken, block.bodyLastToken);
+            this.paintScope(ast, block.bodyFirstToken, block.bodyLastToken);
             for (const statement of block.statements) {
                 const tokens = statement.targets;
-                this.paintScope(tokens[0], tokens[tokens.length-1], true, true);
+                this.paintScope(ast, tokens[0], tokens[tokens.length-1], true, true);
             }
         }
 
         for (const struct of ast.structs){
-            this.paintScope(struct.bodyFirstToken, struct.bodyLastToken);
+            this.paintScope(ast, struct.bodyFirstToken, struct.bodyLastToken);
         }
 
         for (const state of ast.states)
         {
-            this.paintScope(state.bodyFirstToken, state.bodyLastToken);
+            this.paintScope(ast, state.bodyFirstToken, state.bodyLastToken);
             for (const fn of state.functions)
             {
                 this.paintFunctionScopes(ast, fn);
@@ -69,8 +69,8 @@ export class AstIndentRule implements AstBasedLinter
     }
 
     paintFunctionScopes(ast: UnrealClass, fn: UnrealClassFunction) {
-        this.paintScope(fn.fnArgsFirstToken, fn.fnArgsLastToken);
-        this.paintScope(fn.bodyFirstToken, fn.bodyLastToken);
+        this.paintScope(ast, fn.fnArgsFirstToken, fn.fnArgsLastToken);
+        this.paintScope(ast, fn.bodyFirstToken, fn.bodyLastToken);
         this.recursivePaintStatementScopes(ast, fn.body);
     }
 
@@ -160,28 +160,29 @@ export class AstIndentRule implements AstBasedLinter
                 }
             }
 
-            this.paintScope(first, last);
-            this.recursivePaintArgsScope(st.args);
+            this.paintScope(ast, first, last);
+            this.recursivePaintArgsScope(ast, st.args);
 
             if (st.bodyFirstToken?.text !== '{'){
-                this.paintScope(st.op, st.bodyLastToken, st.singleStatementBody);
+                this.paintScope(ast, st.op, st.bodyLastToken, st.singleStatementBody);
             } else {
-                this.paintScope(st.bodyFirstToken, st.bodyLastToken);
+                this.paintScope(ast, st.bodyFirstToken, st.bodyLastToken);
             }
             this.recursivePaintStatementScopes(ast, st.body);
         }
     }
 
-    recursivePaintArgsScope(args: (UnrealClassExpression | ParserToken)[]) {
+    recursivePaintArgsScope(ast: UnrealClass, args: (UnrealClassExpression | ParserToken)[]) {
         for (const arg of args) {
             if ('argsFirstToken' in arg){
-                this.paintScope(arg.argsFirstToken, arg.argsLastToken);
-                this.recursivePaintArgsScope(arg.args);
+                this.paintScope(ast, arg.argsFirstToken, arg.argsLastToken);
+                this.recursivePaintArgsScope(ast, arg.args);
             }
         }
     }
 
     paintScope(
+        ast: UnrealClass,
         first?: ParserToken | null,
         last?: ParserToken | null,
         isSingleStatementBody?: boolean,
@@ -192,10 +193,19 @@ export class AstIndentRule implements AstBasedLinter
         }
         const from = dontSkipFirstLine ? first.line : first.line + 1;
         let to = last.line;
-        if (isSingleStatementBody || last.text !== '}' && last.text !== ')') {
+        const isClosingSymbol = last.text === '}' || last.text === ')';
+        if (isSingleStatementBody || !isClosingSymbol) {
             // declaration scope
         } else { 
-            to -= 1; // block scope
+            const prevLast = ast.tokens[last.index - 1];
+            if (prevLast && prevLast.line != last.line)
+            {
+                to -= 1; // block scope
+            }
+            else 
+            {
+                // closing symbol on same line as other content
+            }
         }
         this.paintIndentLines(from, to);
     }
