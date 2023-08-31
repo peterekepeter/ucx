@@ -153,6 +153,12 @@ test("correctly parses string with escapte quotes inside preceeded by escaped ba
     's', '=', '"some\\\\\\"thing"', ';'
 ]));
 
+test("tokenize infix math", () => verifyTokens(`
+    x=a+1;
+`, [
+    'x', '=', 'a', '+', '1', ';',
+]));
+
 function verifyTokens(input: string, output: string[]){
     expect(tokenize(input)).toEqual(output);
 }
