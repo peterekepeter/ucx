@@ -463,6 +463,12 @@ test('lint operator negation should not have space', () => { lintingStatements(
     'x = -1;'
 ));});
 
+test('lint operator spacing does not remove space between operator and parenthesis', () => { lintingStatements(
+    'expre = ( !value );'
+).hasFormattedResult(statementWrapper(
+    'expre = ( !value );'
+));});
+
 test('lint None formatting correction', () => { lintingStatements(
     'x = none;'
 ).hasFormattedResult(statementWrapper(

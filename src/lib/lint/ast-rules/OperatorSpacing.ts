@@ -17,12 +17,12 @@ export class OperatorSpacing implements AstBasedLinter
             const isPrefix = istPrefixOperator(prev, token, next);
             const isInDefaultProperties = isInDefaultPropertiesScope(token, ast);
             const isStringConcat = token.text === '$' || token.text === '@';
-            const isParen = prev.text === '(';
-            if (prev && prev.line === token.line)
+            const prevIsParen = prev.text === '(';
+            if (prev && prev.line === token.line && !prevIsParen)
             {
                 const prevEnd = prev.position + prev.text.length;
                 const distance = token.position - prevEnd;
-                const expectedDistance = isInDefaultProperties || isStringConcat || isParen ? 0 : 1;
+                const expectedDistance = isInDefaultProperties || isStringConcat ? 0 : 1;
                 if (distance !== expectedDistance){
                     const message = expectedDistance === 0 
                         ? 'Expected no space before operator' 
