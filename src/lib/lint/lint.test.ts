@@ -624,7 +624,6 @@ test('lint operator spacing does not suggest adding space in defaultproperties',
     '}'
 ]).hasNoLintResults();});
 
-// TODO for later
 test.skip('formatting defaultproperties removes semicolons', () => { linting([
     'defaultproperties',
     '{',
@@ -641,11 +640,11 @@ test('lint class name reference can contain dot', () => { lintingStatements(
     "c = class'Engine.Weapon';"
 ).hasNoLintResults();});
 
-test.skip('lint multiline boolean condition', () => { lintingStatements(
+test('lint multiline boolean condition', () => { lintingStatements(
     "return WeaponIndex >= 0",
-    "	&& PlayerPawn.Weapon != None",
-    "	&& PlayerPawn.Weapon.Class == Weapons.GetWeaponClass(WeaponIndex);" // missing indent
-).hasNoLintResults();});
+    "    && PlayerPawn.Weapon != None",
+    "    && PlayerPawn.Weapon.Class == Weapons.GetWeaponClass(WeaponIndex);" // missing indent
+).hasNoFormattedResult();});
 
 test.skip('linting multiline variable declaration', () => { 
     linting([

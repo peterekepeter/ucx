@@ -161,7 +161,6 @@ export class AstIndentRule implements AstBasedLinter
             }
 
             this.paintScope(ast, first, last);
-            this.recursivePaintArgsScope(ast, st.args);
 
             if (st.bodyFirstToken?.text !== '{'){
                 this.paintScope(ast, st.op, st.bodyLastToken, st.singleStatementBody);
@@ -171,16 +170,6 @@ export class AstIndentRule implements AstBasedLinter
             this.recursivePaintStatementScopes(ast, st.body);
         }
     }
-
-    recursivePaintArgsScope(ast: UnrealClass, args: (UnrealClassExpression | ParserToken)[]) {
-        for (const arg of args) {
-            if ('argsFirstToken' in arg){
-                this.paintScope(ast, arg.argsFirstToken, arg.argsLastToken);
-                this.recursivePaintArgsScope(ast, arg.args);
-            }
-        }
-    }
-
     paintScope(
         ast: UnrealClass,
         first?: ParserToken | null,
@@ -193,21 +182,33 @@ export class AstIndentRule implements AstBasedLinter
         }
         const from = dontSkipFirstLine ? first.line : first.line + 1;
         let to = last.line;
-        const isClosingSymbol = last.text === '}' || last.text === ')';
-        if (isSingleStatementBody || !isClosingSymbol) {
-            // declaration scope
+        if (isSingleStatementBody || !this.isClosingSymbol(last)){
+            // delcaration scope
         } else { 
-            const prevLast = ast.tokens[last.index - 1];
-            if (prevLast && prevLast.line != last.line)
+            if (!this.hasNonClosingTokenOnSameLineBeforeToken(ast, last))
             {
-                to -= 1; // block scope
-            }
-            else 
-            {
-                // closing symbol on same line as other content
+                to -= 1;
             }
         }
         this.paintIndentLines(from, to);
+    }
+
+    hasNonClosingTokenOnSameLineBeforeToken(ast: UnrealClass, token: ParserToken): boolean {
+        for (let i = token.index; i >= 0; i -= 1)
+        {
+            const isSameLine = ast.tokens[i].line === token.line;
+            if (!isSameLine) {
+                return false;
+            }
+            if (!this.isClosingSymbol(ast.tokens[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    isClosingSymbol(token: ParserToken): boolean {
+        return token.text === '}' || token.text === ')';
     }
 
     paintIndentLines(from: number, to: number) {
