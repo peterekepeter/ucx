@@ -152,7 +152,7 @@
 		]
 	},
 	"scripts": {
-		"publish-all": "npm run npm-publish && npm run vsce-publish",
+		"publish-all": "npm run npm-publish && npm run vsce-publish && npm run ovsx-publish",
 		"vscode:prepublish": "npx rimraf ./out && npm run esbuild-base -- --minify",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
@@ -163,6 +163,7 @@
 		"unittest:watch": "jest --watch",
 		"pack": "npx vsce package",
 		"vsce-publish": "npx vsce publish",
+		"ovsx-publish": "npx ovsx publish -p $OVSX_PUBLISH_TOKEN",
 		"esbuild-base": "npx esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
 		"esbuild-ucx": "npx esbuild ./src/ucx.ts --bundle --outfile=out/ucx.js --platform=node",
 		"esbuild": "npm run esbuild-base -- --sourcemap",
