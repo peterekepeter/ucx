@@ -157,7 +157,6 @@ function parseExpression(parser: UcParser, token: Token)
         }
         else {
             const statement = resolveStatementExpressionAndApplyLabel(parser);
-            statement.argsLastToken = token;
             parser.lastCodeBlock.push(statement);
             popSingleStatementCodeBlocks(parser, token);
             parser.rootFn = parseStatement;

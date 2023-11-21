@@ -363,6 +363,26 @@ test("parse two sequential if statements", () => { parsing(`
 });
 
 
+test("parse two statements with missing semicolon", () => { parsing(`
+    function Timer(){
+        a()
+        b()
+    }`)
+    .hasFunction(0, {
+        name: "Timer", 
+        body: [{
+            op: "a",
+            argsFirst: 'a',
+            argsLast: ')',
+        },{
+            op: "b",
+            argsFirst: 'b',
+            argsLast: ')',
+        }] 
+    });
+});
+
+
 test("parse if inside if", () => { parsing(`
     function Timer(){
         if (bFlagA) {
@@ -2073,6 +2093,8 @@ interface StatementCheckObj extends ExpressionCheckObj
 {
     bodyFirst?: string,
     bodyLast?: string,
+    argsFirst?: string,
+    argsLast?: string,
     label?: string,
     body?: StatementCheckObj[]
 }
@@ -2083,7 +2105,9 @@ function mapStatementToCheck(e: UnrealClassStatement): StatementCheckObj {
         body: mapBodyToCheck(e.body),
         label: e.label?.text,
         bodyFirst: e.bodyFirstToken?.text,
-        bodyLast: e.bodyLastToken?.text
+        bodyLast: e.bodyLastToken?.text,
+        argsFirst: e.argsFirstToken?.text,
+        argsLast: e.argsLastToken?.text,
     });
 }
 

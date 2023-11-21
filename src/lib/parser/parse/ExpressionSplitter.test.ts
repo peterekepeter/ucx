@@ -50,13 +50,6 @@ test('splits function calls', () => {
         ]);
 });
 
-test('splits function calls', () => {
-    parsing('log(a) log(b)')
-        .yieldsGroups([
-            'log(a)',
-            'log(b)',
-        ]);
-});
 
 test('splits single line foreach statement', () => {
     parsing("foreach AllActors(class'PlayerStart',Dest) DoSomething(Dest)")
