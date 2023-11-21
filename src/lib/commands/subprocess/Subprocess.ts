@@ -5,6 +5,7 @@ import { runSubprocess } from "./runSubprocess";
 export class Subprocess
 {
     builder: CommandBuilder;
+    loggingPathRemap: Record<string, string> = {};
 
     constructor(executablePath: string, ...args: string[])
     {
@@ -26,6 +27,10 @@ export class Subprocess
     async execCommand()
     {
         const command = this.builder.getCommand();
-        await runSubprocess(command);
+        await runSubprocess(command, this.loggingPathRemap);
+    }
+
+    whenLoggingRemapProjectSource(buildName: string, projectDir: string) {
+        this.loggingPathRemap[buildName] = projectDir;
     }
 }

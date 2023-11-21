@@ -37,10 +37,12 @@ async function buildProject(context: BuildContext) {
 async function getBuildContext(projectDir: string, cmd: UcxCommand): Promise<BuildContext> {
     const resolvedPaths = await getUccPath(cmd.uccPath);
     const projectName = await getProjectNameFromPath(projectDir);
+    const projectDirRelative = getRelativeDir(projectDir);
     const context: BuildContext = {
         tempToCleanup: [],
         projectName,
         projectDir,
+        projectDirRelative,
         performCleanup: !cmd.noClean,
         pathSeparator: detectPathSeparator(projectDir),
         ... resolvedPaths,
@@ -102,6 +104,7 @@ interface BuildContext
 {
     uccPath: string;
     projectDir: string;
+    projectDirRelative: string;
     projectName: string;
     pathSeparator: string;
     systemDir: string;
@@ -292,6 +295,7 @@ async function runUccBuildCommand(context: BuildContext): Promise<void> {
     const process = new Subprocess(context.uccPath, 'make');
 
     process.useLogfileOutputIfAvailable();
+    process.whenLoggingRemapProjectSource(context.buildName, context.projectDirRelative);
 
     if (context.buildIniFile)
     {
@@ -353,4 +357,9 @@ function parse(input: string) : UnrealClass {
     }
     parser.endOfFile(input.length, 0);
     return parser.result;
+}
+
+function getRelativeDir(projectDir: string) {
+    const relative = path.relative(process.cwd(), projectDir);
+    return relative;
 }
