@@ -2,7 +2,7 @@
 	"name": "ucx",
 	"displayName": "ucx",
 	"description": "UnrealScript Extensions",
-	"version": "0.10.4",
+	"version": "0.10.5",
 	"repository": "https://github.com/peterekepeter/ucx",
 	"publisher": "peterekepeter",
 	"engines": {
@@ -163,7 +163,7 @@
 		"unittest:watch": "jest --watch",
 		"pack": "npx vsce package",
 		"vsce-publish": "npx vsce publish",
-		"ovsx-publish": "npx ovsx publish -p $OVSX_PUBLISH_TOKEN",
+		"ovsx-publish": "bash -c ovsxpublish",
 		"esbuild-base": "npx esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
 		"esbuild-ucx": "npx esbuild ./src/ucx.ts --bundle --outfile=out/ucx.js --platform=node",
 		"esbuild": "npm run esbuild-base -- --sourcemap",

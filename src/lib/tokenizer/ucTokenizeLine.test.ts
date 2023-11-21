@@ -130,9 +130,9 @@ test("tokenize labels", () => verifyTokens(`
 ]));
 
 test("tokenize operators", () => verifyTokens(`
-    ~=
+    ~= >>> **
 `, [
-    '~='
+    '~=', '>>>', '**',
 ]));
 
 test("does suffer from catastropic backtracking on certain inputs", () => {
