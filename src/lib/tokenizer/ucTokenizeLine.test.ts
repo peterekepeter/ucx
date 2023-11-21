@@ -53,6 +53,14 @@ test("tokenize multiline comment", () => verifyTokens(`
     'function', 'test', '(', ')', '{'
 ]));
 
+test("tokenize multiline comment with multiple stars", () => verifyTokens(`
+    /** Something **/
+    function test(){ 
+`,[ 
+    '/**','Something','**/', 
+    'function', 'test', '(', ')', '{'
+]));
+
 test("tokenize just a line comment", () => verifyTokens(`
     // Float functions.
 `, [
@@ -139,7 +147,7 @@ test("does suffer from catastropic backtracking on certain inputs", () => {
     //  may produce catastrophic backtracking with the tokenizer
     const input = `Resultset = HereWeHaveALongString$"\\changelevels\\"$SomeMoreStuffThatGoesHere;`;
     expect(tokenize(input)).toBeTruthy();
-})
+});
 
 test("correctly parses string with escaped backslash in front of string constant", () => verifyTokens(`
     s = "\\\\test\\\\";
