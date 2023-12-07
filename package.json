@@ -2,7 +2,7 @@
 	"name": "ucx",
 	"displayName": "ucx",
 	"description": "UnrealScript Extensions",
-	"version": "0.10.6",
+	"version": "0.11.0",
 	"repository": "https://github.com/peterekepeter/ucx",
 	"publisher": "peterekepeter",
 	"engines": {
@@ -38,11 +38,18 @@
 					"description": "Show problems that have 'warning' level of severity. These are usually formatting and should be enabled to maintain code cleanliness.",
 					"order": -101
 				},
+				"ucx.overrideEditorIndentationStyle": {
+					"title": "Override Editor Indentation Style",
+					"type": "boolean",
+					"default": true,
+					"description": "Ensures that VsCode uses the indentation style as its configured with the linter. Use ucx.linter.indentation.style to configure desired indentation style.",
+					"order": -100
+				},
 				"ucx.linter.enabled": {
 					"type": "boolean",
 					"description": "Enable linter. These are additional checks that help detect problems early in development and help keep the codebase clean by enforcing formatting rules.",
 					"default": true,
-					"order": -100
+					"order": -99
 				},
 				"ucx.linter.indentation.enabled": {
 					"type": "boolean",

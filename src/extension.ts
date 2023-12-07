@@ -326,8 +326,15 @@ export function activate(context: vscode.ExtensionContext) {
 
     vscode.workspace.onDidChangeTextDocument(event => { 
         if (event.document.languageId === 'unrealscript'){
-            const diagnositcs = [...getDiagnostics(event.document)];
+            const vscodeConfig = vscode.workspace.getConfiguration("ucx");
+            const config = parseConfiguration(vscodeConfig);
+            const diagnositcs = [...getDiagnostics(event.document, config)];
             diagnosticCollection.set(event.document.uri, diagnositcs);
+
+            const editor = vscode.window.activeTextEditor;
+            if (editor && editor.document === event.document && config.overrideEditorIndentationStyle) {
+                editor.options = getEditorOptions(config);
+            }
         }
     });
 
@@ -336,10 +343,8 @@ export function activate(context: vscode.ExtensionContext) {
 // this method is called when your extension is deactivated
 export function deactivate() {}
 
-function* getDiagnostics(document: vscode.TextDocument): Iterable<vscode.Diagnostic> {
+function* getDiagnostics(document: vscode.TextDocument, config: ExtensionConfiguration): Iterable<vscode.Diagnostic> {
     
-    const vscodeConfig = vscode.workspace.getConfiguration("ucx");
-    const config = parseConfiguration(vscodeConfig);
 
     for (const lintResult of processLinterRules(document, config)){
         if (!config.showErrors && lintResult.severity === 'error') {
@@ -418,58 +423,6 @@ function processFormattingRules(document: vscode.TextDocument, edits: vscode.Tex
     }
 }
 
-const WS_REGEX = /^\s*$/;
-
-function isWhitepace(text: string){
-    return WS_REGEX.test(text);
-}
-
-function insertSemicolonEndOfLine(document: vscode.TextDocument, edits: vscode.TextEdit[]) {
-    const lineStartExclude = [
-        "if", "else", "for",  "while", "function", "event", "#", "//", "{", "}",
-        "switch", "Switch",
-        "If", "Else", "For",  "While", "Function", "Event" // sources have these keywords starting with uppercase letter
-    ];
-    for (let i=0; i < document.lineCount; i++){
-        const line = document.lineAt(i);
-
-        if (line.isEmptyOrWhitespace){
-            continue;
-        }
-        const text = line.text;
-        if (text.includes(";")){
-            continue;
-        }
-        let excludeLine = false;
-        for (const exludeStartToken of lineStartExclude){
-            if (text.startsWith(exludeStartToken, line.firstNonWhitespaceCharacterIndex)){
-                excludeLine = true;
-                break;
-            }
-        }
-        if (excludeLine){
-            continue;
-        }
-	
-        const isAssignment = text.match(/^\s*[a-z_]+\s*=\s*/i) !== null;
-        const isFunctionCall = text.match(/^\s*[a-z_]+\s*\(.*?\)/i) !== null;
-        const isDeclaration = text.match(/^\s*(var|const|class|local).*?\s[a-z_]+\s+[a-z_]+/i) !== null;
-
-        if (isAssignment || isFunctionCall || isDeclaration) {
-            let column = line.range.end.character - 1;
-            const commentIndex = text.indexOf("//");
-            if (commentIndex > 0) {
-                column = commentIndex - 1;
-            }
-            while (column > 0 && text.charAt(column) === ' '){
-                column--;
-            }
-            const position = new vscode.Position(i, column + 1);
-            edits.push(vscode.TextEdit.insert(position, ";"));
-        }
-    }
-}
-
 function getAst(document: vscode.TextDocument, cancellation: vscode.CancellationToken) {
     const parser = new UcParser();
     for (let lineIndex=0; lineIndex < document.lineCount; lineIndex++){
@@ -490,6 +443,7 @@ type ExtensionConfiguration =
 {
     showErrors: boolean,
     showWarnings: boolean,
+    overrideEditorIndentationStyle: boolean,
     linterConfiguration: FullLinterConfig,
 };
 
@@ -499,6 +453,8 @@ function parseConfiguration(cfg: vscode.WorkspaceConfiguration): ExtensionConfig
             cfg.get('showErrors') ?? true,
         showWarnings: 
             cfg.get('showWarnings') ?? true,
+        overrideEditorIndentationStyle: 
+            cfg.get('overrideEditorIndentationStyle') ?? true,
         linterConfiguration: {
             linterEnabled: 
                 cfg.get('linter.enabled') ?? DEFAULT_A.linterEnabled,
@@ -553,3 +509,15 @@ function parseIndentationType(value: string | undefined): IndentationType | unde
     }
     return undefined;
 }
+
+function getEditorOptions(config: ExtensionConfiguration): vscode.TextEditorOptions {
+    const indentType = config.linterConfiguration.indentType;
+    switch (indentType)
+    {
+    case '\t': 
+        return { insertSpaces: false };
+    default: 
+        return { insertSpaces: true, tabSize: indentType.length };
+    }
+}
+

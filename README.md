@@ -60,15 +60,4 @@ Or does it extend the language itself? The answer is YES!
     - path to UCC configured via env or cli argument
     - supports windows/linux/wine
 
-## Release Notes
-
-- v0.10.2
-    - formatter improvements:
-       - better multiline variable declaration and multiline expressions
-       - better operator spacing (fixed varios edge cases)
-- v0.10.1
-    - adds support for linter feature configuration support inside vscode
-- v0.9.7
-    - parser supports full 451b, 469b sources (no crash or error)
-
 **Enjoy!**
