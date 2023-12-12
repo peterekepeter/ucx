@@ -10,6 +10,7 @@ import { lintAst } from './lib/lint';
 import { AstLinterConfiguration, DEFAULT_AST_LINTER_CONFIGURATION as DEFAULT_A } from './lib/lint/ast-rules';
 import { IndentationType } from './lib/indentation/IndentationType';
 import { DEFAULT_TOKEN_BASED_LINTER_CONFIGURATION as DEFAULT_T } from './lib/lint/token-rules';
+import { UnrealDefaultProperty } from './lib/parser/ast';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -205,28 +206,58 @@ export function activate(context: vscode.ExtensionContext) {
         provideDocumentSymbols(document, cancellation){
             const ast = getAst(document, cancellation);
             const result: vscode.SymbolInformation[] = []; 
-            let classContainer = '';
-            if (ast.name && ast.classFirstToken && ast.classLastToken){
+            let mainContainer = '';
+            if (ast.name) {
                 result.push(new vscode.SymbolInformation(
                     ast.name.text,
                     vscode.SymbolKind.Class,
                     "",
-                    new vscode.Location(
-                        document.uri, 
-                        rangeFromTokens(ast.classFirstToken, ast.classLastToken)
-                    )
+                    new vscode.Location(document.uri, 
+                        rangeFromTokens(
+                            ast.classDeclarationFirstToken ?? ast.name, 
+                            ast.classDeclarationLastToken ?? ast.name
+                        ))
                 ));
-                classContainer = ast.name.text;
+            }
+            for (const constant of ast.constants) {
+                if (!constant.name) { continue };
+                result.push(new vscode.SymbolInformation(
+                    constant.name.text,
+                    vscode.SymbolKind.Constant,
+                    mainContainer,
+                    new vscode.Location(document.uri, rangeFromTokens(constant.name, constant.name))
+                ));
+            }
+            for (const struct of ast.structs) {
+                if (!struct.name) { continue };
+                const structName = struct.name.text;
+                result.push(new vscode.SymbolInformation(
+                    structName,
+                    vscode.SymbolKind.Struct,
+                    mainContainer,
+                    new vscode.Location(document.uri, rangeFromTokens(
+                        struct.name, struct.bodyLastToken ?? struct.name))
+                ));
+                for (const member of struct.members) {
+                    if (!member.name) { continue };
+                    result.push(new vscode.SymbolInformation(
+                        member.name.text,
+                        vscode.SymbolKind.Variable,
+                        structName,
+                        new vscode.Location(document.uri, rangeFromTokens(
+                            member.firstToken ?? member.name, 
+                            member.lastToken ?? member.name,
+                        ))
+                    ));
+                }
             }
             for (const enumDeclaration of ast.enums){
-                if (!enumDeclaration.name){
-                    return;
-                }
+                if (!enumDeclaration.name) { continue };
                 const enumName = enumDeclaration.name;
                 result.push(new vscode.SymbolInformation(
                     enumDeclaration.name.text,
                     vscode.SymbolKind.Enum,
-                    classContainer,
+                    mainContainer,
                     new vscode.Location(
                         document.uri,
                         rangeFromTokens(
@@ -247,18 +278,135 @@ export function activate(context: vscode.ExtensionContext) {
                 }
             }
             for (const varDeclaration of ast.variables){
-                if (!varDeclaration.name){
-                    continue;
-                }
+                if (!varDeclaration.name) { continue };
                 result.push(new vscode.SymbolInformation(
                     varDeclaration.name.text,
                     vscode.SymbolKind.Variable,
-                    classContainer,
+                    mainContainer,
                     new vscode.Location(
                         document.uri,
                         rangeFromTokens(varDeclaration.name, varDeclaration.name)
                     )
                 ));
+            }
+            for (const fnDecl of ast.functions) {
+                if (!fnDecl.name) { continue };
+                result.push(new vscode.SymbolInformation(
+                    fnDecl.name.text,
+                    vscode.SymbolKind.Function,
+                    mainContainer,
+                    new vscode.Location(
+                        document.uri,
+                        rangeFromTokens(
+                            fnDecl.name,
+                            fnDecl.bodyLastToken ?? fnDecl.fnArgsLastToken ?? fnDecl.name)
+                    )
+                ));
+            }
+            for (const state of ast.states) {
+                const stateNameToken = state.name;
+                if (!stateNameToken) { continue };
+                const stateName = stateNameToken.text;
+                result.push(new vscode.SymbolInformation(
+                    stateName,
+                    vscode.SymbolKind.Class,
+                    mainContainer,
+                    new vscode.Location(
+                        document.uri,
+                        rangeFromTokens(
+                            stateNameToken,
+                            state.bodyLastToken ?? stateNameToken,
+                        )
+                    )
+                ));
+                for (const fnDecl of state.functions) {
+                    if (!fnDecl.name) { continue };
+                    result.push(new vscode.SymbolInformation(
+                        fnDecl.name.text,
+                        vscode.SymbolKind.Function,
+                        stateName,
+                        new vscode.Location(
+                            document.uri, 
+                            rangeFromTokens(
+                                fnDecl.name, fnDecl.bodyLastToken ?? fnDecl.fnArgsLastToken ?? fnDecl.name
+                            )
+                        )
+                    ));
+                }
+            }
+            if (ast.defaultPropertiesFirstToken && ast.defaultPropertiesLastToken) {
+                const section = 'defaultproperties';
+                result.push(new vscode.SymbolInformation( 
+                    section,
+                    vscode.SymbolKind.Namespace,
+                    mainContainer,
+                    new vscode.Location(
+                        document.uri,
+                        rangeFromTokens(
+                            ast.defaultPropertiesFirstToken,
+                            ast.defaultPropertiesLastToken
+                        )
+                    )
+                ));
+                if (ast.defaultProperties.length > 0) {
+                    let consecutiveFirstProp: UnrealDefaultProperty = ast.defaultProperties[0];
+                    let consecutiveLastProp: UnrealDefaultProperty = ast.defaultProperties[0];
+                    const emit = () => { 
+                        if (consecutiveFirstProp.name)
+                        {
+                            result.push(new vscode.SymbolInformation( 
+                                consecutiveFirstProp.name.text,
+                                vscode.SymbolKind.Constant,
+                                section,
+                                new vscode.Location(
+                                    document.uri,
+                                    rangeFromTokens(
+                                        consecutiveFirstProp.name,
+                                        consecutiveLastProp.name ?? consecutiveFirstProp.name,
+                                    )
+                                )
+                            ));
+                        }
+                    };
+
+                    for (const defprop of ast.defaultProperties) {
+                        if (!defprop.name) { continue };
+                        if (consecutiveLastProp.name?.text === defprop.name?.text) {
+                            consecutiveLastProp = defprop;
+                            continue; 
+                        }
+                        else {
+                            emit();
+                            consecutiveFirstProp = defprop;
+                            consecutiveLastProp = defprop;
+                        }
+                    }
+
+                    emit();
+
+                }
+            }
+            for (const replication of ast.replicationBlocks) {
+                const section = 'replication';
+                result.push(new vscode.SymbolInformation(
+                    section,
+                    vscode.SymbolKind.Namespace,
+                    mainContainer,
+                    new vscode.Location(document.uri, rangeFromTokens(
+                        replication.firstToken,
+                        replication.lastToken
+                    ))
+                ));
+                for (const statement of replication.statements) {
+                    for (const target of statement.targets) {
+                        result.push(new vscode.SymbolInformation(
+                            target.text,
+                            vscode.SymbolKind.Null,
+                            section,
+                            new vscode.Location(document.uri, rangeFromToken(target))
+                        ));
+                    }
+                }
             }
             return result;
         }
