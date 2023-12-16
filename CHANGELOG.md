@@ -1,8 +1,14 @@
 # Change Log
 
+## v0.13.0
+
+- Added support for workspace symbol provider. This enables usage of "Goto
+  Symbol in Workspace" `Ctrl-T` or `Ctrl-P #` to quicky naviage to any 
+  symbol from the workspace.
+
 ## v0.12.0
 
-- added support for document symbol provider
+- Added support for document symbol provider
 
 ## v0.11.0
 

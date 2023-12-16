@@ -32,6 +32,7 @@ Or does it extend the language itself? The answer is YES!
     - semantic syntax highlighting
  - language support
     - partialy goto definition (within current file only)
+    - find document or workspace symbols (`Ctrl-P @` and `Ctrl-P #`)
  - formatter support
     - automatic indentation
     - operator spacing

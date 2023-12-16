@@ -42,7 +42,6 @@
             }
         ],
         "@typescript-eslint/semi": ["warn", "always", { "omitLastInOneLineBlock": true }],
-        "curly": "warn",
         "eqeqeq": [
             "warn",
             "smart"
