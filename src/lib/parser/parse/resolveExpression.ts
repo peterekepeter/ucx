@@ -34,7 +34,7 @@ export function resolveStatementExpression(
         }
     }
     if (tokens.length >= 2) {
-        if (tokens[0].textLower === 'case' && tokens[tokens.length-1].text === ':')
+        if ((tokens[0].textLower === 'case' || tokens[0].textLower === 'default') && tokens[tokens.length-1].text === ':')
         {
             return {
                 op: tokens[tokens.length-1],

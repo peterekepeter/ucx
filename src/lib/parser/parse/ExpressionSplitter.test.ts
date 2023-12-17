@@ -102,6 +102,17 @@ test('does not split new() operator', () => {
         ]);
 });
 
+
+test('splits function calls', () => {
+    parsing('case 0: break case 1: break')
+        .yieldsGroups([
+            'case0:',
+            'break',
+            'case1:',
+            'break',
+        ]);
+});
+
 test('does not split multiparameter new() operator', () => {
     parsing("Conf = new (class'UcxConfig', 'UcxConfig') class'UcxConfig'")
         .yieldsGroups([

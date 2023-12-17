@@ -24,6 +24,19 @@ export class ExpressionSplitter
             // and always breaks them
             return false;
         }
+        if (this.tokens.length !== 0) {
+            const lastToken = this.tokens[this.tokens.length-1];
+            if (lastToken.text === ':') {
+                return false; // cannot continue after colon
+            }
+            switch (token.textLower)
+            {
+            case 'case': 
+            case 'default': 
+                // these tokens can only show up at start of expression
+                return false;
+            }
+        }
         if (this.lastWasTerm){
             if (this.tokens.length > 0)
             {

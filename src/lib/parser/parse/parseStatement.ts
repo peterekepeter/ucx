@@ -119,12 +119,10 @@ function parseExpression(parser: UcParser, token: Token)
     switch (token.text)
     {
     case "}":
-        const fn = parser.lastFn;
         parser.lastCodeBlock.push(resolveStatementExpressionAndApplyLabel(parser));
-        fn.bodyLastToken = token;
         popSingleStatementCodeBlocks(parser, token);
-        parser.rootFn = parseNoneState;
-        parser.result.errors.push({ token, message: "Function ended unexpectedly."});
+        parser.rootFn = parseStatement;
+        parser.parseToken(token);
         break;
     case ":":
         parser.expressionSplitter.addToken(token);

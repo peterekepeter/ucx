@@ -385,11 +385,29 @@ test('indent switch case well formatted', () => { lintingStatements(
     '    case 2:',
     '        Log("case 2");',
     '        return 2;',
-    '    defaukt:',
+    '    default:',
     '        Log("NotSupported");',
     '        return -1;',
     '}',
 ).isAlreadyWellFormatted();});
+
+
+test('semicolon autocomplete inside switch case', () => { lintingStatements(
+    'switch (A)',
+    '{',
+    '    case 0: break',
+    '    case 1: break',
+    '    default:',
+    '}',
+).hasFormattedResult(statementWrapper(
+    'switch (A)',
+    '{',
+    '    case 0: break;',
+    '    case 1: break;',
+    '    default:',
+    '}',
+));});
+
 
 test('correctly formatted enum has no linter errors', () => { linting([
     'enum ESoundSlot',
@@ -601,6 +619,56 @@ test('lint autocompletes semicolon for single statement', () => { lintingStateme
 ).hasFormattedResult(statementWrapper(
     'A = 1;'
 ));});
+
+test('lint autocompletes semicolon for return statement', () => { lintingStatements(
+    'return 1',
+).hasFormattedResult(statementWrapper(
+    'return 1;'
+));});
+
+test('lint autocompletes semicolon for continue statement', () => { lintingStatements(
+    'continue',
+).hasFormattedResult(statementWrapper(
+    'continue;'
+));});
+
+test('lint autocompletes semicolon for break statement', () => { lintingStatements(
+    'break',
+).hasFormattedResult(statementWrapper(
+    'break;'
+));});
+
+test('lint autocompletes semicolon for statement with super', () => { lintingStatements(
+    'Super.Notify(C,E)',
+).hasFormattedResult(statementWrapper(
+    'Super.Notify(C,E);'
+));});
+
+test('lint autocompletes semicolon for statement with super', () => { lintingStatements(
+    'Self.Notify(C,E)',
+).hasFormattedResult(statementWrapper(
+    'Self.Notify(C,E);'
+));});
+
+test('lint autocompletes semicolon for nested return statement', () => { linting([
+    'function GetResult()',
+    '{',
+    '    if ( bNotFound )',
+    '    {',
+    '        return -1',
+    '    }',
+    '    return 1',
+    '}',
+]).hasFormattedResult([
+    'function GetResult()',
+    '{',
+    '    if ( bNotFound )',
+    '    {',
+    '        return -1;',
+    '    }',
+    '    return 1;',
+    '}',
+]);});
 
 test('lint autocompletes semicolon in new class statement', () => { lintingStatements(
     "A = new class'TestClass'",
@@ -867,6 +935,7 @@ function linting(lines: string[], options?: Partial<FullLinterConfig>, fileName?
     }
     parser.endOfFile(lines.length, 0);
     const ast = parser.getAst();
+    //console.log(ast.functions[0].body[0].body);
     ast.textLines = lines;
     ast.fileName = fileName;
 
