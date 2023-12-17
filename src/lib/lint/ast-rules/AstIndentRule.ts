@@ -149,6 +149,13 @@ export class AstIndentRule implements AstBasedLinter
 
     recursivePaintStatementScopes(ast: UnrealClass, body: UnrealClassStatement[]): void {
         for (const st of body) {
+            let amount = 1;
+            if (st.op?.text === ':') {
+                const line = st.argsFirstToken?.line ?? st.op.line;
+                this.paintIndentLines(line, line, -1);
+            } else if (st.op?.textLower === 'switch') {
+                amount += 1;
+            }
             const first = st.argsFirstToken;
             let last = st.argsLastToken;
             if (first && last) {
@@ -163,9 +170,9 @@ export class AstIndentRule implements AstBasedLinter
             this.paintScope(ast, first, last);
 
             if (st.bodyFirstToken?.text !== '{'){
-                this.paintScope(ast, st.op, st.bodyLastToken, st.singleStatementBody);
+                this.paintScope(ast, st.op, st.bodyLastToken, st.singleStatementBody, undefined, amount);
             } else {
-                this.paintScope(ast, st.bodyFirstToken, st.bodyLastToken);
+                this.paintScope(ast, st.bodyFirstToken, st.bodyLastToken, undefined, undefined, amount);
             }
             this.recursivePaintStatementScopes(ast, st.body);
         }
@@ -176,6 +183,7 @@ export class AstIndentRule implements AstBasedLinter
         last?: ParserToken | null,
         isSingleStatementBody?: boolean,
         dontSkipFirstLine?: boolean,
+        amount = 1,
     ) {
         if (!first || !last){
             return;
@@ -190,7 +198,7 @@ export class AstIndentRule implements AstBasedLinter
                 to -= 1;
             }
         }
-        this.paintIndentLines(from, to);
+        this.paintIndentLines(from, to, amount);
     }
 
     hasNonClosingTokenOnSameLineBeforeToken(ast: UnrealClass, token: ParserToken): boolean {
@@ -211,9 +219,9 @@ export class AstIndentRule implements AstBasedLinter
         return token.text === '}' || token.text === ')';
     }
 
-    paintIndentLines(from: number, to: number) {
+    paintIndentLines(from: number, to: number, amount: number) {
         for (let i=from; i<=to; i++){
-            this.indent[i] += 1;
+            this.indent[i] += amount;
         }
     }
 

@@ -1,6 +1,6 @@
 import { UcxCommand } from "../cli";
 import { promises as fs, constants } from "fs";
-import { SourceEditor, transformFor436 } from "../transformer";
+import { SourceEditor, standardTranspiler } from "../transformer";
 import { UcParser, UnrealClass } from "../parser";
 import { ucTokenizeLine } from "../tokenizer";
 import { InvalidUccPath } from "./InvalidUccPath";
@@ -332,7 +332,7 @@ async function tempTransformSource(context: BuildContext, srcPath: string, destP
 function transform(input: string): string {
     const editor = new SourceEditor(input);
     const uc = parse(input);
-    transformFor436(editor, uc);
+    standardTranspiler(editor, uc);
     return editor.result;
 }
 

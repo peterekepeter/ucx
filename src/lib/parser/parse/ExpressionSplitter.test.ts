@@ -50,7 +50,6 @@ test('splits function calls', () => {
         ]);
 });
 
-
 test('splits single line foreach statement', () => {
     parsing("foreach AllActors(class'PlayerStart',Dest) DoSomething(Dest)")
         .yieldsGroups([

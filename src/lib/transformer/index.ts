@@ -1,2 +1,2 @@
 export * from './SourceEditor';
-export * from './transformFor436';
+export * from './standardTranspiler';

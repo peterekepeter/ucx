@@ -26,14 +26,12 @@ export function parseStatement(parser: UcParser, token: Token)
             op: token,
             args: [],
             body: [],
-            label: parser.label,
             bodyFirstToken: null,
             bodyLastToken: null,
             argsFirstToken: null,
             argsLastToken: null,
             singleStatementBody: false,
         };
-        parser.label = null;
         parser.lastCodeBlock.push(statement);
         parser.codeBlockStack.push(statement);
         break;
@@ -45,14 +43,12 @@ export function parseStatement(parser: UcParser, token: Token)
             op: token,
             args: [],
             body: [],
-            label: parser.label,
             bodyFirstToken: null,
             bodyLastToken: null,
             argsFirstToken: null,
             argsLastToken: null,
             singleStatementBody: false,
         };
-        parser.label = null;
         parser.lastCodeBlock.push(foreach);
         parser.codeBlockStack.push(foreach);
         break;
@@ -63,14 +59,12 @@ export function parseStatement(parser: UcParser, token: Token)
             op: token,
             args: [],
             body: [],
-            label: parser.label,
             bodyFirstToken: token,
             bodyLastToken: token,
             argsFirstToken: null,
             argsLastToken: null,
             singleStatementBody: false,
         };
-        parser.label = null;
         body.push(codeBlock);
         parser.codeBlockStack.push(codeBlock);
         break;
@@ -81,7 +75,8 @@ export function parseStatement(parser: UcParser, token: Token)
     case "continue":
     case "break":
     case "return":
-    case "case":
+    case "case": 
+    case "default":
         token.type = SemanticClass.Keyword;
     default:
         // default to expression
@@ -123,18 +118,6 @@ function parseExpression(parser: UcParser, token: Token)
 {
     switch (token.text)
     {
-    case ":":
-        if (parser.expressionSplitter.getTokens().length === 1){
-            const labelToken = parser.expressionSplitter.getTokens()[0];
-            labelToken.type = SemanticClass.StatementLabel;
-            parser.expressionSplitter.clear();
-            parser.label = labelToken;
-            parser.rootFn = parseStatement;
-        }
-        else {
-            parser.expressionSplitter.addToken(token);
-        }
-        break;
     case "}":
         const fn = parser.lastFn;
         parser.lastCodeBlock.push(resolveStatementExpressionAndApplyLabel(parser));
@@ -143,6 +126,8 @@ function parseExpression(parser: UcParser, token: Token)
         parser.rootFn = parseNoneState;
         parser.result.errors.push({ token, message: "Function ended unexpectedly."});
         break;
+    case ":":
+        parser.expressionSplitter.addToken(token);
     case ";":
         const statement = resolveStatementExpressionAndApplyLabel(parser);
         statement.argsLastToken = token;
@@ -171,7 +156,6 @@ function parseExpression(parser: UcParser, token: Token)
  */
 function parseControlStatement(parser: UcParser, token: Token)
 {
-    let message = "Error";
     switch (token.textLower){
     case "{":
         parser.rootFn = parseStatement;
@@ -309,11 +293,6 @@ function resolveStatementExpressionAndApplyLabel(parser: UcParser): UnrealClassS
     { 
         result = resolveStatementExpression(parser.expressionSplitter.getTokens());
         parser.expressionSplitter.clear();
-    }
-
-    if (parser.label){
-        result.label = parser.label;
-        parser.label = null;
     }
     return result;
 }

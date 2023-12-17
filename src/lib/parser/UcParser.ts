@@ -30,7 +30,6 @@ export class UcParser{
     fnArgTokens: Token[] = [];
     isMultilineComment = false;
     currentClassState: UnrealClassState | null = null;
-    label: Token | null = null;
     currentlyInStateFunction: boolean = false;
 
     getAst() {

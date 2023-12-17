@@ -142,7 +142,7 @@ test('expression closing paranthesis is not indented', () => {
         '        3 + 4',
         '    );',
         '}'
-    ]).hasNoFormattedResult();
+    ]).isAlreadyWellFormatted();
 });
 
 test('lint indent only increases once when multiple scopes combine on same line', () => {
@@ -154,7 +154,7 @@ test('lint indent only increases once when multiple scopes combine on same line'
         '}'
     ], {
         enableBracketSpacingRule: false // needed to test the feature
-    }).hasNoFormattedResult();
+    }).isAlreadyWellFormatted();
 });
 
 test('lint indent single statement if without braces', () => {
@@ -164,7 +164,7 @@ test('lint indent single statement if without braces', () => {
         '    if ( bFirstRun )',
         '        SaveConfig();',
         '}'
-    ]).hasNoFormattedResult();
+    ]).isAlreadyWellFormatted();
 });
 
 test('lint indent single statment if on one line', () => {
@@ -188,7 +188,7 @@ test('lint indent if with function call in condition', () => {
         '        SaveConfig();',
         '    }',
         '}',
-    ]).hasNoFormattedResult();
+    ]).isAlreadyWellFormatted();
 });
 
 test("lint keyword casing", () => {
@@ -367,6 +367,29 @@ test('incorrectly indented state with control statements', () => { linting([
     .hasResult({ line:4, fixedText:'        ' })
     .hasResult({ line:5, fixedText:'    ' })
 ;});
+
+test('state labels well formatted', () => {linting([
+    'state wandering',
+    '{',
+    'Begin:',
+    '    SetPhysics(PHYS_Swimming);',
+    '}']
+).isAlreadyWellFormatted();});
+
+test('indent switch case well formatted', () => { lintingStatements(
+    'switch (A)',
+    '{',
+    '    case 0: return 1;',
+    '    case 1:',
+    '        return 2;',
+    '    case 2:',
+    '        Log("case 2");',
+    '        return 2;',
+    '    defaukt:',
+    '        Log("NotSupported");',
+    '        return -1;',
+    '}',
+).isAlreadyWellFormatted();});
 
 test('correctly formatted enum has no linter errors', () => { linting([
     'enum ESoundSlot',
@@ -652,7 +675,7 @@ test('lint multiline boolean condition', () => { lintingStatements(
     "return WeaponIndex >= 0",
     "    && PlayerPawn.Weapon != None",
     "    && PlayerPawn.Weapon.Class == Weapons.GetWeaponClass(WeaponIndex);" // missing indent
-).hasNoFormattedResult();});
+).isAlreadyWellFormatted();});
 
 test('linting multiline variable declaration', () => { 
     linting([
@@ -879,7 +902,7 @@ function linting(lines: string[], options?: Partial<FullLinterConfig>, fileName?
         hasFormattedResult(expectedLines: string[]){
             expect(applyLinterFixes(lines, results)).toEqual(expectedLines.join('\n'));
         },
-        hasNoFormattedResult(){
+        isAlreadyWellFormatted(){
             expect(applyLinterFixes(lines, results)).toEqual(lines.join('\n'));
         }
     };

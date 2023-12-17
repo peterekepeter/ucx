@@ -1,7 +1,7 @@
 import { UcParser, UnrealClass } from "../parser";
 import { ucTokenizeLine } from "../tokenizer/ucTokenizeLine";
 import { SourceEditor } from "./SourceEditor";
-import { transformFor436 } from "./transformFor436";
+import { standardTranspiler } from "./standardTranspiler";
 
 test("replaces array count expression with resolved count", () => expect(transform(`
     var string RuleList[512];
@@ -43,7 +43,7 @@ test("substitues constants used in array declarations", () => expect(transform(`
 function transform(input: string): string {
     const editor = new SourceEditor(input);
     const uc = parse(input);
-    transformFor436(editor, uc);
+    standardTranspiler(editor, uc);
     return editor.result;
 }
 

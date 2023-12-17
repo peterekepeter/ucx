@@ -18,6 +18,9 @@ export class SemicolonAutoFixer implements AstBasedLinter
             if (!lastToken){
                 throw new Error('unexpected missing token, parse error');
             }
+            if (lastToken.text === ':'){
+                continue; // is label statement
+            }
             if (lastToken.text !== ';'){
                 if (result == null){
                     result = [];

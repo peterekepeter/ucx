@@ -5,13 +5,52 @@ export function resolveStatementExpression(
     tokens: Token[]
 ): UnrealClassStatement
 {
-    if (tokens.length === 2 && tokens[0].textLower === 'goto'){
-        tokens[1].type = SemanticClass.StatementLabel;
+    if (tokens.length === 2){
+        if (tokens[0].textLower === 'goto'){
+            tokens[1].type = SemanticClass.StatementLabel;
+            return {
+                op: tokens[0],
+                args: [tokens[1]],
+                body: [],
+                bodyFirstToken: null,
+                bodyLastToken: null,
+                argsFirstToken: tokens[1],
+                argsLastToken: tokens[1],
+                singleStatementBody: false,
+            };
+        }
+        else if (tokens[1].text === ':' && tokens[0].type !== SemanticClass.Keyword) {
+            tokens[0].type = SemanticClass.StatementLabel;
+            return {
+                op: tokens[1],
+                args: [tokens[0]],
+                body: [],
+                bodyFirstToken: null,
+                bodyLastToken: null,
+                argsFirstToken: tokens[0],
+                argsLastToken: tokens[0],
+                singleStatementBody: false,
+            };
+        }
+    }
+    if (tokens.length >= 2) {
+        if (tokens[0].textLower === 'case' && tokens[tokens.length-1].text === ':')
+        {
+            return {
+                op: tokens[tokens.length-1],
+                args: [tokens[0], resolveExpression(tokens.slice(1, tokens.length - 1))],
+                argsFirstToken: tokens[1],
+                argsLastToken: tokens[tokens.length-1],
+                body: [],
+                bodyFirstToken: null, 
+                bodyLastToken: null,
+                singleStatementBody: false,
+            };
+        }
     }
     const expression = resolveExpression(tokens);
     if ("text" in expression){
         return {
-            label: null,
             op: expression,
             args: [],
             body:[],
@@ -24,7 +63,6 @@ export function resolveStatementExpression(
     } else {
         return {
             ...expression, 
-            label: null,
             body: [],
             bodyFirstToken: null,
             bodyLastToken: null,

@@ -615,6 +615,8 @@ function Init() {
 		case 2:
             Log("2");
             break;
+        default:
+            Log("Defualt");
     }
 }`)
     .hasFunction(0, {
@@ -628,6 +630,7 @@ function Init() {
     .hasTokens(["switch", C.Keyword])
     .hasTokens(["case", C.Keyword])
     .hasTokens(["break", C.Keyword])
+    .hasTokens(["default", C.Keyword])
     .hasNoErrors();
 });
 
@@ -1525,8 +1528,10 @@ function Test() {
 `).hasNoErrors()
     .hasFunction(0, {
         body: [{
+            op: ':',
+            args: ['RESET'],
+        },{
             op: '=',
-            label: 'RESET',
             args: ['Value', '0']
         }]
     })
@@ -1542,11 +1547,15 @@ function Test() {
     .hasTokens(['while', C.Keyword])
     .hasFunction(0, {
         body: [{
-            label: 'RESET',
+            op: ':',
+            args: ['RESET'],
+        },{
             op: 'while',
             args: ['true'],
             body: [{
-                label: 'L001',
+                op: ':',
+                args: ['L001']
+            },{
                 op: 'break'
             }]
         }]
@@ -2095,7 +2104,6 @@ interface StatementCheckObj extends ExpressionCheckObj
     bodyLast?: string,
     argsFirst?: string,
     argsLast?: string,
-    label?: string,
     body?: StatementCheckObj[]
 }
 
@@ -2103,7 +2111,6 @@ function mapStatementToCheck(e: UnrealClassStatement): StatementCheckObj {
     return ({
         ...mapExpressionToCheck(e),
         body: mapBodyToCheck(e.body),
-        label: e.label?.text,
         bodyFirst: e.bodyFirstToken?.text,
         bodyLast: e.bodyLastToken?.text,
         argsFirst: e.argsFirstToken?.text,

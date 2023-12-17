@@ -2,7 +2,7 @@ import { foldConstants } from "./rules";
 import { SourceTransformer } from "./SourceTransformer";
 
 
-export const transformFor436: SourceTransformer = (editor, uc) => {
+export const standardTranspiler: SourceTransformer = (editor, uc) => {
     const transformers = [
         foldConstants
     ];
