@@ -1,6 +1,6 @@
 # Change Log
 
-## v0.13.3
+## v0.13.4
 
 - Fixes indentation of switch case with multiple stements and label indent
 - Does not warn when class name contains underscore 

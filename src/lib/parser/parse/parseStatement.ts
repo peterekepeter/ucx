@@ -116,7 +116,7 @@ function parseFnLocalVar(parser: UcParser, token: Token)
 
 function parseExpression(parser: UcParser, token: Token)
 {
-    switch (token.text)
+    switch (token.textLower)
     {
     case "}":
         parser.lastCodeBlock.push(resolveStatementExpressionAndApplyLabel(parser));
@@ -133,6 +133,8 @@ function parseExpression(parser: UcParser, token: Token)
         popSingleStatementCodeBlocks(parser, token);
         parser.rootFn = parseStatement;
         break;
+    case "return":
+        token.type === C.Keyword;
     default:
         if (parser.expressionSplitter.canContinueWithToken(token))
         {

@@ -119,13 +119,12 @@ test('does not split default property access', () => {
         ]);
 });
 
-test('does not split default property access', () => {
+test('does not split default property access with operator', () => {
     parsing('x=default.something')
         .yieldsGroups([
             'x=default.something',
         ]);
 });
-
 
 test('does not split multiparameter new() operator', () => {
     parsing("Conf = new (class'UcxConfig', 'UcxConfig') class'UcxConfig'")
