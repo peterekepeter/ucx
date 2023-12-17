@@ -67,12 +67,11 @@ export class ClassNamingRule implements AstBasedLinter
     }
     
     isValidName(name: string){
-        return name.match(/^[a-z_][A-Z0-9]*$/i);
+        return name.match(/^[a-z_][A-Z0-9_]*$/i);
     }
 
     isPascalCase(name: string){
         return name.length > 0 
-            && name.indexOf('_') === -1 
             && name[0].toUpperCase() === name[0];
     }
 

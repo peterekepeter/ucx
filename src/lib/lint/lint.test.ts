@@ -829,6 +829,11 @@ test('class name not having correct casing', () => { linting([
     message: "Class names should be in PascalCase"
 });});
 
+test('do not complain about underscores in class names', () => { linting([
+    'class AB_Something extends Object;'
+], undefined, './something/AB_Something.uc').hasNoLintResults();});
+
+
 
 function linting(lines: string[], options?: Partial<FullLinterConfig>, fileName?: string) {
     const parser = new UcParser();
