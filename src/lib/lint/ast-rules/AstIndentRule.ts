@@ -3,8 +3,8 @@ import { LintResult } from "../LintResult";
 import { UnrealClass } from "../../";
 import { ParserToken, SemanticClass } from "../../parser";
 import { UnrealClassExpression, UnrealClassFunction, UnrealClassStatement } from "../../parser/ast/UnrealClassFunction";
-import { IndentationType } from "../../indentation/IndentationType";
-import { IndentLevelStrings } from "../../indentation/IndentLevelStrings";
+import { IndentationType } from "../indentation/IndentationType";
+import { IndentLevelStrings } from "../indentation/IndentLevelStrings";
 
 
 export class AstIndentRule implements AstBasedLinter

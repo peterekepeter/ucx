@@ -1,4 +1,4 @@
-import { IndentationType } from "../../indentation/IndentationType";
+import { IndentationType } from "../indentation/IndentationType";
 import { AstBasedLinter } from "../AstBasedLinter";
 import { LintResult } from "../LintResult";
 import { AstIndentRule } from "./AstIndentRule";

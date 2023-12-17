@@ -1,4 +1,4 @@
-import { IndentationType } from "../../indentation/IndentationType";
+import { IndentationType } from "../indentation/IndentationType";
 import { ParserToken } from "../../parser";
 import { LintResult } from "../LintResult";
 import { TokenBasedLinterV2 } from "../TokenBasedLinter";

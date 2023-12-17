@@ -4,11 +4,10 @@ import * as vscode from 'vscode';
 import { ucTokenizeLine } from './lib/tokenizer/ucTokenizeLine';
 import { ParserToken, SemanticClass, UcParser, UnrealClass } from './lib/parser';
 import { LintResult } from './lib/lint/LintResult';
-import { FullLinterConfig, buildFullLinter } from './lib/lint/buildFullLinter';
-import { ParserError } from './lib/parser/types';
+import { FullLinterConfig } from './lib/lint/buildFullLinter';
 import { lintAst } from './lib/lint';
-import { AstLinterConfiguration, DEFAULT_AST_LINTER_CONFIGURATION as DEFAULT_A } from './lib/lint/ast-rules';
-import { IndentationType } from './lib/indentation/IndentationType';
+import { DEFAULT_AST_LINTER_CONFIGURATION as DEFAULT_A } from './lib/lint/ast-rules';
+import { parseIndentationType } from './lib/lint/indentation';
 import { DEFAULT_TOKEN_BASED_LINTER_CONFIGURATION as DEFAULT_T } from './lib/lint/token-rules';
 import { UnrealDefaultProperty } from './lib/parser/ast';
 
@@ -661,7 +660,6 @@ function getAstFromString(input: string) : UnrealClass {
     return parser.result;
 }
 
-
 type ExtensionConfiguration =
 {
     showErrors: boolean,
@@ -707,30 +705,6 @@ function parseConfiguration(cfg: vscode.WorkspaceConfiguration): ExtensionConfig
                 cfg.get('linter.keywordCasingRule.enabled') ?? DEFAULT_T.enableValidateStringRule,
         }
     };
-}
-
-function parseIndentationType(value: string | undefined): IndentationType | undefined {
-    if  (!value) {
-        return undefined;
-    }
-    const number = Number.parseInt(value?.trim());
-    if (!isNaN(number)) {
-        switch (number){
-        case 1: return ' ';
-        case 2: return '  ';
-        case 3: return '   ';
-        case 4: return '    ';
-        case 5: return '     ';
-        case 6: return '      ';
-        case 7: return '       ';
-        case 8: return '        ';
-        default: return '    ';
-        }
-    }
-    if (value?.trim() === '\\t') {
-        return '\t';
-    }
-    return undefined;
 }
 
 function getEditorOptions(config: ExtensionConfiguration): vscode.TextEditorOptions {

@@ -1,9 +1,9 @@
 import { LintResult } from "../LintResult";
 import { TokenBasedLinterV2 } from "../TokenBasedLinter";
-import { getIndentLevel } from "../../indentation/getIndentLevel";
+import { getIndentLevel } from "../indentation/getIndentLevel";
 import { ParserToken, SemanticClass } from "../../parser";
-import { IndentationType } from "../../indentation/IndentationType";
-import { IndentLevelStrings } from "../../indentation/IndentLevelStrings";
+import { IndentationType } from "../indentation/IndentationType";
+import { IndentLevelStrings } from "../indentation/IndentLevelStrings";
 
 const BRACKET_TOKEN = SemanticClass.None;
 

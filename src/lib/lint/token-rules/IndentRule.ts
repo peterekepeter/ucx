@@ -1,4 +1,4 @@
-import { toIndentString } from "../../indentation/toIndentString";
+import { toIndentString } from "../indentation/toIndentString";
 import { LintResult } from "../LintResult";
 import { TokenBasedLinter } from "../TokenBasedLinter";
 
