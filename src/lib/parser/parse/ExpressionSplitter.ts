@@ -33,7 +33,7 @@ export class ExpressionSplitter
             {
             case 'case': 
             case 'default': 
-                if (lastToken.text !== '.') {
+                if (lastToken.type === C.Keyword) {
                     return false; // case/default inside switch 
                 }
             }

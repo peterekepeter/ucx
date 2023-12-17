@@ -697,7 +697,8 @@ test('lint autocompletes semicolon function call statemetns', () => { lintingSta
 ));});
 
 test('lint does not add semicolon when accessing default values', () => { lintingStatements(
-    'Canvas.DrawColor = Canvas.default.DrawColor;'
+    'Canvas.DrawColor = Canvas.default.DrawColor;',
+    'BaseEyeHeight = default.BaseEyeHeight;',
 ).isAlreadyWellFormatted();});
 
 test('lint warning string tab escape does not work', () => { lintingStatements(
