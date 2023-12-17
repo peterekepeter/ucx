@@ -33,8 +33,9 @@ export class ExpressionSplitter
             {
             case 'case': 
             case 'default': 
-                // these tokens can only show up at start of expression
-                return false;
+                if (lastToken.text !== '.') {
+                    return false; // case/default inside switch 
+                }
             }
         }
         if (this.lastWasTerm){

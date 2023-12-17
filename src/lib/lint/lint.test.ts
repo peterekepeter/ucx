@@ -696,6 +696,10 @@ test('lint autocompletes semicolon function call statemetns', () => { lintingSta
     'B(1, 2, 3);',
 ));});
 
+test('lint does not add semicolon when accessing default values', () => { lintingStatements(
+    'Canvas.DrawColor = Canvas.default.DrawColor;'
+).isAlreadyWellFormatted();});
+
 test('lint warning string tab escape does not work', () => { lintingStatements(
     'x = "\\t";'
 ).hasResult({ message: "The '\\t' doesn't work in unreal strings." });});

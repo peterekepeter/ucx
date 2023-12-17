@@ -102,7 +102,6 @@ test('does not split new() operator', () => {
         ]);
 });
 
-
 test('splits function calls', () => {
     parsing('case 0: break case 1: break')
         .yieldsGroups([
@@ -112,6 +111,14 @@ test('splits function calls', () => {
             'break',
         ]);
 });
+
+test('does not split default property access', () => {
+    parsing('object.default.something')
+        .yieldsGroups([
+            'object.default.something',
+        ]);
+});
+
 
 test('does not split multiparameter new() operator', () => {
     parsing("Conf = new (class'UcxConfig', 'UcxConfig') class'UcxConfig'")
