@@ -1,5 +1,11 @@
 # Change Log
 
+## v0.13.1
+
+- Fixes indentation of switch case with multiple stements and label indent
+- Does not warn when class name contains underscore 
+- Fixes semicolon autofix for return, break and continue statements
+
 ## v0.13.0
 
 - Added support for workspace symbol provider. This enables usage of "Goto
