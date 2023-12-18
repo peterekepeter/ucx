@@ -1,0 +1,24 @@
+{
+	"Iterate through pawns": {
+		"prefix": "foreach pawn",
+		"body": [
+            "local Pawn P;",
+            "",
+			"for ( P=Level.PawnList; P!=None; P=P.NextPawn )",
+            "{",
+            "\t$1",
+            "}"
+		]
+	},
+	"Iterate through all actors of type": {
+		"prefix": "foreach allactors",
+		"body": [
+            "local PlayerStart$1 S$2;",
+            "",
+			"foreach AllActors(class'PlayerStart$1', S$2)",
+            "{",
+            "\t$3",
+            "}"
+		]
+	}
+}

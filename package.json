@@ -134,7 +134,7 @@
 					".uci"
 				],
 				"firstLine": "^\\s*class\\s*[a-zA-Z0-9_]+\\s*(?:extends|expands)\\s*[a-zA-Z0-9_]+",
-				"configuration": "./uc.language-configuration.json",
+				"configuration": "./syntaxes/uc.language-configuration.json",
 				"icon": {
 					"dark": "./assets/uc-icon-dark.svg",
 					"light": "./assets/uc-icon-light.svg"
@@ -156,7 +156,13 @@
 			{
 				"language": "unrealscript",
 				"scopeName": "source.unrealscript",
-				"path": "./syntaxes/unrealscript.tmLanguage.json"
+				"path": "./syntaxes/uc.tmLanguage.json"
+			}
+		],
+		"snippets": [
+			{
+				"language": "unrealscript",
+				"path": "./syntaxes/uc.snippets.json"
 			}
 		]
 	},
