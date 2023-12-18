@@ -97,3 +97,12 @@ jobs:
         if: matrix.repo
       - run: node ucx.js lint ut --quiet
       
+  publish:
+
+    name: Publish
+    needs: test-cli-tool
+    runs-on: ubuntu-latest
+    # run if all tests pass
+    
+    steps:
+      - run: npm run npm-publish
