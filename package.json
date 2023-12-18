@@ -10,7 +10,9 @@
 	},
 	"bin": "./out/ucx.js",
 	"categories": [
-		"Other"
+		"Programming Languages",
+		"Linters",
+		"Formatters"
 	],
 	"activationEvents": [],
 	"main": "./out/extension.js",
