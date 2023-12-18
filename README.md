@@ -1,7 +1,7 @@
 
 # UCX (Unreal Script Extensions)
 
-[![Node.js CI](https://github.com/peterekepeter/ucx/actions/workflows/node.js.yml/badge.svg)](https://github.com/peterekepeter/ucx/actions/workflows/node.js.yml)
+[![Node.js CD](https://github.com/peterekepeter/ucx/actions/workflows/node.js.yml/badge.svg)](https://github.com/peterekepeter/ucx/actions/workflows/node.js.yml)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=peterekepeter_ucx&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=peterekepeter_ucx)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=peterekepeter_ucx&metric=bugs)](https://sonarcloud.io/summary/new_code?id=peterekepeter_ucx)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=peterekepeter_ucx&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=peterekepeter_ucx)
