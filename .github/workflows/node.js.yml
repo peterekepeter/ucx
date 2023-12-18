@@ -99,8 +99,7 @@ jobs:
       
   publish:
 
-    name: Publish
-    needs: [test-cli-tool, build-vscode-extension]
+    name: Publish to NPM
     runs-on: ubuntu-latest
     # run if all tests pass
     
@@ -109,5 +108,10 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         cache: 'npm'
-    - run: npm run npm-publish
+        
+    - run: npm run prepublish
+
+    - uses: JS-DevTools/npm-publish@v3
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
 
