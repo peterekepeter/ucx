@@ -108,12 +108,6 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         cache: 'npm'
-        
-    - run: npm run prepublish
-
-    - uses: JS-DevTools/npm-publish@v3
-      with:
-        token: ${{ secrets.NPM_TOKEN }}
 
     - run: npm run vscode:prepublish
     
@@ -128,4 +122,10 @@ jobs:
         pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
         registryUrl: https://marketplace.visualstudio.com
         extensionFile: ${{ steps.publishToOpenVSX.outputs.vsixPath }}
+        
+    - run: npm run prepublish
+
+    - uses: JS-DevTools/npm-publish@v3
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
 
