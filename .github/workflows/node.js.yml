@@ -100,8 +100,9 @@ jobs:
   publish:
 
     name: Publish
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
-    # run if all tests pass
+    needs: [test-cli-tool]
     
     steps:
     - uses: actions/checkout@v3
@@ -115,9 +116,6 @@ jobs:
       id: publish
       with:
         token: ${{ secrets.NPM_TOKEN }}
-      
-    - if: ${{ steps.publish.outputs.type }}
-      run: echo "Version changed!"
 
     - if: ${{ steps.publish.outputs.type }}
       run: npm run vscode:prepublish
