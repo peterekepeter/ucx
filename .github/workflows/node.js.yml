@@ -33,6 +33,7 @@ jobs:
       with:
         cache: 'npm'
 
+    - run: npm install eslint
     - run: npm run lint
     
   unit-test:
@@ -45,7 +46,8 @@ jobs:
     - uses: actions/setup-node@v4
       with:
         cache: 'npm'
-    
+
+    - run: npm install ts-jest
     - run: npm run unittest -- --coverage
     - name: Upload unit test coverage artifact
       uses: actions/upload-artifact@v3
@@ -64,6 +66,7 @@ jobs:
       with:
         cache: 'npm'
 
+    - run: npm install esbuild
     - run: npm run esbuild-ucx
     - name: Upload cli-tool artifact
       uses: actions/upload-artifact@v3
@@ -113,6 +116,7 @@ jobs:
       with:
         cache: 'npm'
 
+    - run: npm install esbuild
     - run: npm run pack
     - name: Upload vscode-extension artifact
       uses: actions/upload-artifact@v3
