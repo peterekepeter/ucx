@@ -23,6 +23,13 @@ jobs:
 
     - run: npm ci
     - run: npm run lint
+    - run: npm run unittest -- --coverage
+
+    - name: Upload unit test coverage artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: unit-coverage
+        path: ./src/lib/coverage
 
   build-cli-tool:
 
@@ -97,16 +104,17 @@ jobs:
   sonar-coverage:
 
     name: SonarCloud Scan
+    needs: [basic-checks]
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
-      with:
-        cache: 'npm'
 
-    - run: npm ci
-    - run: npm run unittest -- --coverage
+    - name: Download unit test coverage artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: unit-coverage
+        path: ./src/lib/coverage
 
     - name: SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@master
