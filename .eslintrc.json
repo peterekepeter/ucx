@@ -42,6 +42,7 @@
             }
         ],
         "@typescript-eslint/semi": ["warn", "always", { "omitLastInOneLineBlock": true }],
+        "no-var": ["error"],
         "eqeqeq": [
             "warn",
             "smart"

@@ -43,7 +43,7 @@ function foldConstantsInVariableDeclaration(editor: SourceEditor, variable: Unre
 
 function replaceTokenWithConstantValue(editor: SourceEditor, token: ParserToken, uc: UnrealClass)
 {
-    for (var constant of uc.constants){
+    for (let constant of uc.constants){
         if (!constant.name || !constant.value) {
             return;
         }
