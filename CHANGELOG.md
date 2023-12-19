@@ -1,5 +1,9 @@
 # Change Log
 
+## v0.14.0
+
+- Added support for displaying definition on mouse hover (works partially)
+
 ## v0.13.4
 
 - Fixes indentation of switch case with multiple stements and label indent
@@ -24,9 +28,6 @@
 
 - better multiline variable declaration and multiline expressions
 - better operator spacing (fixed varios edge cases)
-
-## v0.10.1
-
 - adds support for linter feature configuration support inside vscode
 
 ## v0.9.7

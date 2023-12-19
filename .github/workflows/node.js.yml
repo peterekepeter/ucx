@@ -134,4 +134,22 @@ jobs:
         registryUrl: https://marketplace.visualstudio.com
         extensionFile: ${{ steps.publishToOpenVSX.outputs.vsixPath }}
 
+  sonar-coverage:
 
+    name: Lint & Unit Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        cache: 'npm'
+
+    - run: npm ci
+    - run: npm run unittest -- --coverage
+
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        
