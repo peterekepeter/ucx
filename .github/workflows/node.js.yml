@@ -12,7 +12,7 @@ on:
 jobs:
   basic-checks:
 
-    name: Lint
+    name: Basic Checks
     runs-on: ubuntu-latest
 
     steps:
@@ -23,8 +23,8 @@ jobs:
 
     - run: npm ci
     - run: npm run lint
+    
     - run: npm run unittest -- --coverage
-
     - name: Upload unit test coverage artifact
       uses: actions/upload-artifact@v3
       with:
@@ -33,7 +33,8 @@ jobs:
 
   build-cli-tool:
 
-    name: Build CLI Tool
+    needs: [basic-checks]
+    name: Build CLI
     runs-on: ubuntu-latest
 
     steps:
@@ -42,7 +43,6 @@ jobs:
       with:
         cache: 'npm'
 
-    - run: npm ci
     - run: npm run esbuild-ucx
     - name: Upload cli-tool artifact
       uses: actions/upload-artifact@v3
@@ -52,8 +52,8 @@ jobs:
 
   test-cli-tool:
 
-    name: Test Parse
-    needs: [build-cli-tool, basic-checks]
+    needs: [build-cli-tool]
+    name: Parser Integration Test
     runs-on: ubuntu-latest
 
     strategy:
@@ -84,7 +84,7 @@ jobs:
 
   build-vscode-extension:
 
-    name: Build VsCode Extension
+    name: Build Extension
     runs-on: ubuntu-latest
 
     steps:
@@ -93,7 +93,6 @@ jobs:
       with:
         cache: 'npm'
 
-    - run: npm ci
     - run: npm run pack
     - name: Upload vscode-extension artifact
       uses: actions/upload-artifact@v3
