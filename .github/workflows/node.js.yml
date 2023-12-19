@@ -24,25 +24,6 @@ jobs:
     - run: npm ci
     - run: npm run lint
 
-  build-vscode-extension:
-
-    name: Build VsCode Extension
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
-      with:
-        cache: 'npm'
-
-    - run: npm ci
-    - run: npm run pack
-    - name: Upload vscode-extension artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: vscode-extension
-        path: ucx*.vsix
-
   build-cli-tool:
 
     name: Build CLI Tool
@@ -93,6 +74,25 @@ jobs:
       - run: git clone ${{ matrix.repo }} --no-checkout ut && cd ut && git checkout ${{ matrix.commit }}
         if: matrix.repo
       - run: node ucx.js lint ut --quiet
+
+  build-vscode-extension:
+
+    name: Build VsCode Extension
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        cache: 'npm'
+
+    - run: npm ci
+    - run: npm run pack
+    - name: Upload vscode-extension artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: vscode-extension
+        path: ucx*.vsix
 
   sonar-coverage:
 
