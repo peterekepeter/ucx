@@ -235,7 +235,7 @@ export function activate(context: vscode.ExtensionContext) {
             const ast = getAst(document, cancellation);
             const line = position.line;
             const character = position.character;
-            var target: ParserToken | null = null;
+            let target: ParserToken | null = null;
             for (const token of ast.tokens){
                 if (token.line === line && 
                     token.position <= character && 
@@ -564,7 +564,9 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+    console.log('Extension "ucx" has been deactivated!');
+}
 
 function* getDiagnostics(document: vscode.TextDocument, config: ExtensionConfiguration): Iterable<vscode.Diagnostic> {
     

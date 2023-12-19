@@ -133,8 +133,6 @@ function parseExpression(parser: UcParser, token: Token)
         popSingleStatementCodeBlocks(parser, token);
         parser.rootFn = parseStatement;
         break;
-    case "return":
-        token.type === C.Keyword;
     default:
         if (parser.expressionSplitter.canContinueWithToken(token))
         {

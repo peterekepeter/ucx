@@ -22,18 +22,14 @@ export async function runSubprocess(command: SubprocessCommand, loggingPathRemap
     }
     finally
     {
-        if (!printLogFile){
-            return;
+        if (printLogFile && command.logFile){
+            const logContent = await fs.readFile(command.logFile, 'utf8');
+            const decorated = decorateLog(logContent, quiet, loggingPathRemap);
+            console.log(decorated);
         }
-        
-        if (!command.logFile) {
+        else if (!command.logFile) {
             console.log(yellow("warn: log file not detected!"));
-            return;
         }
-    
-        const logContent = await fs.readFile(command.logFile, 'utf8');
-        const decorated = decorateLog(logContent, quiet, loggingPathRemap);
-        console.log(decorated);
     }
 } 
 
