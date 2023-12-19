@@ -34,7 +34,7 @@ jobs:
         cache: 'npm'
 
     - run: npm install ts-jest
-    - run: npm run unittest -- --coverage
+    - run: npm run unittest -- --coverage --runInBand
     - name: Upload unit test coverage artifact
       uses: actions/upload-artifact@v3
       with:
