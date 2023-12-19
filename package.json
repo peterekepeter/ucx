@@ -168,7 +168,7 @@
 	},
 	"scripts": {
 		"publish-all": "npm run npm-publish && npm run vsce-publish && npm run ovsx-publish",
-		"vscode:prepublish": "npx rimraf ./out && npm run esbuild-base -- --minify",
+		"vscode:prepublish": "rimraf ./out && npm run esbuild-base -- --minify",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"pretest": "npm run compile && npm run lint",
@@ -179,11 +179,11 @@
 		"pack": "npx vsce package",
 		"vsce-publish": "npx vsce publish",
 		"ovsx-publish": "bash -c ovsxpublish",
-		"esbuild-base": "npx esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
-		"esbuild-ucx": "npx esbuild ./src/ucx.ts --bundle --outfile=out/ucx.js --platform=node",
+		"esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
+		"esbuild-ucx": "esbuild ./src/ucx.ts --bundle --outfile=out/ucx.js --platform=node",
 		"esbuild": "npm run esbuild-base -- --sourcemap",
 		"npm-publish": "npm run prepublish && npm publish",
-		"prepublish": "npx rimraf ./out && npm run esbuild-ucx -- --minify"
+		"prepublish": "rimraf ./out && npm run esbuild-ucx -- --minify"
 	},
 	"devDependencies": {
 		"@types/glob": "^7.1.4",
@@ -193,10 +193,12 @@
 		"@typescript-eslint/eslint-plugin": "^5.1.0",
 		"@typescript-eslint/parser": "^5.1.0",
 		"@vscode/test-electron": "^1.6.2",
-		"eslint": "^8.1.0",
+		"esbuild": "^0.14.54",
+		"eslint": "^8.56.0",
 		"glob": "^7.1.7",
 		"jest": "^27.4.7",
 		"mocha": "^9.1.3",
+		"rimraf": "^5.0.5",
 		"ts-jest": "^27.1.3",
 		"typescript": "^4.4.4"
 	}
