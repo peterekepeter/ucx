@@ -9,3 +9,18 @@ export interface ParserToken {
     readonly textLower: string;
 }
 
+export function isTokenAtOrBetween(token: ParserToken, from: ParserToken, to: ParserToken){
+    if (token.line < from.line) {
+        return false;
+    }
+    if (token.line > to.line) {
+        return false;
+    }
+    if (token.line === from.line && token.position < from.position) {
+        return false;
+    }
+    if (token.line === to.line && token.position > to.position + to.text.length) {
+        return false;
+    }
+    return true;
+}

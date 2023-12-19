@@ -2,7 +2,7 @@
 	"name": "ucx",
 	"displayName": "ucx",
 	"description": "UnrealScript Extensions",
-	"version": "0.13.6",
+	"version": "0.14.0",
 	"repository": "https://github.com/peterekepeter/ucx",
 	"publisher": "peterekepeter",
 	"engines": {
@@ -175,7 +175,7 @@
 		"lint": "eslint src --ext ts",
 		"test": "node ./out/test/runTest.js",
 		"unittest": "jest",
-		"unittest:watch": "jest --watch",
+		"unittest:watch": "jest --watch --runInBand",
 		"pack": "npx vsce package",
 		"vsce-publish": "npx vsce publish",
 		"ovsx-publish": "bash -c ovsxpublish",

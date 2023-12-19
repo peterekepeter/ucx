@@ -10,6 +10,10 @@ import { DEFAULT_AST_LINTER_CONFIGURATION as DEFAULT_A } from './lib/lint/ast-ru
 import { parseIndentationType } from './lib/lint/indentation';
 import { DEFAULT_TOKEN_BASED_LINTER_CONFIGURATION as DEFAULT_T } from './lib/lint/token-rules';
 import { UnrealDefaultProperty } from './lib/parser/ast';
+import { ClassDatabase, renderDefinitionMarkdownLines } from './lib';
+import { TokenInformation } from './lib/typecheck/ClassDatabase';
+
+const langId = { uc: 'unrealscript' };
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -20,6 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
     console.log('Extension "ucx" is now active!');
 
     const disposables = context.subscriptions;
+    let db = new VsCodeClassDatabase();
 
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with registerCommand
@@ -31,7 +36,7 @@ export function activate(context: vscode.ExtensionContext) {
     }));
 
     // formatter implemented using API
-    disposables.push(vscode.languages.registerDocumentFormattingEditProvider('unrealscript', {
+    disposables.push(vscode.languages.registerDocumentFormattingEditProvider(langId.uc, {
         provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.TextEdit[] {
             const vscodeConfig = vscode.workspace.getConfiguration("ucx");
             const config = parseConfiguration(vscodeConfig);
@@ -102,9 +107,9 @@ export function activate(context: vscode.ExtensionContext) {
     
     const legend = new vscode.SemanticTokensLegend(standardTokenTypes, standardModifiers);
 
-    disposables.push(vscode.languages.registerDocumentSemanticTokensProvider('unrealscript', {
-        provideDocumentSemanticTokens(document, cancellation) {     
-            const ast = getAst(document, cancellation);
+    disposables.push(vscode.languages.registerDocumentSemanticTokensProvider(langId.uc, {
+        provideDocumentSemanticTokens(document, token) {     
+            const ast = getAst(document, token);
             const tokensBuilder = new vscode.SemanticTokensBuilder(legend);
             // on line 1, characters 1-5 are a class declaration
             for (const token of ast.tokens){
@@ -201,15 +206,32 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }, legend));
 
-    disposables.push(vscode.languages.registerDocumentSymbolProvider('unrealscript', {
+    disposables.push(vscode.languages.registerHoverProvider(langId.uc, {
+        async provideHover(document, position, cancellation) {
+            db.updateDocument(document, cancellation);
+            const result = await db.findDefinition(document.uri, position, cancellation);
+            return { contents: renderDefinitionMarkdownLines(result) };
+        },
+    }));
+
+    disposables.push(vscode.languages.registerDocumentSymbolProvider(langId.uc, {
         provideDocumentSymbols(document, cancellation){
             const ast = getAst(document, cancellation);
             return getSymbolsFromAst(ast, document.uri);
         }
     }));
 
-    disposables.push(vscode.languages.registerDefinitionProvider('unrealscript', {
-        provideDefinition(document, position, cancellation) {
+    disposables.push(vscode.languages.registerDefinitionProvider(langId.uc, {
+        async provideDefinition(document, position, cancellation) {
+            db.updateDocument(document, cancellation);
+            const result = await db.findDefinition(document.uri, position, cancellation);
+            if (result.found && result.token && result.uri) {
+                return {
+                    range: rangeFromToken(result.token),
+                    uri: vscode.Uri.parse(result.uri),
+                };
+            }
+            // old algorithm
             const ast = getAst(document, cancellation);
             const line = position.line;
             const character = position.character;
@@ -526,7 +548,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(diagnosticCollection);
 
     disposables.push(vscode.workspace.onDidChangeTextDocument(event => { 
-        if (event.document.languageId === 'unrealscript'){
+        if (event.document.languageId === langId.uc){
             const vscodeConfig = vscode.workspace.getConfiguration("ucx");
             const config = parseConfiguration(vscodeConfig);
             const diagnositcs = [...getDiagnostics(event.document, config)];
@@ -716,4 +738,85 @@ function getEditorOptions(config: ExtensionConfiguration): vscode.TextEditorOpti
     default: 
         return { insertSpaces: true, tabSize: indentType.length };
     }
+}
+
+class VsCodeClassDatabase {
+
+    private libdb = new ClassDatabase();
+
+    async findDefinition(vscodeuri: vscode.Uri, position: vscode.Position, token: vscode.CancellationToken) {
+        const uri = vscodeuri.toString();
+        const codeToken = this.libdb.findToken(uri, position.line, position.character);
+
+        // quickly resolve references to the given file (assumes given URI is never out of date)
+        let result = this.libdb.findLocalFileDefinition(codeToken);
+        if (result.found || token.isCancellationRequested) return result;
+
+        // resolves reference from cache, updates referenced file if needed
+        result = await this.getCrossFileDefinition(codeToken);
+        if (result.found || token.isCancellationRequested) return result;
+
+        // load workspace classses and try again
+        await this.ensureWorkspaceIsNotOutdated(token);
+        result = await this.getCrossFileDefinition(codeToken);
+        if (result.found || token.isCancellationRequested) return result;
+
+        // load library classes and try again
+        await this.ensureLibraryIsNotOutdated(token);
+        result = await this.getCrossFileDefinition(codeToken);
+        if (result.found || token.isCancellationRequested) return result;
+
+        return result;
+    }
+
+    ensureLibraryIsNotOutdated(token: vscode.CancellationToken) {
+        // TODO
+    }
+
+    ensureWorkspaceIsNotOutdated(token: vscode.CancellationToken) {
+        // TODO
+    }
+
+    private async getCrossFileDefinition(codeToken: TokenInformation): Promise<TokenInformation> {
+        const localResult = this.libdb.findLocalFileDefinition(codeToken);
+        if (localResult.found) {
+            return localResult;
+        }
+        const cachedResult = this.libdb.findCrossFileDefinition(codeToken);
+        if (cachedResult.found)
+        {
+            if (this.isFileOutdated(cachedResult))
+            {
+                await this.updateFile(cachedResult);
+                const refreshedResult = this.libdb.findCrossFileDefinition(codeToken);
+                if (refreshedResult.found) {
+                    return refreshedResult;
+                }
+            }
+            else {
+                return cachedResult;
+            }
+        }
+        return cachedResult;
+    }
+
+    updateFile(cachedResult: TokenInformation) {
+        // TODO
+
+    }
+
+    isFileOutdated(cachedResult: TokenInformation) {
+        // TODO
+        return false;
+    }
+
+    updateDocument(document: vscode.TextDocument, token: vscode.CancellationToken) {
+        const uri = document.uri.toString();
+        if (this.libdb.getVersion(uri) >= document.version) {
+            return;
+        }
+        const ast = getAst(document, token);
+        this.libdb.updateAst(uri, ast, document.version);
+    }
+
 }
