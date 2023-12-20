@@ -43,11 +43,16 @@ describe("find token", () => {
         ast(uri, 1, [
             'class SomeClass extends Info;', // line 0
             '',
-            '',
+            'var config string tag;',
             '', // line 3
             'function PostBeginPlay(string name) {', // line 4
             '    local int i;',
-            '    for (i=0; i<10; i+=1) Log("S"$name);', // line 6
+            '    for (i=0; i<10; i+=1) Log(tag$name);', // line 6
+            '    DebugPrint();', // line 7
+            '}',
+            '',
+            'function DebugPrint() {', // line 10
+            '    Log(tag);',
             '}',
         ]);
     });
@@ -64,6 +69,8 @@ describe("find token", () => {
         [4, 32, { 
             token: {text: 'name'}, 
             functionScope: { name: { text: 'PostBeginPlay' }},
+            uri: uri,
+            ast: {},
         }],
         [6, 9, { 
             token: { text: 'i' }, 
@@ -76,9 +83,14 @@ describe("find token", () => {
     test.each([
         [6, 9, { 
             token: { text: 'i', line: 5 }, 
-            typeToken: { text: 'int' },
+            localDefinition: { type: { text: 'int' }},
+        }],
+        [7, 9, { 
+            token: { text: 'DebugPrint' }, 
+            fnDefinition: { name: { text: 'DebugPrint' }},
         }] as [number, number, TokenInformation],
-    ])("findLocalDefinition at (%p:%p) results %p", (line, column, expected) => {
+    ] as [number, number, TokenInformation][]
+    )("findLocalDefinition at (%p:%p) results %p", (line, column, expected) => {
         const token = db.findToken(uri, line, column);
         const definition = db.findLocalFileDefinition(token);
         expect(definition).toMatchObject(expected);
@@ -87,6 +99,8 @@ describe("find token", () => {
     test.each([
         [6, 9, ['\tlocal int i']],
         [6, 35, ['\t(parameter) string name']],
+        [6, 31, ['\tvar config string tag']],
+        [7, 9, ['\tfunction DebugPrint()']],
     ] as [number, number, string[]][]
     )("markdown definition at (%p:%p) is %p", (line, column, expected) => {
         const info = db.findLocalFileDefinition(db.findToken(uri, line, column));

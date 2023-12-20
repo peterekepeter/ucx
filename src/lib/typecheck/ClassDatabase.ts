@@ -1,5 +1,5 @@
 import { ParserToken, UnrealClass, isTokenAtOrBetween } from "../parser";
-import { UnrealClassFunction, UnrealClassFunctionArgument, UnrealClassFunctionLocal } from "../parser/ast";
+import { UnrealClassFunction, UnrealClassFunctionArgument, UnrealClassFunctionLocal, UnrealClassVariable } from "../parser/ast";
 
 export type TokenInformation = {
     found?: boolean,
@@ -8,9 +8,10 @@ export type TokenInformation = {
     ast?: UnrealClass,
     uri?: string,
     functionScope?: UnrealClassFunction
-    typeToken?: ParserToken | null,
     localDefinition?: UnrealClassFunctionLocal,
     paramDefinition?: UnrealClassFunctionArgument,
+    varDefinition?: UnrealClassVariable,
+    fnDefinition?: UnrealClassFunction,
 };
 
 export class ClassDatabase
@@ -40,41 +41,57 @@ export class ClassDatabase
         }
         return { uri, found: true, token, ast, functionScope };
     }
-
+    
     findLocalFileDefinition(query: TokenInformation): TokenInformation {
-        let result: TokenInformation = {} ;
+        let result: TokenInformation|undefined;
         if (!query.token) return { found: false };
         if (!query.ast) return { missingAst: true };
         if (query.functionScope) {
-            for (const param of query.functionScope.fnArgs) {
-                if (param.name?.textLower === query.token.textLower) {
-                    return {
-                        found: true, 
-                        ast: query.ast, 
-                        functionScope: query.functionScope,
-                        token: param.name,
-                        typeToken: param.type,
-                        paramDefinition: param,
-                        uri: query.uri
-                    };
-                }
-            }
-            for (const local of query.functionScope.locals) {
-                if (local.name?.textLower === query.token.textLower)
-                {
-                    return {
-                        found: true,
-                        ast: query.ast,
-                        functionScope: query.functionScope,
-                        token: local.name,
-                        typeToken: local.type,
-                        localDefinition: local,
-                        uri: query.uri,
-                    };
-                }
-            }
+            result = this.findFunctionLocalDefinition(query);
+        }
+        if (!result && query.ast) {
+            result = this.findClassLocalDefinition(query, query.token.textLower, query.ast);
+        }
+        if (result?.token) {
+            result.found = true;
+            result.ast = query.ast;
+            result.uri = query.uri;
+            return result;
+        }
+        return { found: false };
+    }
+
+    private findFunctionLocalDefinition(q: TokenInformation) {
+        let result: TokenInformation|undefined;
+        if (!q.functionScope || !q.token) return;
+        result = this.findFunctionLocalDefinitionStr(q.token.textLower, q.functionScope);
+        if (result?.token) {
+            result.found = true;
+            result.functionScope = q.functionScope;
         }
         return result;
+    }
+
+    private findFunctionLocalDefinitionStr(nameLower: string, fn: UnrealClassFunction){
+        for (const param of fn.fnArgs) 
+            if (param.name?.textLower === nameLower) 
+                return { token: param.name, paramDefinition: param };
+        for (const local of fn.locals) 
+            if (local.name?.textLower === nameLower)
+                return { token: local.name, localDefinition: local, };
+    }
+
+    private findClassLocalDefinition(query: TokenInformation, name: string, ast: UnrealClass): TokenInformation|undefined {
+        for (const variable of ast.variables) 
+            if (variable.name?.textLower === name) 
+                return {
+                    found: true,
+                    token: variable.name,
+                    varDefinition: variable,
+                };
+        for (const fn of ast.functions)
+            if (fn.name?.textLower === name)
+                return { token: fn.name, fnDefinition: fn };
     }
     
     findCrossFileDefinition(query: TokenInformation): TokenInformation {
