@@ -1,4 +1,4 @@
-import { UnrealClassFunction, UnrealClassFunctionArgument, UnrealClassFunctionLocal, UnrealClassVariable } from "../parser/ast";
+import { UnrealClass, UnrealClassFunction, UnrealClassFunctionArgument, UnrealClassFunctionLocal, UnrealClassVariable } from "../parser/ast";
 import { TokenInformation } from "./ClassDatabase";
 
 
@@ -25,6 +25,9 @@ export function renderDefinitionMarkdownLines(info: TokenInformation): string[] 
         if (info.fnDefinition)
         {
             return renderFn(info.fnDefinition);
+        }
+        if (info.classDefinition) {
+            return renderClassDefinition(info.classDefinition);
         }
     }
     return [ '???' ];
@@ -63,6 +66,13 @@ function renderFn(fnDefinition: UnrealClassFunction): string[] {
     else {
         result.push('()');
     }
+    return [`\t${result.join('')}`];
+}
+
+function renderClassDefinition(classDefinition: UnrealClass): string[] {
+    const result = ['class'];
+    if (classDefinition.name) result.push(' ', classDefinition.name.text);
+    if (classDefinition.parentName) result.push(' extends ', classDefinition.parentName.text);
     return [`\t${result.join('')}`];
 }
 

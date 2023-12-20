@@ -35,7 +35,7 @@ describe("ast versioning", () => {
 
 });
 
-describe("find token", () => {
+describe("single file", () => {
 
     const uri = "SomeClass.uc";
 
@@ -61,6 +61,7 @@ describe("find token", () => {
         expect(db.findToken('asdasdas', 0, 0).missingAst).toBe(true);
     });
     
+    // find token
     test.each([
         [0, 1, { found: true }],
         [0, 100, { found: false }],
@@ -80,6 +81,7 @@ describe("find token", () => {
         expect(db.findToken(uri, line, column)).toMatchObject(expected);
     });
 
+    // find definition
     test.each([
         [6, 9, { 
             token: { text: 'i', line: 5 }, 
@@ -96,16 +98,45 @@ describe("find token", () => {
         expect(definition).toMatchObject(expected);
     });
 
+    // markdown definition
     test.each([
         [6, 9, ['\tlocal int i']],
         [6, 35, ['\t(parameter) string name']],
         [6, 31, ['\tvar config string tag']],
         [7, 9, ['\tfunction DebugPrint()']],
+        [0, 9, ['\tclass SomeClass extends Info']],
     ] as [number, number, string[]][]
     )("markdown definition at (%p:%p) is %p", (line, column, expected) => {
         const info = db.findLocalFileDefinition(db.findToken(uri, line, column));
         expect(renderDefinitionMarkdownLines(info)).toEqual(expected);
     });
+
+});
+
+describe("cross file", () => {
+
+    const uriA = "ClassA.uc";
+    const uriB = "ClassB.uc";
+
+    beforeEach(() => {
+        ast(uriA, 1, [
+            'class ClassA;', // line 0
+        ]);
+        ast(uriB, 1, [
+            'class ClassB extends ClassA;', // line 0
+        ]);
+    });
+
+    // find definition
+    test.each([
+        [0, 24, { token: { text: 'ClassA' }, uri: uriA }],
+    ] as [number, number, TokenInformation][]
+    )("findCrossFileDefinition at (%p:%p) results %p", (line, column, expected) => {
+        const token = db.findToken(uriB, line, column);
+        const definition = db.findCrossFileDefinition(token);
+        expect(definition).toMatchObject(expected);
+    });
+
 
 });
 

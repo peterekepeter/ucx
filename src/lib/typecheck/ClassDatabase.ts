@@ -12,6 +12,7 @@ export type TokenInformation = {
     paramDefinition?: UnrealClassFunctionArgument,
     varDefinition?: UnrealClassVariable,
     fnDefinition?: UnrealClassFunction,
+    classDefinition?: UnrealClass,
 };
 
 export class ClassDatabase
@@ -51,6 +52,12 @@ export class ClassDatabase
         }
         if (!result && query.ast) {
             result = this.findClassLocalDefinition(query, query.token.textLower, query.ast);
+        }
+        if (query.token.textLower === query.ast.name?.textLower) {
+            result = {
+                token: query.ast.name,
+                classDefinition: query.ast,
+            };
         }
         if (result?.token) {
             result.found = true;
@@ -95,6 +102,23 @@ export class ClassDatabase
     }
     
     findCrossFileDefinition(query: TokenInformation): TokenInformation {
+        if (query.token && query.ast) {
+            if (query.token === query.ast.parentName) {
+                // looking for parent definition
+                return this.findClassDefinition(query.token.textLower);
+            }
+        }
+        return { found: false };
+    }
+
+    findClassDefinition(textLower: string): TokenInformation  {
+        for (const uri in this.store) {
+            const entry = this.store[uri];
+            const ast = entry.ast;
+            if (ast.name?.textLower === textLower) {
+                return { found: true, uri, ast, classDefinition: ast, token: ast.name };
+            }
+        }
         return { found: false };
     }
 

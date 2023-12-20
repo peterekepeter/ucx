@@ -1,8 +1,10 @@
 # Change Log
 
-## v0.14.0
+## v0.14.1
 
 - Added support for displaying definition on mouse hover (works partially)
+- Improved find definition for function and variables inside current file
+- Improved find definition for parent class
 
 ## v0.13.4
 

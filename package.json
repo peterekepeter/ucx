@@ -2,7 +2,7 @@
 	"name": "ucx",
 	"displayName": "ucx",
 	"description": "UnrealScript Extensions",
-	"version": "0.14.0",
+	"version": "0.14.1",
 	"repository": "https://github.com/peterekepeter/ucx",
 	"publisher": "peterekepeter",
 	"engines": {
@@ -19,8 +19,8 @@
 	"contributes": {
 		"commands": [
 			{
-				"command": "ucx.helloWorld",
-				"title": "Hello World"
+				"command": "ucx.restartServer",
+				"title": "ucx: Restart UnrealScript Language Server"
 			}
 		],
 		"configuration": {

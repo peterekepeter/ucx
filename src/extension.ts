@@ -12,8 +12,18 @@ import { DEFAULT_TOKEN_BASED_LINTER_CONFIGURATION as DEFAULT_T } from './lib/lin
 import { UnrealDefaultProperty } from './lib/parser/ast';
 import { ClassDatabase, renderDefinitionMarkdownLines } from './lib';
 import { TokenInformation } from './lib/typecheck/ClassDatabase';
+import { ucParseText } from './lib/parser/ucParse';
 
 const langId = { uc: 'unrealscript' };
+let activatedAt: number; // milliseconds since extension was activated
+let db: VsCodeClassDatabase;
+let symbolCache: SymbolCache;
+
+function initializeState(){
+    activatedAt = Date.now();
+    db = new VsCodeClassDatabase();
+    symbolCache = new SymbolCache();
+}
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -22,17 +32,14 @@ export function activate(context: vscode.ExtensionContext) {
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     // This line of code will only be executed once when your extension is activated
     console.log('Extension "ucx" is now active!');
-
+    initializeState();
+    
     const disposables = context.subscriptions;
-    let db = new VsCodeClassDatabase();
 
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with registerCommand
-    // The commandId parameter must match the command field in package.json
-    disposables.push(vscode.commands.registerCommand('ucx.helloWorld', () => {
-        // The code you place here will be executed every time your command is executed
-        // Display a message box to the user
-        vscode.window.showInformationMessage('Hello World from ucx!');
+    disposables.push(vscode.commands.registerCommand('ucx.restartServer', () => {
+        // vscode.window.showInformationMessage('Restarting UnrealScript Language Server');
+        diagnosticCollection.clear();
+        initializeState();
     }));
 
     // formatter implemented using API
@@ -267,25 +274,6 @@ export function activate(context: vscode.ExtensionContext) {
             return null;
         },
     }));
-
-    const symbolCache = new class SymbolCache {
-        store: Record<string, { 
-            symbolsVersion: number;
-            symbols: vscode.SymbolInformation[]; 
-        }> = {};
-
-        getSymbols(key: string, fileVersion: number) {
-            const entry = this.store[key];
-            if (!entry || entry.symbolsVersion < fileVersion) 
-                return null;
-            return entry.symbols;
-        }
-
-        putSymbols(key: string, symbolsVersion: number, symbols: vscode.SymbolInformation[]) {
-            const entry = this.store[key];
-            this.store[key] = { ...entry, symbols, symbolsVersion };
-        }
-    };
 
     disposables.push(vscode.languages.registerWorkspaceSymbolProvider({
         async provideWorkspaceSymbols(query, token){
@@ -771,11 +759,33 @@ class VsCodeClassDatabase {
         return result;
     }
 
-    ensureLibraryIsNotOutdated(token: vscode.CancellationToken) {
-        // TODO
+    private async ensureLibraryIsNotOutdated(cancellation: vscode.CancellationToken) {
+        const files = await vscode.workspace.findFiles("**/*.uc");
+        for (const file of files)
+        {
+            const stats = await vscode.workspace.fs.stat(file);
+            const fileVersion = this.versionFromFileStat(stats);
+            const cacheKey = file.toString();
+            const dbVersion = this.libdb.getVersion(cacheKey);
+            if (fileVersion < dbVersion) continue;
+
+            if (cancellation.isCancellationRequested) return; 
+
+            const array = await vscode.workspace.fs.readFile(file);
+            const str = Buffer.from(array).toString('utf8');
+            const ast = ucParseText(str);
+            this.libdb.updateAst(file.toString(), ast, fileVersion);
+        }
     }
 
-    ensureWorkspaceIsNotOutdated(token: vscode.CancellationToken) {
+    private versionFromFileStat(stat: vscode.FileStat): number {
+        // assumes vscode closes once every 2 years or so
+        const msPerHour = 1000*60*60;
+        const msPerYear = msPerHour*24*365.25;
+        return stat.mtime - activatedAt - msPerYear*2;
+    }
+
+    private ensureWorkspaceIsNotOutdated(token: vscode.CancellationToken) {
         // TODO
     }
 
@@ -822,3 +832,22 @@ class VsCodeClassDatabase {
     }
 
 }
+
+class SymbolCache {
+    store: Record<string, { 
+        symbolsVersion: number;
+        symbols: vscode.SymbolInformation[]; 
+    }> = {};
+
+    getSymbols(key: string, fileVersion: number) {
+        const entry = this.store[key];
+        if (!entry || entry.symbolsVersion < fileVersion) 
+            return null;
+        return entry.symbols;
+    }
+
+    putSymbols(key: string, symbolsVersion: number, symbols: vscode.SymbolInformation[]) {
+        const entry = this.store[key];
+        this.store[key] = { ...entry, symbols, symbolsVersion };
+    }
+};
