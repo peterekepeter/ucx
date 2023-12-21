@@ -17,6 +17,11 @@ export type TokenInformation = {
 
 export class ClassDatabase
 {
+    store: Record<string, {
+        ast: UnrealClass; 
+        version: number
+    }> = {};
+
     findToken(uri: string, line: number, character: number): TokenInformation {
         const entry = this.store[uri];
         if (!entry) return { uri, missingAst: true };
@@ -48,10 +53,10 @@ export class ClassDatabase
         if (!query.token) return { found: false };
         if (!query.ast) return { missingAst: true };
         if (query.functionScope) {
-            result = this.findFunctionLocalDefinition(query);
+            result = this.findFunctionScopedSymbol(query);
         }
         if (!result && query.ast) {
-            result = this.findClassLocalDefinition(query, query.token.textLower, query.ast);
+            result = this.findClassScopedSymbol(query.token.textLower, query.ast);
         }
         if (query.token.textLower === query.ast.name?.textLower) {
             result = {
@@ -68,59 +73,30 @@ export class ClassDatabase
         return { found: false };
     }
 
-    private findFunctionLocalDefinition(q: TokenInformation) {
-        let result: TokenInformation|undefined;
-        if (!q.functionScope || !q.token) return;
-        result = this.findFunctionLocalDefinitionStr(q.token.textLower, q.functionScope);
-        if (result?.token) {
-            result.found = true;
-            result.functionScope = q.functionScope;
-        }
-        return result;
-    }
-
-    private findFunctionLocalDefinitionStr(nameLower: string, fn: UnrealClassFunction){
-        for (const param of fn.fnArgs) 
-            if (param.name?.textLower === nameLower) 
-                return { token: param.name, paramDefinition: param };
-        for (const local of fn.locals) 
-            if (local.name?.textLower === nameLower)
-                return { token: local.name, localDefinition: local, };
-    }
-
-    private findClassLocalDefinition(query: TokenInformation, name: string, ast: UnrealClass): TokenInformation|undefined {
-        for (const variable of ast.variables) 
-            if (variable.name?.textLower === name) 
-                return {
-                    found: true,
-                    token: variable.name,
-                    varDefinition: variable,
-                };
-        for (const fn of ast.functions)
-            if (fn.name?.textLower === name)
-                return { token: fn.name, fnDefinition: fn };
-    }
-    
     findCrossFileDefinition(query: TokenInformation): TokenInformation {
         if (query.token && query.ast) {
             if (query.token === query.ast.parentName) {
                 // looking for parent definition
                 return this.findClassDefinition(query.token.textLower);
             }
-        }
-        return { found: false };
-    }
-
-    findClassDefinition(textLower: string): TokenInformation  {
-        for (const uri in this.store) {
-            const entry = this.store[uri];
-            const ast = entry.ast;
-            if (ast.name?.textLower === textLower) {
-                return { found: true, uri, ast, classDefinition: ast, token: ast.name };
+            // look for symbol in parent class
+            let location: TokenInformation | undefined = query;
+            let symbolName = query.token?.textLower;
+            while (location?.ast?.parentName) {
+                location = this.findClassDefinition(location.ast.parentName.textLower);
+                if (!location.found || !location.ast) break;
+                const symbol = this.findClassScopedSymbol(symbolName, location.ast);
+                if (symbol?.token) {
+                    symbol.found = true;
+                    symbol.uri = location.uri;
+                    symbol. ast = location.ast;
+                    return symbol;
+                }
             }
         }
         return { found: false };
     }
+
 
     updateAst(uri: string, ast: UnrealClass, version: number) {
         if (!this.store[uri]) 
@@ -139,8 +115,47 @@ export class ClassDatabase
         return this.store[uri]?.version ?? -Infinity;
     }
 
-    store: Record<string, {
-        ast: UnrealClass; 
-        version: number
-    }> = {};
+    private findFunctionScopedSymbol(q: TokenInformation) {
+        let result: TokenInformation|undefined;
+        if (!q.functionScope || !q.token) return;
+        result = this.findFunctionScopedSymbolStr(q.token.textLower, q.functionScope);
+        if (result?.token) {
+            result.found = true;
+            result.functionScope = q.functionScope;
+        }
+        return result;
+    }
+
+    private findFunctionScopedSymbolStr(nameLower: string, fn: UnrealClassFunction){
+        for (const param of fn.fnArgs) 
+            if (param.name?.textLower === nameLower) 
+                return { token: param.name, paramDefinition: param };
+        for (const local of fn.locals) 
+            if (local.name?.textLower === nameLower)
+                return { token: local.name, localDefinition: local, };
+    }
+
+    private findClassScopedSymbol(name: string, ast: UnrealClass): TokenInformation|undefined {
+        for (const variable of ast.variables) 
+            if (variable.name?.textLower === name) 
+                return {
+                    found: true,
+                    token: variable.name,
+                    varDefinition: variable,
+                };
+        for (const fn of ast.functions)
+            if (fn.name?.textLower === name)
+                return { token: fn.name, fnDefinition: fn };
+    }
+
+    private findClassDefinition(textLower: string): TokenInformation  {
+        for (const uri in this.store) {
+            const entry = this.store[uri];
+            const ast = entry.ast;
+            if (ast.name?.textLower === textLower) {
+                return { found: true, uri, ast, classDefinition: ast, token: ast.name };
+            }
+        }
+        return { found: false };
+    }
 }

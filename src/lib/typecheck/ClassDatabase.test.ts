@@ -121,15 +121,22 @@ describe("cross file", () => {
     beforeEach(() => {
         ast(uriA, 1, [
             'class ClassA;', // line 0
+            '',
+            'var int Count;',
         ]);
         ast(uriB, 1, [
             'class ClassB extends ClassA;', // line 0
+            '',
+            'function Timer(){',
+            '   Count += 1;', // line 3
+            '}',
         ]);
     });
 
     // find definition
     test.each([
         [0, 24, { token: { text: 'ClassA' }, uri: uriA }],
+        [3, 4, { uri: uriA, varDefinition: { name: { text: 'Count' }} }],
     ] as [number, number, TokenInformation][]
     )("findCrossFileDefinition at (%p:%p) results %p", (line, column, expected) => {
         const token = db.findToken(uriB, line, column);
