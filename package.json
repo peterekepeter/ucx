@@ -2,7 +2,7 @@
 	"name": "ucx",
 	"displayName": "ucx",
 	"description": "UnrealScript Extensions",
-	"version": "0.14.1",
+	"version": "0.14.2",
 	"repository": "https://github.com/peterekepeter/ucx",
 	"publisher": "peterekepeter",
 	"engines": {
@@ -26,26 +26,32 @@
 		"configuration": {
 			"title": "UCX",
 			"properties": {
+				"ucx.libraryPath": {
+					"title": "Path to UnrealScript library",
+					"type": "string",
+					"description": "All UnrealScript files from this path will be scanned and be used to provide definition and references in your project. This can be the folder where you exported all your scripts from the editor. Example: C:/Games/Ut99",
+					"order": -180
+				},
 				"ucx.showErrors": {
 					"title": "Report Errors",
 					"type": "boolean",
 					"default": true,
 					"description": "Show problems that have 'error' level of severity. These are usually compiler errors that would prevent the project from working.",
-					"order": -102
+					"order": -150
 				},
 				"ucx.showWarnings": {
 					"title": "Report Warnings",
 					"type": "boolean",
 					"default": true,
 					"description": "Show problems that have 'warning' level of severity. These are usually formatting and should be enabled to maintain code cleanliness.",
-					"order": -101
+					"order": -149
 				},
 				"ucx.overrideEditorIndentationStyle": {
 					"title": "Override Editor Indentation Style",
 					"type": "boolean",
 					"default": true,
 					"description": "Ensures that VsCode uses the indentation style as its configured with the linter. Use ucx.linter.indentation.style to configure desired indentation style.",
-					"order": -100
+					"order": -148
 				},
 				"ucx.linter.enabled": {
 					"type": "boolean",

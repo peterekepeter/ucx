@@ -674,6 +674,7 @@ function getAstFromString(input: string) : UnrealClass {
 
 type ExtensionConfiguration =
 {
+    libraryPath: string,
     showErrors: boolean,
     showWarnings: boolean,
     overrideEditorIndentationStyle: boolean,
@@ -682,6 +683,8 @@ type ExtensionConfiguration =
 
 function parseConfiguration(cfg: vscode.WorkspaceConfiguration): ExtensionConfiguration {
     return {
+        libraryPath: 
+            cfg.get('libraryPath') ?? '',
         showErrors: 
             cfg.get('showErrors') ?? true,
         showWarnings: 
@@ -759,8 +762,22 @@ class VsCodeClassDatabase {
         return result;
     }
 
-    private async ensureLibraryIsNotOutdated(cancellation: vscode.CancellationToken) {
+    private async ensureWorkspaceIsNotOutdated(cancellation: vscode.CancellationToken) {
         const files = await vscode.workspace.findFiles("**/*.uc");
+        await this.updateFiles(files, cancellation);
+    }
+
+    private async ensureLibraryIsNotOutdated(cancellation: vscode.CancellationToken) {
+        const vscodeConfig = vscode.workspace.getConfiguration("ucx");
+        const config = parseConfiguration(vscodeConfig);
+        if (config.libraryPath){
+            const searchPattern = new vscode.RelativePattern(config.libraryPath, '**/*.uc');
+            const files = await vscode.workspace.findFiles(searchPattern);
+            await this.updateFiles(files, cancellation);
+        }
+    }
+
+    private async updateFiles(files: vscode.Uri[], cancellation: vscode.CancellationToken) {
         for (const file of files)
         {
             const stats = await vscode.workspace.fs.stat(file);
@@ -783,10 +800,6 @@ class VsCodeClassDatabase {
         const msPerHour = 1000*60*60;
         const msPerYear = msPerHour*24*365.25;
         return stat.mtime - activatedAt - msPerYear*2;
-    }
-
-    private ensureWorkspaceIsNotOutdated(token: vscode.CancellationToken) {
-        // TODO
     }
 
     private async getCrossFileDefinition(codeToken: TokenInformation): Promise<TokenInformation> {
