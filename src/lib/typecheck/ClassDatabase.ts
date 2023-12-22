@@ -1,5 +1,5 @@
-import { ParserToken, UnrealClass, isTokenAtOrBetween } from "../parser";
-import { UnrealClassFunction, UnrealClassFunctionArgument, UnrealClassFunctionLocal, UnrealClassVariable } from "../parser/ast";
+import { ParserToken, SemanticClass, UnrealClass, isTokenAtOrBetween } from "../parser";
+import { UnrealClassFunction, UnrealClassFunctionArgument, UnrealClassFunctionLocal, UnrealClassVariable, getAllFunctions, getAllStatements } from "../parser/ast";
 
 export type TokenInformation = {
     found?: boolean,
@@ -75,15 +75,15 @@ export class ClassDatabase
 
     findCrossFileDefinition(query: TokenInformation): TokenInformation {
         if (query.token && query.ast) {
-            if (query.token === query.ast.parentName) {
+            if (this.isTypeQuery(query)) {
                 // looking for parent definition
-                return this.findClassDefinition(query.token.textLower);
+                return this.findClassDefinitionForQueryToken(query);
             }
             // look for symbol in parent class
             let location: TokenInformation | undefined = query;
             let symbolName = query.token?.textLower;
             while (location?.ast?.parentName) {
-                location = this.findClassDefinition(location.ast.parentName.textLower);
+                location = this.findClassDefinitionStr(location.ast.parentName.textLower);
                 if (!location.found || !location.ast) break;
                 const symbol = this.findClassScopedSymbol(symbolName, location.ast);
                 if (symbol?.token) {
@@ -148,7 +148,19 @@ export class ClassDatabase
                 return { token: fn.name, fnDefinition: fn };
     }
 
-    private findClassDefinition(textLower: string): TokenInformation  {
+    private findClassDefinitionForQueryToken(q: TokenInformation) {
+        if (!q.token) return { found: false };
+        if (q.token.textLower.startsWith("'")) {
+            const quoted = q.token.textLower;
+            const className = quoted.substring(1, quoted.length - 1);
+            return this.findClassDefinitionStr(className);
+        }
+        else {
+            return this.findClassDefinitionStr(q.token.textLower);
+        }
+    }
+
+    private findClassDefinitionStr(textLower: string): TokenInformation  {
         for (const uri in this.store) {
             const entry = this.store[uri];
             const ast = entry.ast;
@@ -157,5 +169,48 @@ export class ClassDatabase
             }
         }
         return { found: false };
+    }
+
+    private isTypeQuery(q: TokenInformation): boolean {
+        if (!q.token || !q.ast) return false;
+        if (q.functionScope)
+        {
+            const fn = q.functionScope;
+            if (q.token.textLower.startsWith("'")) {
+                const idx = q.ast.tokens.indexOf(q.token);
+                if (idx > 0) {
+                    const before = q.ast.tokens[idx - 1];
+                    if (before.textLower === 'class') {
+                        return true;
+                    }
+                }
+            }
+            for (const arg of fn.fnArgs) {
+                if (q.token === arg.type) {
+                    return true;
+                }
+            }
+            for (const local of fn.locals) {
+                if (q.token === local.type) {
+                    return true;
+                }
+            } 
+        }
+        else if (q.token === q.ast.parentName) {
+            return true; // look for parent class
+        }
+        else {
+            for (const v of q.ast.variables) {
+                if (q.token === v.type) {
+                    return true; // look for type of var def
+                }
+            }
+            for (const fn of getAllFunctions(q.ast)) {
+                if (q.token === fn.returnType) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

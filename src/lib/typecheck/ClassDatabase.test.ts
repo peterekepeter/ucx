@@ -124,26 +124,45 @@ describe("cross file", () => {
             '',
             'var int Count;',
         ]);
+        ast(uriA, 1, [
+            'class ClassA;', // line 0
+            '',
+            'var int Count;',
+        ]);
         ast(uriB, 1, [
             'class ClassB extends ClassA;', // line 0
             '',
+            'var ClassA other;', // line 2
+            '',
             'function Timer(){',
-            '   Count += 1;', // line 3
+            '   Count += 1;', // line 5
+            '}',
+            '',
+            'function ClassA MakeCopy(ClassA other){',  // line 8
+            '   local ClassA copy;',
+            `   copy = new class'ClassA';`, // line 10
             '}',
         ]);
     });
 
+    const classDefA = { token: { text: 'ClassA' }, uri: uriA };
+    const varDefCount = { uri: uriA, varDefinition: { name: { text: 'Count' }} };
+
     // find definition
     test.each([
-        [0, 24, { token: { text: 'ClassA' }, uri: uriA }],
-        [3, 4, { uri: uriA, varDefinition: { name: { text: 'Count' }} }],
-    ] as [number, number, TokenInformation][]
-    )("findCrossFileDefinition at (%p:%p) results %p", (line, column, expected) => {
+        ['parent type', 0, 24, classDefA],
+        ['inherited variable', 5, 4, varDefCount],
+        ['var type', 2, 7, classDefA],
+        ['return type', 8, 13, classDefA], 
+        ['parameter type', 8, 28, classDefA],
+        ['local type', 9, 12, classDefA],
+        ['absolute class reference', 10, 23, classDefA],
+    ] as [string, number, number, TokenInformation][]
+    )("findCrossFileDefinition finds %p at %p:%p", (_, line, column, expected) => {
         const token = db.findToken(uriB, line, column);
         const definition = db.findCrossFileDefinition(token);
         expect(definition).toMatchObject(expected);
     });
-
 
 });
 

@@ -28,7 +28,7 @@ function *getAllRecursiveStatements(sts: UnrealClassStatement[]): Iterable<Unrea
 }
 
 /** @returns all declared functions including state functions */
-function *getAllFunctions(ast: UnrealClass): Iterable<UnrealClassFunction> 
+export function *getAllFunctions(ast: UnrealClass): Iterable<UnrealClassFunction> 
 {
     for (const fn of ast.functions)
     {
