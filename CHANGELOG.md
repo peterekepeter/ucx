@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.14.4
+- Only scan workspace and library folders once.
+
 ### v0.14.3
 - Improved custom typename lookup. Should be able to resolve most typenames.
 

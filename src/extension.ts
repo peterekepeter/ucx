@@ -736,6 +736,8 @@ function getEditorOptions(config: ExtensionConfiguration): vscode.TextEditorOpti
 class VsCodeClassDatabase {
 
     private libdb = new ClassDatabase();
+    private workspaceLoaded = false;
+    private libraryLoaded = false;
 
     async findDefinition(vscodeuri: vscode.Uri, position: vscode.Position, token: vscode.CancellationToken) {
         const uri = vscodeuri.toString();
@@ -749,15 +751,22 @@ class VsCodeClassDatabase {
         result = await this.getCrossFileDefinition(codeToken);
         if (result.found || token.isCancellationRequested) return result;
 
-        // load workspace classses and try again
-        await this.ensureWorkspaceIsNotOutdated(token);
-        result = await this.getCrossFileDefinition(codeToken);
-        if (result.found || token.isCancellationRequested) return result;
+        if (!this.workspaceLoaded)
+        {
+            // load workspace classses and try again
+            this.workspaceLoaded = true;
+            await this.ensureWorkspaceIsNotOutdated(token);
+            result = await this.getCrossFileDefinition(codeToken);
+            if (result.found || token.isCancellationRequested) return result;
+        }
 
-        // load library classes and try again
-        await this.ensureLibraryIsNotOutdated(token);
-        result = await this.getCrossFileDefinition(codeToken);
-        if (result.found || token.isCancellationRequested) return result;
+        if (!this.libraryLoaded) {
+            // load library classes and try again
+            this.libraryLoaded = true;
+            await this.ensureLibraryIsNotOutdated(token);
+            result = await this.getCrossFileDefinition(codeToken);
+            if (result.found || token.isCancellationRequested) return result;
+        }
 
         return result;
     }
