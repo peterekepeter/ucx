@@ -31,7 +31,7 @@ Or does it extend the language itself? The answer is YES!
     - textmate grammar
     - semantic syntax highlighting
  - language support
-    - partialy goto definition (within current file only)
+    - partialy working find definition
     - find document or workspace symbols (`Ctrl-P @` and `Ctrl-P #`)
  - formatter support
     - automatic indentation

@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.14.5
+- Fix stop scanning workspace/library symbols only after a full scan is run
+- Fix lookup when param and type has same text
+- Fix lookup class names with package specifier
+
 ### v0.14.4
 - Only scan workspace and library folders once
 
