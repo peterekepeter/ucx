@@ -52,6 +52,10 @@ export class ClassDatabase
         let result: TokenInformation|undefined;
         if (!query.token) return { found: false };
         if (!query.ast) return { missingAst: true };
+        if (this.isTypeQuery(query)) {
+            // looking for a type in this file
+            return { found: false }; // HACK assume types are always across files
+        }
         if (query.functionScope) {
             result = this.findFunctionScopedSymbol(query);
         }
@@ -96,7 +100,6 @@ export class ClassDatabase
         }
         return { found: false };
     }
-
 
     updateAst(uri: string, ast: UnrealClass, version: number) {
         if (!this.store[uri]) 

@@ -117,12 +117,18 @@ describe("definition across files", () => {
 
     const uriA = "PackageName/Classes/ClassA.uc";
     const uriB = "PackageName/Classes/ClassB.uc";
+    const uriCanvas = "Engine/Classes/Canvas.uc";
 
     beforeEach(() => {
         ast(uriA, 1, [
             'class ClassA;', // line 0
             '',
             'var int Count;',
+        ]);
+        ast(uriCanvas, 1, [
+            'class Canvas;', // line 0
+            '',
+            'function Reset() {}',
         ]);
         ast(uriB, 1, [
             'class ClassB extends ClassA;', // line 0
@@ -138,14 +144,20 @@ describe("definition across files", () => {
             `   copy = new class'ClassA';`, // line 10
             '}',
             '',
-            'function HUD GetHud() {', // line 13
+            'function ClassA GetHud() {', // line 13
             '   return Spawn(Class\'PackageName.ClassA\');',
+            '}',
+            '',
+            'function Draw(canvas canvas){', // line 17
+            '   canvas.Reset();',
             '}',
         ]);
     });
 
     const classDefA = { token: { text: 'ClassA' }, uri: uriA };
     const varDefCount = { uri: uriA, varDefinition: { name: { text: 'Count' }} };
+    const paramDefCanvas = { uri:uriB, paramDefinition: { name: { text: 'canvas'} }};
+    const canvasClassDef = { token: { text: 'Canvas' }, classDefinition: { name: { text: 'Canvas' }}};
 
     // find definition
     test.each([
@@ -157,10 +169,14 @@ describe("definition across files", () => {
         ['local type', 9, 12, classDefA],
         ['absolute class reference', 10, 23, classDefA],
         ['absolute package.class reference', 14, 38, classDefA],
+        ['function parameter reference', 17, 24, paramDefCanvas],
+        ['function parameter type reference', 17, 16, canvasClassDef],
+        // ['method call', 18, 12, { uri:uriCanvas, fnDefinition: { name: { text: 'Reset' }}}],
     ] as [string, number, number, TokenInformation][]
     )("findCrossFileDefinition finds %p at %p:%p", (_, line, column, expected) => {
         const token = db.findToken(uriB, line, column);
-        const definition = db.findCrossFileDefinition(token);
+        let definition = db.findLocalFileDefinition(token);
+        if (!definition.found) definition = db.findCrossFileDefinition(token);
         expect(definition).toMatchObject(expected);
     });
 
