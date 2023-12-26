@@ -754,16 +754,23 @@ class VsCodeClassDatabase {
         if (!this.workspaceLoaded)
         {
             // load workspace classses and try again
-            this.workspaceLoaded = true;
             await this.ensureWorkspaceIsNotOutdated(token);
+            if (token.isCancellationRequested) return result;
+
+            // if this line is reached then workspace was fully scanned
+            this.workspaceLoaded = true;
             result = await this.getCrossFileDefinition(codeToken);
             if (result.found || token.isCancellationRequested) return result;
         }
 
-        if (!this.libraryLoaded) {
+        if (!this.libraryLoaded) 
+        {
             // load library classes and try again
-            this.libraryLoaded = true;
             await this.ensureLibraryIsNotOutdated(token);
+            if (token.isCancellationRequested) return result;
+
+            // if this line is reached then library was fully scanned
+            this.workspaceLoaded = true;
             result = await this.getCrossFileDefinition(codeToken);
             if (result.found || token.isCancellationRequested) return result;
         }
