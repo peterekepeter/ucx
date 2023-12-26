@@ -160,11 +160,18 @@ export class ClassDatabase
         }
     }
 
-    private findClassDefinitionStr(textLower: string): TokenInformation  {
+    private findClassDefinitionStr(classNameLower: string): TokenInformation  {
+        let packageNameLower = '';
+        if (classNameLower.indexOf('.')) {
+            const parts = classNameLower.split('.');
+            classNameLower = parts[parts.length - 1];
+            packageNameLower = parts[0];
+        }
+        // TODO match pacage
         for (const uri in this.store) {
             const entry = this.store[uri];
             const ast = entry.ast;
-            if (ast.name?.textLower === textLower) {
+            if (ast.name?.textLower === classNameLower) {
                 return { found: true, uri, ast, classDefinition: ast, token: ast.name };
             }
         }

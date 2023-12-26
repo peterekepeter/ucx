@@ -35,7 +35,7 @@ describe("ast versioning", () => {
 
 });
 
-describe("single file", () => {
+describe("definitions inside single file", () => {
 
     const uri = "SomeClass.uc";
 
@@ -113,17 +113,12 @@ describe("single file", () => {
 
 });
 
-describe("cross file", () => {
+describe("definition across files", () => {
 
-    const uriA = "ClassA.uc";
-    const uriB = "ClassB.uc";
+    const uriA = "PackageName/Classes/ClassA.uc";
+    const uriB = "PackageName/Classes/ClassB.uc";
 
     beforeEach(() => {
-        ast(uriA, 1, [
-            'class ClassA;', // line 0
-            '',
-            'var int Count;',
-        ]);
         ast(uriA, 1, [
             'class ClassA;', // line 0
             '',
@@ -142,6 +137,10 @@ describe("cross file", () => {
             '   local ClassA copy;',
             `   copy = new class'ClassA';`, // line 10
             '}',
+            '',
+            'function HUD GetHud() {', // line 13
+            '   return Spawn(Class\'PackageName.ClassA\');',
+            '}',
         ]);
     });
 
@@ -157,6 +156,7 @@ describe("cross file", () => {
         ['parameter type', 8, 28, classDefA],
         ['local type', 9, 12, classDefA],
         ['absolute class reference', 10, 23, classDefA],
+        ['absolute package.class reference', 14, 38, classDefA],
     ] as [string, number, number, TokenInformation][]
     )("findCrossFileDefinition finds %p at %p:%p", (_, line, column, expected) => {
         const token = db.findToken(uriB, line, column);
