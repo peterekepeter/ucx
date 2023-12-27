@@ -83,6 +83,9 @@ export class ClassDatabase
                 // looking for parent definition
                 return this.findClassDefinitionForQueryToken(query);
             }
+            if (this.isMemberQuery(query)) {
+                return this.findMemberDefinitionForQueryToken(query);
+            }
             // look for symbol in parent class
             let location: TokenInformation | undefined = query;
             let symbolName = query.token?.textLower;
@@ -117,6 +120,82 @@ export class ClassDatabase
     getVersion(uri: string): number {
         return this.store[uri]?.version ?? -Infinity;
     }
+
+    private isMemberQuery(query: TokenInformation) {
+        if (!query.token || !query.ast) return false;
+        const index = query.ast.tokens.indexOf(query.token);
+        return this.isMemberToken(query.ast.tokens, index);
+    }
+
+    private isMemberToken(tokens: ParserToken[], index: number) {
+        if (index > 0) {
+            const before = tokens[index-1];
+            if (before.text === ".") {
+                return true;
+            }
+        }
+    }
+
+    private findMemberDefinitionForQueryToken(query: TokenInformation): TokenInformation {
+        if (!query.token || !query.ast) return { found: false };
+        const tokens = query.ast.tokens;
+        let index = tokens.indexOf(query.token);
+        const chain = this.getMemberChain(tokens, index);
+        let type: TokenInformation|null = null;
+        let member: TokenInformation|null = null;
+        for (const item of chain) {
+            const itemQuery: TokenInformation = {
+                token: item,
+                ast: query.ast,
+                functionScope: query.functionScope,
+                uri: query.uri, 
+            };
+            if (member){
+            //     type = this.findTypeOf(member);
+            //     member = null;
+            // }
+            // if (type) {
+            //     member = this.findMemberDefinition(type, itemQuery);
+            // } else {
+            //     member = this.findDefinition(itemQuery);
+            }
+        }
+        if (member) {
+            return member;
+        }
+        return { found: false };
+    }
+
+    findDefinition(itemQuery: TokenInformation): TokenInformation {
+        const localResult = this.findLocalFileDefinition(itemQuery);
+        if (localResult.found) return localResult;
+        return this.findCrossFileDefinition(itemQuery);
+    }
+
+    // findMemberDefinition(typeDefinition: TokenInformation, memberReference: TokenInformation): TokenInformation {
+        
+    // }
+
+    // findTypeOf(memberDefinition: TokenInformation): TokenInformation {
+    //     if (memberDefinition.fnDefinition) {
+    //         return { 
+    //             memberDefinition.fnDefinition.name,
+    //         }
+    //     }
+    // }
+
+    private getMemberChain(tokens: ParserToken[], index: number) 
+    {
+        const stack = [tokens[index]];
+        while (index > 1) {
+            if (!this.isMemberToken(tokens, index)) break;
+            stack.push(tokens[index - 2]);
+            index -= 2;
+        }
+        const chain = stack.reverse();
+        return chain;
+    }
+
 
     private findFunctionScopedSymbol(q: TokenInformation) {
         let result: TokenInformation|undefined;

@@ -171,7 +171,7 @@ describe("definition across files", () => {
         ['absolute package.class reference', 14, 38, classDefA],
         ['function parameter reference', 17, 24, paramDefCanvas],
         ['function parameter type reference', 17, 16, canvasClassDef],
-        // ['method call', 18, 12, { uri:uriCanvas, fnDefinition: { name: { text: 'Reset' }}}],
+        //['method call', 18, 12, { uri:uriCanvas, fnDefinition: { name: { text: 'Reset' }}}],
     ] as [string, number, number, TokenInformation][]
     )("findCrossFileDefinition finds %p at %p:%p", (_, line, column, expected) => {
         const token = db.findToken(uriB, line, column);
