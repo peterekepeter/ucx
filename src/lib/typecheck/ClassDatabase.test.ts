@@ -150,6 +150,7 @@ describe("definition across files", () => {
             '',
             'function Draw(canvas canvas){', // line 17
             '   canvas.Reset();',
+            '   other.Count += 1;',
             '}',
         ]);
     });
@@ -158,6 +159,7 @@ describe("definition across files", () => {
     const varDefCount = { uri: uriA, varDefinition: { name: { text: 'Count' }} };
     const paramDefCanvas = { uri:uriB, paramDefinition: { name: { text: 'canvas'} }};
     const canvasClassDef = { token: { text: 'Canvas' }, classDefinition: { name: { text: 'Canvas' }}};
+    const resetFnDef = { uri:uriCanvas, token: { text: 'Reset', line: 2 }, fnDefinition: { name: { text: 'Reset' }}};
 
     // find definition
     test.each([
@@ -171,13 +173,14 @@ describe("definition across files", () => {
         ['absolute package.class reference', 14, 38, classDefA],
         ['function parameter reference', 17, 24, paramDefCanvas],
         ['function parameter type reference', 17, 16, canvasClassDef],
-        //['method call', 18, 12, { uri:uriCanvas, fnDefinition: { name: { text: 'Reset' }}}],
+        ['member method call', 18, 12, resetFnDef],
+        ['member variable', 19, 11, { uri: uriA, token: { text: 'Count' }}],
     ] as [string, number, number, TokenInformation][]
     )("findCrossFileDefinition finds %p at %p:%p", (_, line, column, expected) => {
         const token = db.findToken(uriB, line, column);
         let definition = db.findLocalFileDefinition(token);
         if (!definition.found) definition = db.findCrossFileDefinition(token);
-        expect(definition).toMatchObject(expected);
+        expect(definition).toMatchObject({...expected, found: true }); 
     });
 
 });

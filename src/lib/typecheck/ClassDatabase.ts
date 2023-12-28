@@ -151,13 +151,13 @@ export class ClassDatabase
                 uri: query.uri, 
             };
             if (member){
-            //     type = this.findTypeOf(member);
-            //     member = null;
-            // }
-            // if (type) {
-            //     member = this.findMemberDefinition(type, itemQuery);
-            // } else {
-            //     member = this.findDefinition(itemQuery);
+                type = this.findTypeDefinition(member);
+                member = null;
+            }
+            if (type) {
+                member = this.findMemberDefinition(type, itemQuery);
+            } else {
+                member = this.findDefinition(itemQuery);
             }
         }
         if (member) {
@@ -172,17 +172,58 @@ export class ClassDatabase
         return this.findCrossFileDefinition(itemQuery);
     }
 
-    // findMemberDefinition(typeDefinition: TokenInformation, memberReference: TokenInformation): TokenInformation {
-        
-    // }
+    findMemberDefinition(typeDefinition: TokenInformation, memberReference: TokenInformation): TokenInformation {
+        if (!typeDefinition.ast) return { found: false };
+        for (const fn of typeDefinition.ast.functions) {
+            if (fn.name && fn.name?.textLower === memberReference.token?.textLower) {
+                return {
+                    token: fn.name,
+                    ast: typeDefinition.ast,
+                    uri: typeDefinition.uri,
+                    fnDefinition: fn,
+                    found: true,
+                };
+            }
+        }
+        for (const v of typeDefinition.ast.variables) {
+            if (v.name && v.name.textLower === memberReference.token?.textLower) {
+                return {
+                    token: v.name,
+                    ast: typeDefinition.ast,
+                    uri: typeDefinition.uri,
+                    varDefinition: v,
+                    found: true,
+                };
+            }
+        }
+        return { found: false };
+    }
 
-    // findTypeOf(memberDefinition: TokenInformation): TokenInformation {
-    //     if (memberDefinition.fnDefinition) {
-    //         return { 
-    //             memberDefinition.fnDefinition.name,
-    //         }
-    //     }
-    // }
+    findTypeDefinition(d: TokenInformation): TokenInformation {
+        if (d.fnDefinition) {
+            return this.findDefinition({
+                token: d.fnDefinition.name ?? undefined,
+                ast: d.ast,
+                uri: d.uri,
+            });
+        }
+        if (d.paramDefinition) {
+            return this.findDefinition({
+                token: d.paramDefinition.type ?? undefined,
+                ast: d.ast,
+                uri: d.uri,
+                functionScope: d.functionScope,
+            });
+        }
+        if (d.varDefinition && d.varDefinition.type) {
+            return this.findDefinition({
+                token: d.varDefinition.type,
+                ast: d.ast, 
+                uri: d.uri, 
+            });
+        }
+        return { found: false };
+    }
 
     private getMemberChain(tokens: ParserToken[], index: number) 
     {

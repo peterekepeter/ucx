@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.14.6
+- Find variable or function member definition
+
 ### v0.14.5
 - Fix stop scanning workspace/library symbols only after a full scan is run
 - Fix lookup when param and type has same text
