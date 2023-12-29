@@ -121,6 +121,10 @@ export class ClassDatabase
         return this.store[uri]?.version ?? -Infinity;
     }
 
+    getAst(uri: string): UnrealClass|undefined {
+        return this.store[uri]?.ast;
+    }
+
     private isMemberQuery(query: TokenInformation) {
         if (!query.token || !query.ast) return false;
         const index = query.ast.tokens.indexOf(query.token);

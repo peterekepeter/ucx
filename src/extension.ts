@@ -44,7 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // formatter implemented using API
     disposables.push(vscode.languages.registerDocumentFormattingEditProvider(langId.uc, {
-        provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.TextEdit[] {
+        provideDocumentFormattingEdits(document: vscode.TextDocument, options, cancellation): vscode.TextEdit[] {
             const vscodeConfig = vscode.workspace.getConfiguration("ucx");
             const config = parseConfiguration(vscodeConfig);
             const edits = new Array<vscode.TextEdit>();
@@ -115,8 +115,8 @@ export function activate(context: vscode.ExtensionContext) {
     const legend = new vscode.SemanticTokensLegend(standardTokenTypes, standardModifiers);
 
     disposables.push(vscode.languages.registerDocumentSemanticTokensProvider(langId.uc, {
-        provideDocumentSemanticTokens(document, token) {     
-            const ast = getAst(document, token);
+        provideDocumentSemanticTokens(document, ctoken) {     
+            const ast = db.updateDocumentAndGetAst(document, ctoken);
             const tokensBuilder = new vscode.SemanticTokensBuilder(legend);
             // on line 1, characters 1-5 are a class declaration
             for (const token of ast.tokens){
@@ -214,62 +214,29 @@ export function activate(context: vscode.ExtensionContext) {
     }, legend));
 
     disposables.push(vscode.languages.registerHoverProvider(langId.uc, {
-        async provideHover(document, position, cancellation) {
-            db.updateDocument(document, cancellation);
-            const result = await db.findDefinition(document.uri, position, cancellation);
+        async provideHover(document, position, ctoken) {
+            db.updateDocumentAndGetAst(document, ctoken);
+            const result = await db.findDefinition(document.uri, position, ctoken);
             return { contents: renderDefinitionMarkdownLines(result) };
         },
     }));
 
     disposables.push(vscode.languages.registerDocumentSymbolProvider(langId.uc, {
-        provideDocumentSymbols(document, cancellation){
-            const ast = getAst(document, cancellation);
+        provideDocumentSymbols(document, ctoken){
+            const ast = db.updateDocumentAndGetAst(document, ctoken);
             return getSymbolsFromAst(ast, document.uri);
         }
     }));
 
     disposables.push(vscode.languages.registerDefinitionProvider(langId.uc, {
-        async provideDefinition(document, position, cancellation) {
-            db.updateDocument(document, cancellation);
-            const result = await db.findDefinition(document.uri, position, cancellation);
+        async provideDefinition(document, position, ctoken) {
+            db.updateDocumentAndGetAst(document, ctoken);
+            const result = await db.findDefinition(document.uri, position, ctoken);
             if (result.found && result.token && result.uri) {
                 return {
                     range: rangeFromToken(result.token),
                     uri: vscode.Uri.parse(result.uri),
                 };
-            }
-            // old algorithm
-            const ast = getAst(document, cancellation);
-            const line = position.line;
-            const character = position.character;
-            let target: ParserToken | null = null;
-            for (const token of ast.tokens){
-                if (token.line === line && 
-                    token.position <= character && 
-                    character <= token.position + token.text.length)
-                {
-                    target = token;
-                    break;
-                }
-            }
-            if (!target) {
-                return null;
-            }
-            for (const variable of ast.variables){
-                if (variable.name?.textLower === target.textLower){
-                    return { 
-                        range: rangeFromToken(variable.name),
-                        uri: document.uri
-                    };
-                }
-            }
-            for (const fn of ast.functions) {
-                if (fn.name?.textLower === target.textLower) {
-                    return {
-                        range: rangeFromToken(fn.name),
-                        uri: document.uri
-                    };
-                }
             }
             return null;
         },
@@ -851,13 +818,14 @@ class VsCodeClassDatabase {
         return false;
     }
 
-    updateDocument(document: vscode.TextDocument, token: vscode.CancellationToken) {
+    updateDocumentAndGetAst(document: vscode.TextDocument, token: vscode.CancellationToken): UnrealClass {
         const uri = document.uri.toString();
         if (this.libdb.getVersion(uri) >= document.version) {
-            return;
+            return this.libdb.getAst(uri) ?? getAstFromDocument(document, token);
         }
-        const ast = getAst(document, token);
+        const ast = getAstFromDocument(document, token);
         this.libdb.updateAst(uri, ast, document.version);
+        return ast;
     }
 
 }
