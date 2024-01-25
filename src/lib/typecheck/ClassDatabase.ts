@@ -148,6 +148,9 @@ export class ClassDatabase
         let type: TokenInformation|null = null;
         let member: TokenInformation|null = null;
         for (const item of chain) {
+            if (item.type === SemanticClass.Keyword && item.textLower === 'static') {
+                continue;
+            }
             const itemQuery: TokenInformation = {
                 token: item,
                 ast: query.ast,
@@ -155,7 +158,14 @@ export class ClassDatabase
                 uri: query.uri, 
             };
             if (member){
-                type = this.findTypeDefinition(member);
+                // look inside class of member
+                if (member.classDefinition) {
+                    // member already a class
+                    type = member;
+                }
+                else {
+                    type = this.findTypeDefinition(member);
+                }
                 member = null;
             }
             if (type) {

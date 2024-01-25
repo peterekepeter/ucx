@@ -124,6 +124,7 @@ describe("definition across files", () => {
             'class ClassA;', // line 0
             '',
             'var int Count;',
+            'static function ShowStartMessage(){}'
         ]);
         ast(uriCanvas, 1, [
             'class Canvas;', // line 0
@@ -151,6 +152,7 @@ describe("definition across files", () => {
             'function Draw(canvas canvas){', // line 17
             '   canvas.Reset();',
             '   other.Count += 1;',
+            "   class'ClassA'.static.ShowStartMessage(PP);",
             '}',
         ]);
     });
@@ -175,6 +177,8 @@ describe("definition across files", () => {
         ['function parameter type reference', 17, 16, canvasClassDef],
         ['member method call', 18, 12, resetFnDef],
         ['member variable', 19, 11, { uri: uriA, token: { text: 'Count' }}],
+        // ['static keyword in expression', 8, 28, classDefA],
+        ['static function', 20, 31, { uri: uriA, fnDefinition: { name: { text: 'ShowStartMessage' }}}],
     ] as [string, number, number, TokenInformation][]
     )("findCrossFileDefinition finds %p at %p:%p", (_, line, column, expected) => {
         const token = db.findToken(uriB, line, column);

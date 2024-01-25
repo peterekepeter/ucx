@@ -1,5 +1,9 @@
 # Change Log
 
+### v0.14.7
+- Fix lookup for static functions
+- Fix static and default parsed as keyword inside expressions
+
 ### v0.14.6
 - Find variable or function member definition
 
