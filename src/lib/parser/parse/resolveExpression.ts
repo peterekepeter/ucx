@@ -234,6 +234,7 @@ function classifyExpressionToken(token: Token){
     case "super":
     case "self":
     case "new":
+    case "static":
         token.type = SemanticClass.Keyword;
         break;
     }

@@ -265,6 +265,20 @@ test("parse function with log", () => { parsing(`
     .hasNoErrors();
 });
 
+test("parse static function call", () => { parsing(`
+    function F(){
+        r1 = class'Util'.static.Log("x");
+    }`)
+    .hasNoErrors()
+    .hasTokens(
+        ['class', C.ClassReference], 
+        ["'Util'", C.ObjectReferenceName], 
+        ['.', C.None],
+        ['static', C.Keyword],
+        ['.', C.None],
+        ['Log', C.FunctionReference],
+    );
+});
 
 test("parse expression recovery", () => { parsing(`
     function Fn1(){ Log( } 
