@@ -280,6 +280,21 @@ test("parse static function call", () => { parsing(`
     );
 });
 
+test("parse default variable access", () => { parsing(`
+    function F(){
+        r1 = class'Util'.default.Value;
+    }`)
+    .hasNoErrors()
+    .hasTokens(
+        ['class', C.ClassReference], 
+        ["'Util'", C.ObjectReferenceName], 
+        ['.', C.None],
+        ['default', C.Keyword],
+        ['.', C.None],
+        ['Value', C.VariableReference],
+    );
+});
+
 test("parse expression recovery", () => { parsing(`
     function Fn1(){ Log( } 
     function Fn2(){ Log(42 }
