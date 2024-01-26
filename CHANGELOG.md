@@ -1,5 +1,9 @@
 # Change Log
 
+### v0.14.8
+- Semicolon detect and fix is no longer considered experimental and is enabled by default
+- Fix lookup for default variables
+
 ### v0.14.7
 - Fix lookup for static functions
 - Fix static and default parsed as keyword inside expressions

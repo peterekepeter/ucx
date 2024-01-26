@@ -153,6 +153,7 @@ describe("definition across files", () => {
             '   canvas.Reset();',
             '   other.Count += 1;',
             "   class'ClassA'.static.ShowStartMessage(PP);",
+            "   Log(class'ClassA'.default.Count);", // line 21
             '}',
         ]);
     });
@@ -162,6 +163,7 @@ describe("definition across files", () => {
     const paramDefCanvas = { uri:uriB, paramDefinition: { name: { text: 'canvas'} }};
     const canvasClassDef = { token: { text: 'Canvas' }, classDefinition: { name: { text: 'Canvas' }}};
     const resetFnDef = { uri:uriCanvas, token: { text: 'Reset', line: 2 }, fnDefinition: { name: { text: 'Reset' }}};
+    const showStartMessageFnDef = { uri: uriA, fnDefinition: { name: { text: 'ShowStartMessage' }}};
 
     // find definition
     test.each([
@@ -177,8 +179,10 @@ describe("definition across files", () => {
         ['function parameter type reference', 17, 16, canvasClassDef],
         ['member method call', 18, 12, resetFnDef],
         ['member variable', 19, 11, { uri: uriA, token: { text: 'Count' }}],
-        // ['static keyword in expression', 8, 28, classDefA],
-        ['static function', 20, 31, { uri: uriA, fnDefinition: { name: { text: 'ShowStartMessage' }}}],
+        ['static keyword in expression', 20, 20, classDefA],
+        ['default keyword in expression', 21, 25, classDefA],
+        ['static function', 20, 31, showStartMessageFnDef],
+        ['default var', 21, 30, varDefCount],
     ] as [string, number, number, TokenInformation][]
     )("findCrossFileDefinition finds %p at %p:%p", (_, line, column, expected) => {
         const token = db.findToken(uriB, line, column);

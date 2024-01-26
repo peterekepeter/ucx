@@ -2,7 +2,7 @@
 	"name": "ucx",
 	"displayName": "ucx",
 	"description": "UnrealScript Extensions",
-	"version": "0.14.7",
+	"version": "0.14.8",
 	"repository": "https://github.com/peterekepeter/ucx",
 	"publisher": "peterekepeter",
 	"engines": {
@@ -83,8 +83,8 @@
 				},
 				"ucx.linter.semicolonFix.enabled": {
 					"type": "boolean",
-					"description": "Automatically add missing semicolons when formatting code. (experimental)",
-					"default": false
+					"description": "Detect and add missing semicolons when formatting code.",
+					"default": true
 				},
 				"ucx.linter.classNamingRule.enabled": {
 					"type": "boolean",

@@ -148,7 +148,8 @@ export class ClassDatabase
         let type: TokenInformation|null = null;
         let member: TokenInformation|null = null;
         for (const item of chain) {
-            if (item.type === SemanticClass.Keyword && item.textLower === 'static') {
+            if (item.type === SemanticClass.Keyword && 
+                (item.textLower === 'static' || item.textLower === 'default')) {
                 continue;
             }
             const itemQuery: TokenInformation = {
