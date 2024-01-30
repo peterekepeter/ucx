@@ -150,9 +150,39 @@ export class ClassDatabase
         const tokens = query.ast.tokens;
         let index = tokens.indexOf(query.token);
         const chain = this.getMemberChain(tokens, index);
+
         let type: TokenInformation|null = null;
         let member: TokenInformation|null = null;
         for (const item of chain) {
+            if (item.text === ')') 
+            {
+                // is using result of function call or typecast
+                // find matching paren
+                const tokens = query.ast.tokens;
+                let count = 1;
+                let found = false;
+                for (let i = 1; i<item.index; i+=1) {
+                    const prev = tokens[item.index-i];
+                    if (prev.text === ')') count += 1;
+                    if (prev.text === '(') {
+                        count -= 1;
+                        if (count === 0) {
+                            const fn = tokens[item.index - i - 1];
+                            const subquery = { ...query, token: fn };
+                            member = this.findDefinition(subquery);
+                            if (!member.found) {
+                                member = this.findClassDefinitionStr(fn.textLower);
+                            }
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if (found) {
+                    continue;
+                }
+            }
+            
             if (item.type === SemanticClass.Keyword && 
                 (item.textLower === 'static' || item.textLower === 'default')) {
                 continue;

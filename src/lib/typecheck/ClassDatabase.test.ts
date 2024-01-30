@@ -160,6 +160,7 @@ describe("definition across files", () => {
     });
 
     const classDefA = { token: { text: 'ClassA' }, uri: uriA };
+    const classDefB = { token: { text: 'ClassB' }, uri: uriB };
     const varDefCount = { uri: uriA, varDefinition: { name: { text: 'Count' }} };
     const paramDefCanvas = { uri:uriB, paramDefinition: { name: { text: 'canvas'} }};
     const canvasClassDef = { token: { text: 'Canvas' }, classDefinition: { name: { text: 'Canvas' }}};
@@ -168,6 +169,7 @@ describe("definition across files", () => {
 
     // find definition
     test.each([
+        ['self type', 0, 9, classDefB],
         ['parent type', 0, 24, classDefA],
         ['inherited variable', 5, 4, varDefCount],
         ['var type', 2, 7, classDefA],
@@ -185,6 +187,7 @@ describe("definition across files", () => {
         ['static function', 20, 31, showStartMessageFnDef],
         ['default var', 21, 30, varDefCount],
         ['typecast to class', 22, 10, classDefA],
+        ['typecast to class member', 22, 23, varDefCount],
     ] as [string, number, number, TokenInformation][]
     )("findCrossFileDefinition finds %p at %p:%p", (_, line, column, expected) => {
         const token = db.findToken(uriB, line, column);
