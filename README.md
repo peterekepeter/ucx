@@ -14,8 +14,6 @@ Or does it extend the language itself? The answer is YES!
 
 ## Installation
 
-> 🚧 Work in progress. Many features are still experimental! USE AT YOUR OWN RISK!
-
  - VsCode/Codium extension available
     - [Open VSX Registry](https://open-vsx.org/extension/peterekepeter/ucx)
     - [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=peterekepeter.ucx)
