@@ -1,5 +1,9 @@
 # Change Log
 
+### v0.14.9
+- Fix lookup class definition in a typecast
+- Fix lookup members of a typecast
+
 ### v0.14.8
 - Semicolon detect and fix is no longer considered experimental and is enabled by default
 - Fix lookup for default variables
