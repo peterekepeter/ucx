@@ -100,6 +100,11 @@ export class ClassDatabase
                     return symbol;
                 }
             }
+            // maybe its a typecast to another class
+            const classdef =this.findClassDefinitionForQueryToken(query);
+            if (classdef.found) {
+                return classdef;
+            }
         }
         return { found: false };
     }

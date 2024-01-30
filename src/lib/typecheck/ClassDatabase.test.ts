@@ -154,6 +154,7 @@ describe("definition across files", () => {
             '   other.Count += 1;',
             "   class'ClassA'.static.ShowStartMessage(PP);",
             "   Log(class'ClassA'.default.Count);", // line 21
+            "   Log(ClassA(self).Count)",
             '}',
         ]);
     });
@@ -183,6 +184,7 @@ describe("definition across files", () => {
         ['default keyword in expression', 21, 25, classDefA],
         ['static function', 20, 31, showStartMessageFnDef],
         ['default var', 21, 30, varDefCount],
+        ['typecast to class', 22, 10, classDefA],
     ] as [string, number, number, TokenInformation][]
     )("findCrossFileDefinition finds %p at %p:%p", (_, line, column, expected) => {
         const token = db.findToken(uriB, line, column);
