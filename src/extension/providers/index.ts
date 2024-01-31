@@ -5,3 +5,4 @@ export * from './UnrealScriptFormattingProvider';
 export * from './UnrealScriptHoverProvider';
 export * from './UnrealScriptSemanticTokensProvider';
 export * from './UnrealWorkspaceSymbolProvider';
+export * from './UnrealScriptCompletionItemProvider';

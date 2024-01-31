@@ -12,7 +12,8 @@ import {
     UnrealScriptFormattingProvider, 
     UnrealScriptHoverProvider, 
     UnrealScriptSemanticTokensProvider, 
-    UnrealWorkspaceSymbolProvider 
+    UnrealWorkspaceSymbolProvider, 
+    UnrealScriptCompletionItemProvider
 } from './extension/providers';
 
 
@@ -35,6 +36,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.languages.registerColorProvider(langId.uc, new UnrealScriptColorProvider()),
         vscode.languages.registerDocumentSymbolProvider(langId.uc, new UnrealScriptDocumentSymbolProvider()),
         vscode.languages.registerHoverProvider(langId.uc, new UnrealScriptHoverProvider()),
+        vscode.languages.registerCompletionItemProvider(langId.uc, new UnrealScriptCompletionItemProvider(), '.'),
         vscode.languages.registerDocumentSemanticTokensProvider(langId.uc, semanticTokensProvider, semanticTokensProvider.legend),
         vscode.commands.registerCommand('ucx.restartServer', () => {
             diagnostics.clearDiagnosticsCollection();

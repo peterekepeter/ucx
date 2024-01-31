@@ -50,6 +50,11 @@ export class VsCodeClassDatabase {
         return result;
     }
 
+    async findTypeDefinition(vscodeuri: vscode.Uri, position: vscode.Position, token: vscode.CancellationToken) {
+        const defintion = await this.findDefinition(vscodeuri, position, token);
+        return this.libdb.findTypeDefinition(defintion);
+    }
+
     private async ensureWorkspaceIsNotOutdated(cancellation: vscode.CancellationToken) {
         const files = await vscode.workspace.findFiles("**/*.uc");
         await this.updateFiles(files, cancellation);
@@ -111,7 +116,7 @@ export class VsCodeClassDatabase {
     }
 
     updateFile(cachedResult: TokenInformation) {
-        // TODO
+        // TODO;
     }
 
     isFileOutdated(cachedResult: TokenInformation) {
