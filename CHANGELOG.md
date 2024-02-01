@@ -1,5 +1,9 @@
 # Change Log
 
+### v0.15.0
+- Basic function member completion provider triggered by pressing `.`
+- Can disable package name mangling via `--no-package-mangle`
+
 ### v0.14.9
 - Fix lookup class definition in a typecast
 - Fix lookup members of a typecast
