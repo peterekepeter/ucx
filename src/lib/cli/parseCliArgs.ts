@@ -25,6 +25,9 @@ export function parseCliArgs(argv: string[]): Partial<UcxCommand>{
             case '--quiet':
                 result.quiet = true;
                 break;
+            case '--no-package-mangle':
+                result.noPackageMangle = true;
+                break;
             case '--no-clean':
                 result.noClean = true;
                 break;

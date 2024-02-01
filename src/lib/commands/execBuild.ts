@@ -16,6 +16,11 @@ export async function execBuild(cmd: UcxCommand){
     for (const project of projectFolders){
         try {
             context = await getBuildContext(project, cmd);
+            console.log(
+                green('building'), 
+                bold(context.projectName), 
+                context.buildName !== context.projectName ? gray(context.buildName) : ''
+            );
             await buildProject(context);
         }
         finally {
@@ -30,27 +35,35 @@ export async function execBuild(cmd: UcxCommand){
 async function buildProject(context: BuildContext) {
     await visitSourceFolder(context, context.projectDir);
     await generateBuildIniIfNotExists(context);
+    await deletePreviousOutput(context);
     await runUccBuildCommand(context);
     await copyOutput(context);
 }
 
 async function getBuildContext(projectDir: string, cmd: UcxCommand): Promise<BuildContext> {
-    const resolvedPaths = await getUccPath(cmd.uccPath);
-    const projectName = await getProjectNameFromPath(projectDir);
+    const resolvedPathsPromise = getUccPath(cmd.uccPath);
+    const projectNamePromise = getProjectNameFromPath(projectDir);
     const projectDirRelative = getRelativeDir(projectDir);
+    const pathSeparator = detectPathSeparator(projectDir);
+    const resolvedPaths= await resolvedPathsPromise;
+    const projectName = await projectNamePromise;
+    const buildNameResultPromise = generateBuildNameAndDir(resolvedPaths.gameDir, projectName, cmd);
+    const systemDir = resolvedPaths.systemDir;
+    const buildNameResult = await buildNameResultPromise;
     const context: BuildContext = {
         tempToCleanup: [],
         projectName,
         projectDir,
         projectDirRelative,
         performCleanup: !cmd.noClean,
-        pathSeparator: detectPathSeparator(projectDir),
+        pathSeparator,
+        uccOutput: `${systemDir}${pathSeparator}${buildNameResult.buildName}.u`,
+        requiredOutput: `${systemDir}${pathSeparator}${projectName}.u`,
         ... resolvedPaths,
-        ... await generateBuildNameAndDir(resolvedPaths.gameDir),
+        ... buildNameResult,
     };
     context.tempToCleanup.push({ fullPath: context.buildDir, isDir: true });
     context.tempToCleanup.push({ fullPath: context.buildClassesDir, isDir: true });
-    console.log(green('building'), bold(projectName), gray(context.buildName));
     return context;
 }
 
@@ -112,6 +125,8 @@ interface BuildContext
     buildDir: string;
     buildClassesDir: string;
     buildName: string;
+    uccOutput: string, 
+    requiredOutput: string,
     buildIniFile?: string
     performCleanup: boolean,
     tempToCleanup: { fullPath: string, isDir: boolean }[];
@@ -227,11 +242,12 @@ function getBuildClassesPath(context: BuildContext, fullPath: string){
     throw new Error(`Path "${fullPath}" not part of project ${context.projectDir}`);
 }
 
-async function generateBuildNameAndDir(gameDir: string): Promise<{ buildName: string, buildDir: string, buildClassesDir: string }> {
+async function generateBuildNameAndDir(gameDir: string, projectName: string, cmd: UcxCommand): Promise<{ buildName: string, buildDir: string, buildClassesDir: string }> {
     const number = Date.now();
     let error: unknown;
-    for (let i=0; i<1000; i++){
-        let buildName = `ucx-build-${number + i}`;
+    const maxTries = cmd.noPackageMangle ? 1 : 1000;
+    for (let i=0; i<maxTries; i++){
+        let buildName = cmd.noPackageMangle ? projectName : `ucx-build-${number + i}`;
         let buildDir = gameDir + "/" + buildName;
         try {
             await fs.mkdir(buildDir);
@@ -251,19 +267,39 @@ async function generateBuildNameAndDir(gameDir: string): Promise<{ buildName: st
 
 
 async function tempMkDir(context: BuildContext, path: string){
+    if (await directoryExists(path)) return;
+    await fs.mkdir(path, { recursive: false });
+    context.tempToCleanup.push({ fullPath: path, isDir: true });
+}
+
+async function directoryExists(path: string) {
     try 
     {
         const dirStat = await fs.stat(path);
         if (dirStat.isDirectory()){
-            return; // already exists
+            return true; // already exists
         }
     }
     catch 
     {
         // dir does not exists
     }
-    await fs.mkdir(path, { recursive: false });
-    context.tempToCleanup.push({ fullPath: path, isDir: true });
+    return false;
+}
+
+async function fileExists(path: string) {
+    try 
+    {
+        const dirStat = await fs.stat(path);
+        if (dirStat.isFile()){
+            return true; // already exists
+        }
+    }
+    catch 
+    {
+        // dir does not exists
+    }
+    return false;
 }
 
 async function tempCopy(context: BuildContext, src: string, dest: string) {
@@ -287,6 +323,12 @@ async function deleteTemporaryFiles(context: BuildContext) {
         } else {
             await fs.unlink(item.fullPath);
         }
+    }
+}
+
+async function deletePreviousOutput(context: BuildContext) {
+    if (await fileExists(context.uccOutput)) {
+        await fs.unlink(context.uccOutput);
     }
 }
 

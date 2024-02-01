@@ -99,7 +99,7 @@ function decorateLog(input: string, quiet: boolean, loggingPathRemap: Record<str
             {
                 tag = red(tag);
             }
-            else if (i.startsWith('Warning:')) {
+            else if (i.startsWith('Warning:') || i.startsWith('ExecWarning:')) {
                 tag = yellow(bold(tag));
             }
             else if (i.startsWith('Heading:')) {
@@ -108,7 +108,7 @@ function decorateLog(input: string, quiet: boolean, loggingPathRemap: Record<str
                 rest = rest.replace(/-{20}/g, s => gray(s));
             }
             else if (i.startsWith('Log: Success')) {
-                tag = green(bold(tag));
+                tag = bold(green(tag));
             }
             else {
                 tag = gray(tag);

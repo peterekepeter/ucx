@@ -1,18 +1,7 @@
-export interface UcxCommand {
-    jsInterpreter: string;
-    ucxScript: string;
-    files: string[];
-    command: string;
-    errors: string[];
-    uccPath: string;
-    noClean: boolean;
-    quiet: boolean;
-    verbose: boolean;
-}
 
 export const DEFAULT_UCX_COMMAND = {
-    errors: [],
-    files: [],
+    errors: [] as string[],
+    files: [] as string[],
     jsInterpreter: '',
     uccPath: '',
     ucxScript: '',
@@ -20,4 +9,7 @@ export const DEFAULT_UCX_COMMAND = {
     noClean: false,
     quiet: false,
     verbose: false,
-} as UcxCommand;
+    noPackageMangle: false,
+};
+
+export type UcxCommand = typeof DEFAULT_UCX_COMMAND;
