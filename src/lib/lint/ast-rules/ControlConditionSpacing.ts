@@ -47,7 +47,7 @@ export class ControlConditionSpacing implements AstBasedLinter
                         results.push({
                             fixedText: ' ',
                             length: 0,
-                            line: first.line,
+                            line: last.line,
                             message: 'Required space before closing parenthesis in control structures',
                             originalText: '',
                             position: close.position,

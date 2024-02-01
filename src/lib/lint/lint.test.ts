@@ -896,6 +896,16 @@ test('format if control condition spacing', () => { lintingStatements(
     "}",
 ));});
 
+test('format space is not introduces in middle of identifier', () => { lintingStatements(
+    "if ( PlayerOwner.GameReplicationInfo == None",
+    "        || (Canvas.ClipX < 640))",
+    "    return;"
+).hasFormattedResult(statementWrapper(
+    "if ( PlayerOwner.GameReplicationInfo == None",
+    "        || (Canvas.ClipX < 640) )",
+    "    return;"
+));});
+
 
 
 test('checks class name to be filename', () => { linting([

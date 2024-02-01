@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.15.1
+- Fix critical bug which introduce space when formatting closing parens for control structures.
+
 ### v0.15.0
 - Basic function member completion provider triggered by pressing `.`
 - Can disable package name mangling via `--no-package-mangle`
