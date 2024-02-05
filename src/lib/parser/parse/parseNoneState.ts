@@ -77,6 +77,7 @@ export function parseNoneState(parser: UcParser, token: Token) {
 
     case 'defaultproperties':
         parser.rootFn = parseDefaultProperties;
+        parser.result.defaultPropertiesKeyword = token;
         token.type = C.Keyword;
         break;
 

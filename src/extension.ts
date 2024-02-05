@@ -13,7 +13,8 @@ import {
     UnrealScriptHoverProvider, 
     UnrealScriptSemanticTokensProvider, 
     UnrealWorkspaceSymbolProvider, 
-    UnrealScriptCompletionItemProvider
+    UnrealScriptCompletionItemProvider,
+    UnrealScriptFoldingRangeProvider
 } from './extension/providers';
 
 
@@ -42,6 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
             diagnostics.clearDiagnosticsCollection();
             resetExtensionState();
         }),
+        vscode.languages.registerFoldingRangeProvider(langId.uc, new UnrealScriptFoldingRangeProvider()),
         diagnostics,
         vscode.workspace.onDidChangeTextDocument(event => diagnostics.updateDiagnostics(event.document))
     );

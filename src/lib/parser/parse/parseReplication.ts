@@ -66,6 +66,8 @@ function parseReplicationStatementBegin(parser: UcParser, token: Token)
     }
     token.type = C.Keyword;
     parser.lastReplicationBlock.statements.push({
+        firstToken: token,
+        lastToken: token,
         condition: null,
         isReliable: reliable,
         targets: []
@@ -113,7 +115,9 @@ function parseReplicaitonIfExpression(parser: UcParser, token: Token)
             parser.expressionTokens.push(token);
             break;
         }
-        parser.lastReplicationStatement.condition = resolveExpression(parser.expressionTokens);
+        const statement = parser.lastReplicationStatement;
+        statement.lastToken = token;
+        statement.condition = resolveExpression(parser.expressionTokens);
         parser.rootFn = parseReplicationTarget;
         break;
     }
@@ -121,12 +125,14 @@ function parseReplicaitonIfExpression(parser: UcParser, token: Token)
 
 function parseReplicationTarget(parser: UcParser, token: Token)
 {
+    const statement = parser.lastReplicationStatement;
+    statement.lastToken = token;
     if (token.text === ';') {
         parser.rootFn = parseReplicationStatementBegin;
         return;
     }
     token.type = C.Identifier;
-    parser.lastReplicationStatement.targets.push(token);
+    statement.targets.push(token);
     parser.rootFn = parseReplicationTargetComma;
 }
 

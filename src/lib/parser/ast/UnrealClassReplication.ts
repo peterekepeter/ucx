@@ -12,6 +12,8 @@ export interface UnrealClassReplicationBlock
 
 export interface UnrealClassReplicationStatement
 {
+    firstToken: Token;
+    lastToken: Token;
     isReliable: boolean;
     condition: Token | UnrealClassExpression | null;
     targets: Token[];

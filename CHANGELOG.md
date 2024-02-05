@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.16
+- Added support for folding multi-line comments, replication statements,
+arrays of defaultproperties, labelled statement blocks
+- Improves folding for functions, by folding on function declaration line
+
 ### v0.15.1
 - Fix critical bug which introduce space when formatting closing parens for control structures.
 

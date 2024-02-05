@@ -37,6 +37,7 @@ export interface UnrealClass {
     functions: UnrealClassFunction[];
     textLines: string[];
     defaultProperties: UnrealDefaultProperty[];
+    defaultPropertiesKeyword?: Token | null;
     defaultPropertiesFirstToken?: Token | null;
     defaultPropertiesLastToken?: Token | null;
     execInstructions: UnrealExecInstruction[];
