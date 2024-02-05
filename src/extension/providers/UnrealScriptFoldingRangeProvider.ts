@@ -1,7 +1,7 @@
-import { db } from "..";
 import { UnrealClass } from "../../lib";
 import { SemanticClass, ParserToken as Token } from "../../lib/parser";
 import { UnrealClassFunction, UnrealClassStatement, UnrealExecInstruction } from "../../lib/parser/ast";
+import { db } from "../state";
 import { vscode } from "../vscode";
 
 type FoldingRanges = vscode.FoldingRange[];
