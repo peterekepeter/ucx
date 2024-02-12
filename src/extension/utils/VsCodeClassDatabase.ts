@@ -25,27 +25,17 @@ export class VsCodeClassDatabase {
         result = await this.getCrossFileDefinition(codeToken);
         if (result.found || token.isCancellationRequested) return result;
 
-        if (!this.workspaceLoaded) {
-            // load workspace classses and try again
-            await this.ensureWorkspaceIsNotOutdated(token);
-            if (token.isCancellationRequested) return result;
+        await this.requiresWorkspaceLoaded(token);
+        if (token.isCancellationRequested) return result;
 
-            // if this line is reached then workspace was fully scanned
-            this.workspaceLoaded = true;
-            result = await this.getCrossFileDefinition(codeToken);
-            if (result.found || token.isCancellationRequested) return result;
-        }
+        result = await this.getCrossFileDefinition(codeToken);
+        if (result.found || token.isCancellationRequested) return result;
 
-        if (!this.libraryLoaded) {
-            // load library classes and try again
-            await this.ensureLibraryIsNotOutdated(token);
-            if (token.isCancellationRequested) return result;
+        await this.requiresLibraryLoaded(token);
+        if (token.isCancellationRequested) return result;
 
-            // if this line is reached then library was fully scanned
-            this.workspaceLoaded = true;
-            result = await this.getCrossFileDefinition(codeToken);
-            if (result.found || token.isCancellationRequested) return result;
-        }
+        result = await this.getCrossFileDefinition(codeToken);
+        if (result.found || token.isCancellationRequested) return result;
 
         return result;
     }
@@ -53,6 +43,44 @@ export class VsCodeClassDatabase {
     async findTypeDefinition(vscodeuri: vscode.Uri, position: vscode.Position, token: vscode.CancellationToken) {
         const defintion = await this.findDefinition(vscodeuri, position, token);
         return this.libdb.findTypeDefinition(defintion);
+    }
+
+    async findChildClassesOf(name: string, token: vscode.CancellationToken) {
+        await this.requiresWorkspaceAndLibraryLoaded(token);
+        return this.libdb.findChildClassesOf(name);
+    }
+    
+    async findParentClassOf(name: string, token: vscode.CancellationToken) {
+        await this.requiresWorkspaceAndLibraryLoaded(token);
+        return this.libdb.findParentClassOf(name);
+    }
+    
+    async requiresWorkspaceAndLibraryLoaded(token: vscode.CancellationToken) {
+        await this.requiresWorkspaceLoaded(token);
+        if (token.isCancellationRequested) return;
+        await this.requiresLibraryLoaded(token);
+    }
+
+    async requiresWorkspaceLoaded(token: vscode.CancellationToken) {
+        if (!this.workspaceLoaded) {
+            // load workspace classses and try again
+            await this.ensureWorkspaceIsNotOutdated(token);
+            if (token.isCancellationRequested) return;
+
+            // if this line is reached then workspace was fully scanned
+            this.workspaceLoaded = true;
+        }
+    }
+
+    async requiresLibraryLoaded(token: vscode.CancellationToken) {
+        if (!this.libraryLoaded) {
+            // load library classes and try again
+            await this.ensureLibraryIsNotOutdated(token);
+            if (token.isCancellationRequested) return;
+
+            // if this line is reached then library was fully scanned
+            this.libraryLoaded = true;
+        }
     }
 
     private async ensureWorkspaceIsNotOutdated(cancellation: vscode.CancellationToken) {

@@ -14,7 +14,8 @@ import {
     UnrealScriptSemanticTokensProvider, 
     UnrealWorkspaceSymbolProvider, 
     UnrealScriptCompletionItemProvider,
-    UnrealScriptFoldingRangeProvider
+    UnrealScriptFoldingRangeProvider,
+    UnrealScriptTypeHierarchyProvider
 } from './extension/providers';
 
 
@@ -31,6 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
     const semanticTokensProvider = new UnrealScriptSemanticTokensProvider();
 
     context.subscriptions.push(
+        vscode.languages.registerTypeHierarchyProvider(langId.uc, new UnrealScriptTypeHierarchyProvider()),
         vscode.languages.registerDocumentFormattingEditProvider(langId.uc, new UnrealScriptFormattingProvider()),
         vscode.languages.registerDefinitionProvider(langId.uc, new UnrealScriptDefinitionProvider()),
         vscode.languages.registerWorkspaceSymbolProvider(new UnrealWorkspaceSymbolProvider()),

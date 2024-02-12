@@ -130,6 +130,48 @@ export class ClassDatabase
         return this.store[uri]?.ast;
     }
 
+    findChildClassesOf(className: string): TokenInformation[] {
+        const results: TokenInformation[] = [];
+        const lowerClassName = className.toLowerCase();
+        for (const key in this.store) {
+            const item = this.store[key];
+            if (item.ast.parentName?.textLower === lowerClassName && item.ast.name) {
+                results.push({
+                    found: true,
+                    token: item.ast.name,
+                    uri: key,
+                    ast: item.ast,
+                    classDefinition: item.ast
+                });
+            }
+        }
+        results.sort((a,b) => (a.token?.textLower && b.token?.textLower) 
+            ? a.token.textLower.localeCompare(b.token.textLower) : 0);
+        return results;
+    }
+
+    findParentClassOf(childClassName: string): TokenInformation {
+        const lowerClassName = childClassName.toLowerCase();
+        const definition = this.findClassDefinitionStr(lowerClassName);
+        if (!definition.found || !definition.classDefinition?.parentName) {
+            return { found: false };
+        }
+        const parentLowerName = definition.classDefinition.parentName.textLower;
+        for (const key in this.store) {
+            const item = this.store[key];
+            if (item.ast.name?.textLower === parentLowerName && item.ast.name) {
+                return {
+                    found: true,
+                    token: item.ast.name,
+                    uri: key,
+                    ast: item.ast,
+                    classDefinition: item.ast
+                };
+            }
+        }
+        return { found: false };
+    }
+
     private isMemberQuery(query: TokenInformation) {
         if (!query.token || !query.ast) return false;
         const index = query.ast.tokens.indexOf(query.token);

@@ -196,6 +196,14 @@ describe("definition across files", () => {
         expect(definition).toMatchObject({...expected, found: true }); 
     });
 
+    test('find subclasses', () => {
+        expect(db.findChildClassesOf("ClassA")).toMatchObject([classDefB]);
+    });
+
+    test('find superclass', () => {
+        expect(db.findParentClassOf("ClassB")).toMatchObject(classDefA);
+    });
+
 });
 
 function ast(uri: string, version: number, lines: string[]) {

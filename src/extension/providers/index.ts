@@ -6,4 +6,5 @@ export * from './UnrealScriptFoldingRangeProvider';
 export * from './UnrealScriptFormattingProvider';
 export * from './UnrealScriptHoverProvider';
 export * from './UnrealScriptSemanticTokensProvider';
+export * from './UnrealScriptTypeHierarchyProvider';
 export * from './UnrealWorkspaceSymbolProvider';

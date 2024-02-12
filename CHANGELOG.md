@@ -1,6 +1,10 @@
 # Change Log
 
-### v0.16
+### v0.17.0
+- You can search for parent/child class references for given class
+- Fix performance issue when failing to find definition, library is now cached
+
+### v0.16.0
 - Added support for folding multi-line comments, replication statements,
 arrays of defaultproperties, labelled statement blocks
 - Improves folding for functions, by folding on function declaration line
