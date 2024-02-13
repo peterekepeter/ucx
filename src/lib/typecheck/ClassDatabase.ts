@@ -22,10 +22,25 @@ export class ClassDatabase
         version: number
     }> = {};
 
+    findTokenBeforePosition(uri: string, line: number, character: number): TokenInformation {
+        const ast = this.getAst(uri);
+        if (!ast) return { uri, missingAst: true };
+        let token = this.astFindTokenBeforePosition(ast, line, character);
+        if (!token) return { uri, found: false };
+        const functionScope = this.findFunctionScope(ast, token);
+        return { uri, found: true, token, ast, functionScope };
+    }
+
     findToken(uri: string, line: number, character: number): TokenInformation {
-        const entry = this.store[uri];
-        if (!entry) return { uri, missingAst: true };
-        const ast = entry.ast;
+        const ast = this.getAst(uri);
+        if (!ast) return { uri, missingAst: true };
+        let token = this.astFindTokenAtPosition(ast, line, character);
+        if (!token) return { uri, found: false };
+        const functionScope = this.findFunctionScope(ast, token);
+        return { uri, found: true, token, ast, functionScope };
+    }
+    
+    private astFindTokenAtPosition(ast: UnrealClass, line: number, character: number) {
         let token: ParserToken | undefined;
         for (const t of ast.tokens) {
             if (t.line === line) {
@@ -35,7 +50,23 @@ export class ClassDatabase
                 }
             }
         }
-        if (!token) return { uri, found: false };
+        return token;
+    }
+
+    private astFindTokenBeforePosition(ast: UnrealClass, line: number, position: number) {
+        let token: ParserToken | undefined;
+        for (const t of ast.tokens) {
+            if (t.line <= line && t.position <= position) {
+                token = t;
+            }
+            else {
+                break;
+            }
+        }
+        return token;
+    }
+
+    private findFunctionScope(ast: UnrealClass, token: ParserToken) {
         let functionScope: UnrealClassFunction | undefined;
         for (const fn of ast.functions) {
             const from = fn.name ?? fn.fnArgsFirstToken ?? fn.bodyFirstToken;
@@ -45,9 +76,9 @@ export class ClassDatabase
                 break;
             }
         }
-        return { uri, found: true, token, ast, functionScope };
+        return functionScope;
     }
-    
+
     findLocalFileDefinition(query: TokenInformation): TokenInformation {
         let result: TokenInformation|undefined;
         if (!query.token) return { found: false };
@@ -170,6 +201,46 @@ export class ClassDatabase
             }
         }
         return { found: false };
+    }
+
+    findSignature(uri: string, line: number, column: number): TokenInformation {
+        const cursor = this.findTokenBeforePosition(uri, line, column);
+        if (!cursor.found || !cursor.functionScope || !cursor.token || !cursor.ast) return cursor;
+        const ast = cursor.ast;
+        let commas = 0;
+        let parens = 0;
+        let method: ParserToken | null = null;
+        for (let i = cursor.token.index; i >= 0; i-=1) {
+            const t = ast.tokens[i];
+            if (parens < 0) {
+                method = t;
+                break;
+            }
+
+            if (t.text === ',') {
+                commas += 1;
+            }
+            else if (t.text === ')') {
+                parens += 1;
+            }
+            else if (t.text === '(') {
+                parens -= 1;
+            }
+            else if (t.text === '{') {
+                break;
+            }
+        }
+        if (!method) return { found: false };
+        const methodDef = this.findDefinition({
+            uri: cursor.uri,
+            ast: ast,
+            token: method,
+        });
+        if (!methodDef.fnDefinition) return { found: false };
+        return {
+            ...methodDef, 
+            paramDefinition: methodDef.fnDefinition.fnArgs[commas],
+        };
     }
 
     private isMemberQuery(query: TokenInformation) {

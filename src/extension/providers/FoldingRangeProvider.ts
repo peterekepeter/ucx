@@ -7,7 +7,7 @@ import { vscode } from "../vscode";
 type FoldingRanges = vscode.FoldingRange[];
 type ProviderInterface = vscode.FoldingRangeProvider;
 
-export class UnrealScriptFoldingRangeProvider implements ProviderInterface {
+export class FoldingRangeProvider implements ProviderInterface {
     
     onDidChangeFoldingRanges?: vscode.Event<void> | undefined;
 

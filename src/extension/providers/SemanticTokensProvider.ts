@@ -3,7 +3,7 @@ import { db } from "../state";
 import { vscode } from "../vscode";
 
 
-export class UnrealScriptSemanticTokensProvider implements vscode.DocumentSemanticTokensProvider {
+export class SemanticTokensProvider implements vscode.DocumentSemanticTokensProvider {
 
     legend: vscode.SemanticTokensLegend;
     keywordToken: number;

@@ -3,7 +3,7 @@ import { db } from '../state';
 import { rangeFromToken } from '../utils';
 import { vscode } from '../vscode';
 
-export class UnrealScriptDefinitionProvider implements vscode.DefinitionProvider {
+export class DefinitionProvider implements vscode.DefinitionProvider {
 
     provideDefinition(document: vscode.TextDocument, position: vscode.Position, ctoken: vscode.CancellationToken): vscode.ProviderResult<vscode.Definition | vscode.DefinitionLink[]> {
         return db.findDefinition(document.uri, position, ctoken).then((result: TokenInformation) => {

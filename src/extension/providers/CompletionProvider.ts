@@ -2,7 +2,7 @@ import { db } from "../state";
 import { vscode } from "../vscode";
 
 
-export class UnrealScriptCompletionItemProvider implements vscode.CompletionItemProvider {
+export class CompletionProvider implements vscode.CompletionItemProvider {
 
     async provideCompletionItems(
         document: vscode.TextDocument, 

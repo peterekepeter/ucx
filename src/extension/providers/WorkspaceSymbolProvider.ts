@@ -3,7 +3,7 @@ import { symbolCache } from '../state';
 import { getAst } from '../utils/getAst';
 import { getSymbolsFromAst } from '../utils';
 
-export class UnrealWorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvider {
+export class WorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvider {
 
     async provideWorkspaceSymbols(query: string, token: vscode.CancellationToken) {
         const regex = new RegExp(query.split('').join('.*?'), 'i');
