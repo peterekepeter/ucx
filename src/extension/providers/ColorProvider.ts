@@ -3,7 +3,7 @@ import { db } from '../state';
 import { rangeFromTokens } from '../utils';
 import { vscode } from '../vscode';
 
-export class UnrealScriptColorProvider implements vscode.DocumentColorProvider {
+export class ColorProvider implements vscode.DocumentColorProvider {
 
     provideDocumentColors(document: vscode.TextDocument, ctoken: vscode.CancellationToken) {
         const colors = new Array<vscode.ColorInformation>();

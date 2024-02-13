@@ -1,3 +1,3 @@
 export * from './state';
-export * from './UnrealScriptDiagnostics';
+export * from './Diagnostics';
 export * from './providers';

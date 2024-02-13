@@ -4,7 +4,7 @@ import { vscode } from "../vscode";
 
 
 
-export class UnrealScriptTypeHierarchyProvider implements vscode.TypeHierarchyProvider {
+export class TypeHierarchyProvider implements vscode.TypeHierarchyProvider {
 
     async prepareTypeHierarchy(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.TypeHierarchyItem | vscode.TypeHierarchyItem[] | null> {
         db.updateDocumentAndGetAst(document, token);

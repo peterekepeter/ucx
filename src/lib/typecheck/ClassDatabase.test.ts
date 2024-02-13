@@ -196,6 +196,15 @@ describe("definition across files", () => {
         expect(definition).toMatchObject({...expected, found: true }); 
     });
 
+    // find signature
+    test.each([
+        ['static function signature', 20, 42, showStartMessageFnDef],
+    ] as [string, number, number, TokenInformation][]
+    )("findSignature finds %p at %p:%p", (_, line, column, expected) => {
+        let signature = db.findSignature(uriB, line, column);
+        expect(signature).toMatchObject({ ...expected, found: true });
+    });
+
     test('find subclasses', () => {
         expect(db.findChildClassesOf("ClassA")).toMatchObject([classDefB]);
     });

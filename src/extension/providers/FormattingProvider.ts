@@ -2,7 +2,7 @@ import { ExtensionConfiguration, parseConfiguration } from '../config';
 import { processLinterRules } from '../utils';
 import { vscode } from '../vscode';
 
-export class UnrealScriptFormattingProvider implements vscode.DocumentFormattingEditProvider {
+export class FormattingProvider implements vscode.DocumentFormattingEditProvider {
 
     provideDocumentFormattingEdits(document: vscode.TextDocument, options: vscode.FormattingOptions, cancellation: vscode.CancellationToken): vscode.TextEdit[] {
         const vscodeConfig = vscode.workspace.getConfiguration("ucx");

@@ -3,7 +3,7 @@ import { db } from "../state";
 import { vscode } from "../vscode";
 
 
-export class UnrealScriptHoverProvider implements vscode.HoverProvider {
+export class HoverProvider implements vscode.HoverProvider {
 
     async provideHover(document: vscode.TextDocument, position: vscode.Position, ctoken: vscode.CancellationToken) {
         db.updateDocumentAndGetAst(document, ctoken);

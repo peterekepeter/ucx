@@ -3,7 +3,7 @@ import { langId } from "./constants";
 import { processLinterRules } from "./utils";
 import { vscode } from "./vscode";
 
-export class UnrealScriptDiagnostics implements vscode.Disposable {
+export class Diagnostics implements vscode.Disposable {
 
     private diagnosticCollection: vscode.DiagnosticCollection;
 
@@ -34,7 +34,7 @@ export class UnrealScriptDiagnostics implements vscode.Disposable {
         }
     }
 
-    *getDiagnostics(document: vscode.TextDocument, config: ExtensionConfiguration): Iterable<vscode.Diagnostic> {
+    private *getDiagnostics(document: vscode.TextDocument, config: ExtensionConfiguration): Iterable<vscode.Diagnostic> {
         for (const lintResult of processLinterRules(document, config)){
             if (!config.showErrors && lintResult.severity === 'error') {
                 continue;
