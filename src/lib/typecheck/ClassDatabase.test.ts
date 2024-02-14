@@ -198,6 +198,7 @@ describe("definition across files", () => {
 
     // find signature
     test.each([
+        ['method signature', 18, 16, resetFnDef],
         ['static function signature', 20, 42, showStartMessageFnDef],
     ] as [string, number, number, TokenInformation][]
     )("findSignature finds %p at %p:%p", (_, line, column, expected) => {
