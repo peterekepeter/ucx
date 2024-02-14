@@ -9,8 +9,7 @@
 [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=peterekepeter_ucx&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=peterekepeter_ucx)
 [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=peterekepeter_ucx&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=peterekepeter_ucx)
 
-Provides language support for UT99 unreal script. Is it a VsCode extension? 
-Or does it extend the language itself? The answer is YES!
+Dedicated language support and tooling UnrealScript, with primary focus on UT99.
 
 ## Installation
 
@@ -25,20 +24,25 @@ Or does it extend the language itself? The answer is YES!
 
 ## VsCode Features
 
- - syntax highlight
+ - highlight:
     - textmate grammar
     - semantic syntax highlighting
- - language support
-    - partialy working find definition
+ - language:
+    - goto definition (`Ctrl-Click`)
     - find document or workspace symbols (`Ctrl-P @` and `Ctrl-P #`)
- - formatter support
+    - folding support for defaultproperties, states, labels, replication
+    - completion support for methods (partially working)
+    - function signature support
+    - class hierarcy: (right click on class & select Show Type Hierarchy)
+ - formatter:
     - automatic indentation
     - operator spacing
     - keyword casing
     - other spacing / newline rules
- - early detection / fix of problems
     - remove redundant default properties
-    - (experimental) partially working automatic semicolon completion
+ - diagnostics:
+    - detect syntax parse errors
+    - semicolon completion
 
 ## CLI Features
 
@@ -49,7 +53,7 @@ Or does it extend the language itself? The answer is YES!
     - can be used build system for your unreal script projects
         - can auto generate ini file for build
         - copies files into temporary build folder
-        - runs ucc build 
+        - runs ucc build
     - language extensions
         - moves all code files into `Classes` subdir, this enables having folder 
         in sources for better project organization while flattening the structure
