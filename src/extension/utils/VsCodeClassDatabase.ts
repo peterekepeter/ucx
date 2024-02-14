@@ -13,6 +13,35 @@ export class VsCodeClassDatabase {
     private workspaceLoaded = false;
     private libraryLoaded = false;
 
+    async findSignature(vscodeuri: vscode.Uri, position: vscode.Position, token: vscode.CancellationToken) {
+        const uri = vscodeuri.toString();
+        const result = this.libdb.findSignature(uri, position.line, position.character);
+        if (result.found) return result;
+
+        await this.requiresWorkspaceAndLibraryLoaded(token);
+        if (token.isCancellationRequested) return { found: false };
+
+        return this.libdb.findSignature(uri, position.line, position.character);
+    }
+
+    async findTypeDefinition(vscodeuri: vscode.Uri, position: vscode.Position, token: vscode.CancellationToken) {
+        const defintion = await this.findDefinition(vscodeuri, position, token);
+        if (token.isCancellationRequested) return { found: false };
+        return this.libdb.findTypeDefinition(defintion);
+    }
+
+    async findChildClassesOf(name: string, token: vscode.CancellationToken) {
+        await this.requiresWorkspaceAndLibraryLoaded(token);
+        if (token.isCancellationRequested) return [];
+        return this.libdb.findChildClassesOf(name);
+    }
+    
+    async findParentClassOf(name: string, token: vscode.CancellationToken) {
+        await this.requiresWorkspaceAndLibraryLoaded(token);
+        if (token.isCancellationRequested) return { found: false };
+        return this.libdb.findParentClassOf(name);
+    }
+
     async findDefinition(vscodeuri: vscode.Uri, position: vscode.Position, token: vscode.CancellationToken) {
         const uri = vscodeuri.toString();
         const codeToken = this.libdb.findToken(uri, position.line, position.character);
@@ -39,29 +68,13 @@ export class VsCodeClassDatabase {
 
         return result;
     }
-
-    async findTypeDefinition(vscodeuri: vscode.Uri, position: vscode.Position, token: vscode.CancellationToken) {
-        const defintion = await this.findDefinition(vscodeuri, position, token);
-        return this.libdb.findTypeDefinition(defintion);
-    }
-
-    async findChildClassesOf(name: string, token: vscode.CancellationToken) {
-        await this.requiresWorkspaceAndLibraryLoaded(token);
-        return this.libdb.findChildClassesOf(name);
-    }
-    
-    async findParentClassOf(name: string, token: vscode.CancellationToken) {
-        await this.requiresWorkspaceAndLibraryLoaded(token);
-        return this.libdb.findParentClassOf(name);
-    }
-    
-    async requiresWorkspaceAndLibraryLoaded(token: vscode.CancellationToken) {
+    private async requiresWorkspaceAndLibraryLoaded(token: vscode.CancellationToken) {
         await this.requiresWorkspaceLoaded(token);
         if (token.isCancellationRequested) return;
         await this.requiresLibraryLoaded(token);
     }
 
-    async requiresWorkspaceLoaded(token: vscode.CancellationToken) {
+    private async requiresWorkspaceLoaded(token: vscode.CancellationToken) {
         if (!this.workspaceLoaded) {
             // load workspace classses and try again
             await this.ensureWorkspaceIsNotOutdated(token);
@@ -72,7 +85,7 @@ export class VsCodeClassDatabase {
         }
     }
 
-    async requiresLibraryLoaded(token: vscode.CancellationToken) {
+    private async requiresLibraryLoaded(token: vscode.CancellationToken) {
         if (!this.libraryLoaded) {
             // load library classes and try again
             await this.ensureLibraryIsNotOutdated(token);

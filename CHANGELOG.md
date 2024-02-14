@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.18.0
+- Adds support for function signature helper when calling functions
+
 ### v0.17.0
 - You can search for parent/child class references for given class
 - Fix performance issue when failing to find definition, library is now cached

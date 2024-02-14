@@ -11,22 +11,30 @@ export class SignatureProvider implements vscode.SignatureHelpProvider {
         context: vscode.SignatureHelpContext
     ): Promise<vscode.SignatureHelp | null> {
         db.updateDocumentAndGetAst(document, token);
-        const definition = await db.findDefinition(document.uri, position, token);
+        const definition = await db.findSignature(document.uri, position, token);
         if (!definition.found || token.isCancellationRequested) return null; 
         const activeParameter = definition.paramDefinition ? definition.fnDefinition?.fnArgs.indexOf(definition.paramDefinition) ?? 0 : 0;
-        return {
+        const result = {
             signatures: [{
-                label: definition.fnDefinition?.name?.text ?? '',
+                label: renderDefinitionMarkdownLines(definition).join('\n'),
                 parameters: (definition.fnDefinition?.fnArgs ?? []).map(a => ({
                     label: a.name?.text ?? '',
-                    documentation: 'test',
+                    // TODO render parameter documentation here
+                    // documentation: renderDefinitionMarkdownLines({ 
+                    //     found: true, 
+                    //     token: a.name ?? undefined, 
+                    //     functionScope: definition.fnDefinition, 
+                    //     paramDefinition: a 
+                    // }).join('\n'),
                 })),
                 activeParameter,
-                documentation: renderDefinitionMarkdownLines(definition).join('\n'),
+                // TODO render functiuon documentation here
+                // documentation: renderDefinitionMarkdownLines(definition).join('\n'),
             }],
             activeSignature: 0,
             activeParameter,
-        }
+        };
+        return result;
     }
     
 }

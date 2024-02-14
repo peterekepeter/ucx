@@ -56,7 +56,7 @@ export class ClassDatabase
     private astFindTokenBeforePosition(ast: UnrealClass, line: number, position: number) {
         let token: ParserToken | undefined;
         for (const t of ast.tokens) {
-            if (t.line <= line && t.position <= position) {
+            if (t.line < line || t.line === line && t.position < position) {
                 token = t;
             }
             else {
@@ -205,7 +205,7 @@ export class ClassDatabase
 
     findSignature(uri: string, line: number, column: number): TokenInformation {
         const cursor = this.findTokenBeforePosition(uri, line, column);
-        if (!cursor.found || !cursor.functionScope || !cursor.token || !cursor.ast) return cursor;
+        if (!cursor.found || !cursor.functionScope || !cursor.token || !cursor.ast) return { found: false };
         const ast = cursor.ast;
         let commas = 0;
         let parens = 0;
