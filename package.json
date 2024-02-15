@@ -1,8 +1,8 @@
 {
 	"name": "ucx",
 	"displayName": "ucx",
-	"description": "UnrealScript Extensions",
-	"version": "0.18.1",
+	"description": "Dedicated language support for Unreal Engine 1 UnrealScript",
+	"version": "0.18.2",
 	"icon": "assets/ucx.png",
 	"repository": "https://github.com/peterekepeter/ucx",
 	"publisher": "peterekepeter",
