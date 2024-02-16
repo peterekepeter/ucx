@@ -2,10 +2,11 @@
 
 import { DEFAULT_UCX_COMMAND, parseCliArgs, parseEnvArgs,  } from "./lib/cli";
 import { SubprocessError } from "./lib/commands";
-import { dispatchCommand } from "./lib/commands/dispatchCommand";
+import { dispatchCommand, knownCommands } from "./lib/commands/dispatchCommand";
 import { UnknownCommandError, UserInputError } from "./lib/commands/error";
 import { red, bold } from "./lib/commands/terminal";
 import { InvalidUccPath } from "./lib/commands/InvalidUccPath";
+import { execVersion } from "./lib/commands/execVersion";
 
 setTimeout(main, 0);
 
@@ -13,8 +14,8 @@ async function main(){
     try
     {
         const command = parseUserInput();
-        if (!command.command) {
-            printUsage();
+        if (!command.command || command.command === "help" || command.help) {
+            printUsageAndCommands();
         }
         else {
             await dispatchCommand(command);
@@ -23,7 +24,7 @@ async function main(){
     catch (err) {
         if (err instanceof UnknownCommandError) {
             console.error(red(err.message));
-            console.log("Available commands:", err.knownCommands.map(c => bold(c)).join(', '));
+            printCommands();
             process.exit(1);
         }
         else if (err instanceof SubprocessError){
@@ -35,7 +36,7 @@ async function main(){
             process.exit(1);
         }
         else if (err instanceof InvalidUccPath) {
-            console.error(INVALID_UCC_INFO);
+            printUccInfo();
             process.exit(1);
         }
         else {
@@ -53,19 +54,23 @@ function parseUserInput(){
         };
     }
     catch (error) {
-        printUsage();
+        printUsageAndCommands();
         throw error;
     }
 }
 
-function printUsage(){
+function printUsageAndCommands(){
+    const USAGE_INFO = `ucx command [--option optionValue] path1 path2 path3 ...`;
     console.log(USAGE_INFO);
+    printCommands();
 }
 
-const USAGE_INFO = `
-ucx command [--option optionValue] path1 path2 path3 ...
-`;
+function printCommands() {
+    console.log(" - available commands:", Object.keys(knownCommands).map(c => bold(c)).join(', '));
+}
 
-const INVALID_UCC_INFO = `
-path to UCC must be provided either via env var ${bold('UCC_PATH')}  or cli argument ${bold('--ucc')}
-`;
+function printUccInfo() {
+    const INVALID_UCC_INFO = `path to UCC must be provided either via env var ${
+        bold('UCC_PATH')}  or cli argument ${bold('--ucc')}`;
+    console.log(INVALID_UCC_INFO);
+}

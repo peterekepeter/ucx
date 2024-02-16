@@ -37,8 +37,24 @@ export function parseCliArgs(argv: string[]): Partial<UcxCommand>{
             case '--ucc':
                 expectUccPath = true;
                 break;
+            case '--help':
+                result.help = true;
+                break;
             default:    
                 errors.push(`Uknown argument "${arg}"`);
+            }
+        }
+        else if (arg.startsWith('-')) {
+            for (const char of arg.slice(1)) switch (char) {
+            case 'v': 
+                result.verbose = true; 
+                break;
+            case 'q': 
+                result.quiet = true; 
+                break;
+            case 'h': 
+                result.quiet = true; 
+                break;
             }
         }
         else if (!result.command){

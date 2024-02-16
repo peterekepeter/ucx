@@ -6,6 +6,7 @@ export class Subprocess
 {
     builder: CommandBuilder;
     loggingPathRemap: Record<string, string> = {};
+    ignoreLoadWarningsFor: string[] = [];
 
     constructor(executablePath: string, ...args: string[])
     {
@@ -27,10 +28,22 @@ export class Subprocess
     async execCommand()
     {
         const command = this.builder.getCommand();
-        await runSubprocess(command, this.loggingPathRemap);
+        await runSubprocess(command, this.loggingPathRemap, this.ignoreLoadWarningsFor);
     }
 
     whenLoggingRemapProjectSource(buildName: string, projectDir: string) {
         this.loggingPathRemap[buildName] = projectDir;
+    }
+
+    whenLoggingIgnoreLoadWarningsFor(packageName: string) {
+        this.ignoreLoadWarningsFor.push(packageName);
+    }
+
+    setQuiet(quiet = true) { 
+        this.builder.quiet = quiet;
+    }
+
+    setVerbose(verbose = true) {
+        this.builder.verbose = verbose;
     }
 }

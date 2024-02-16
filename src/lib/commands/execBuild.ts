@@ -56,6 +56,8 @@ async function getBuildContext(projectDir: string, cmd: UcxCommand): Promise<Bui
         projectDir,
         projectDirRelative,
         performCleanup: !cmd.noClean,
+        verbose: cmd.verbose,
+        quiet: cmd.quiet,
         pathSeparator,
         uccOutput: `${systemDir}${pathSeparator}${buildNameResult.buildName}.u`,
         requiredOutput: `${systemDir}${pathSeparator}${projectName}.u`,
@@ -129,6 +131,8 @@ interface BuildContext
     requiredOutput: string,
     buildIniFile?: string
     performCleanup: boolean,
+    verbose: boolean,
+    quiet: boolean,
     tempToCleanup: { fullPath: string, isDir: boolean }[];
 }
 
@@ -338,6 +342,9 @@ async function runUccBuildCommand(context: BuildContext): Promise<void> {
 
     process.useLogfileOutputIfAvailable();
     process.whenLoggingRemapProjectSource(context.buildName, context.projectDirRelative);
+    process.whenLoggingIgnoreLoadWarningsFor(context.buildName + '.u');
+    process.setVerbose(context.verbose);
+    process.setQuiet(context.quiet);
 
     if (context.buildIniFile)
     {

@@ -8,7 +8,7 @@ import { execVersion } from "./execVersion";
 import { UnknownCommandError } from "./error";
 
 
-const knownCommands: Record<string,(cmd: UcxCommand) => Promise<void>> = {
+export const knownCommands: Record<string,(cmd: UcxCommand) => Promise<void>> = {
     build: execBuild,
     ucc: execUcc,
     ut: execUt,

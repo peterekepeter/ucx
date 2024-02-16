@@ -7,6 +7,8 @@ export type SubprocessCommand = {
     preferredLogMode: 'stdio' | 'logfile', 
     logFile: string|undefined, 
     executableFile: string|undefined 
+    verbose: boolean, 
+    quiet: boolean,
 };
 
 export class CommandBuilder 
@@ -15,6 +17,8 @@ export class CommandBuilder
     logFile?: string;
     args: string[] = [];
     preferredLogMode: 'stdio' | 'logfile' = 'stdio';
+    quiet: boolean = false;
+    verbose: boolean = false;
 
     constructor(public platform: PlatformType)
     {
@@ -42,6 +46,8 @@ export class CommandBuilder
             logFile: this.logFile,
             preferredLogMode: this.preferredLogMode,
             executableFile: this.executableFile,
+            quiet: this.quiet,
+            verbose: this.verbose,
         };
     }
 

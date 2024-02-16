@@ -6,16 +6,14 @@ import { SubprocessError } from "./SubprocessError";
 
 const EMPTY_MAP = {};
 
-export async function runSubprocess(command: SubprocessCommand, loggingPathRemap: Record<string, string> = EMPTY_MAP): Promise<void>
+export async function runSubprocess(command: SubprocessCommand, loggingPathRemap: Record<string, string> = EMPTY_MAP, ignoreLoadWarnings: string[]): Promise<void>
 {
     let printLogFile = command.preferredLogMode === 'logfile' && command.logFile != null;
-    let quiet = false;
     try 
     {
         execSync(command.command, {
             stdio: printLogFile ? 'ignore' : 'inherit'
         });
-        quiet = true;
     }
     catch (err){
         throw new SubprocessError("subprocess failed: " + command.command);
@@ -24,7 +22,7 @@ export async function runSubprocess(command: SubprocessCommand, loggingPathRemap
     {
         if (printLogFile && command.logFile){
             const logContent = await fs.readFile(command.logFile, 'utf8');
-            const decorated = decorateLog(logContent, quiet, loggingPathRemap);
+            const decorated = decorateLog(logContent, command.quiet, command.verbose, loggingPathRemap, ignoreLoadWarnings);
             console.log(decorated);
         }
         else if (!command.logFile) {
@@ -33,8 +31,9 @@ export async function runSubprocess(command: SubprocessCommand, loggingPathRemap
     }
 } 
 
-function decorateLog(input: string, quiet: boolean, loggingPathRemap: Record<string, string>): string{
+function decorateLog(input: string, quiet: boolean, verbose: boolean, loggingPathRemap: Record<string, string>, ignoreLoadWarnings: string[]): string{
     
+    const whitespace = /^\s*$/;
     const remapRegexes: Record<string, RegExp> = {};
     for (const key in loggingPathRemap) {
         const escaped = key; // TODO regexp escape 
@@ -44,20 +43,24 @@ function decorateLog(input: string, quiet: boolean, loggingPathRemap: Record<str
 
     return input.split('\n')
         .filter(i => {
-            if (!quiet) {
+            if (verbose) {
                 return true;
             }
-            if (i.startsWith("Log:"))
+            if (whitespace.test(i)) {
+                return false;
+            }
+            else if (i.startsWith("Log:") || i.startsWith("Heading:"))
             {
-                if (i.includes("Unloading: Package") ||
-                    i.includes("Compiling") ||
-                    i.includes("Parsing") ||
-                    i.includes("Imported:")||
-                    i.includes("Bound to")||
-                    i.includes("Unbound to")||
-                    i.includes("FactoryCreateBinary:")||
-                    i.includes("FactoryCreateText:")){
-                    return false;
+                return false;
+            }
+            else if (i.startsWith("Warning:") && quiet) {
+                return false;
+            }
+            else if (i.startsWith("Warning:") && i.includes("Can't find file")){
+                for (const item of ignoreLoadWarnings) {
+                    if (i.includes(item)) {
+                        return false;
+                    }
                 }
             }
             else if (i.startsWith("DevCompile:") || 
@@ -76,7 +79,7 @@ function decorateLog(input: string, quiet: boolean, loggingPathRemap: Record<str
 
             for (const key in loggingPathRemap) {
                 // remap project directory
-                if (rest.includes(key)) {
+                if (rest.includes(key) && !rest.includes('SystemConform')) {
                     const regex = remapRegexes[key];
                     const path = loggingPathRemap[key];
                     rest = rest.replace(regex, path);
