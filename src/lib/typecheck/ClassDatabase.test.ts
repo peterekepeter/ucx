@@ -223,3 +223,15 @@ function ast(uri: string, version: number, lines: string[]) {
 function expectVersion(uri: string, expected: number) {
     expect(db.getVersion(uri)).toBe(expected);
 }
+
+// TODO
+// hover information missing
+
+// function ResetPawn(Pawn P) 
+// {
+// if ( P == None ) 
+// 	return;
+
+// if ( P.PlayerReplicationInfo.bIsSpectator ){ << here
+		
+// }

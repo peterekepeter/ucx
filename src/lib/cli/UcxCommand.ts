@@ -9,7 +9,7 @@ export const DEFAULT_UCX_COMMAND = {
     noClean: false,
     quiet: false,
     verbose: false,
-    noPackageMangle: false,
+    noPackageMangle: true,
 };
 
 export type UcxCommand = typeof DEFAULT_UCX_COMMAND;
