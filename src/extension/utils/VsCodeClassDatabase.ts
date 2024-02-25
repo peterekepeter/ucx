@@ -68,6 +68,13 @@ export class VsCodeClassDatabase {
 
         return result;
     }
+    
+    async getAllExtendableClassNames(token: vscode.CancellationToken) {
+        await this.requiresLibraryLoaded(token);
+        if (token.isCancellationRequested) return [];
+        return this.libdb.findAllExtendableClassNames();
+    }
+
     private async requiresWorkspaceAndLibraryLoaded(token: vscode.CancellationToken) {
         await this.requiresWorkspaceLoaded(token);
         if (token.isCancellationRequested) return;

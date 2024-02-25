@@ -1,5 +1,5 @@
 import { ParserToken, SemanticClass, UnrealClass, isTokenAtOrBetween } from "../parser";
-import { UnrealClassFunction, UnrealClassFunctionArgument, UnrealClassFunctionLocal, UnrealClassVariable, getAllFunctions, getAllStatements } from "../parser/ast";
+import { UnrealClassFunction, UnrealClassFunctionArgument, UnrealClassFunctionLocal, UnrealClassVariable, getAllFunctions } from "../parser/ast";
 
 export type TokenInformation = {
     found?: boolean,
@@ -118,26 +118,38 @@ export class ClassDatabase
                 return this.findMemberDefinitionForQueryToken(query);
             }
             // look for symbol in parent class
-            let location: TokenInformation | undefined = query;
-            let symbolName = query.token?.textLower;
-            while (location?.ast?.parentName) {
-                location = this.findClassDefinitionStr(location.ast.parentName.textLower);
-                if (!location.found || !location.ast) break;
-                const symbol = this.findClassScopedSymbol(symbolName, location.ast);
-                if (symbol?.token) {
-                    symbol.found = true;
-                    symbol.uri = location.uri;
-                    symbol. ast = location.ast;
-                    return symbol;
-                }
+            const inheritedSymbol = this.findInheritedSybol(query);
+            if (inheritedSymbol?.found) {
+                return inheritedSymbol;
             }
             // maybe its a typecast to another class
-            const classdef =this.findClassDefinitionForQueryToken(query);
+            const classdef = this.findClassDefinitionForQueryToken(query);
             if (classdef.found) {
                 return classdef;
             }
         }
         return { found: false };
+    }
+
+    private findInheritedSybol(query: TokenInformation) {
+        let location: TokenInformation | undefined = query;
+        let symbolName = query.token?.textLower;
+        if (!symbolName) return;
+        while (location?.ast?.parentName) {
+            location = this.findClassDefinitionStr(location.ast.parentName.textLower);
+            if (!location.found || !location.ast) break;
+            const symbol = this.findClassScopedSymbol(symbolName, location.ast);
+            if (symbol?.token) {
+                symbol.found = true;
+                symbol.uri = location.uri;
+                symbol. ast = location.ast;
+                return symbol;
+            }
+        }
+    }
+
+    findAllExtendableClassNames() {
+        return Object.values(this.store).map(v => v.ast.name?.text).filter(n => n);
     }
 
     updateAst(uri: string, ast: UnrealClass, version: number) {

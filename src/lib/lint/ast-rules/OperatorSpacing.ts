@@ -96,17 +96,16 @@ function canOperatorBeAppliedTo(token: ParserToken)
     }
     switch (token.type){
     case C.ClassConstant:
+    case C.ClassReference: // can be applied to static function result
+    case C.ClassVariable:
+    case C.FunctionReference: // can be applied to function result
     case C.Identifier:
+    case C.LanguageConstant:
+    case C.LiteralName:
     case C.LiteralNumber:
     case C.LiteralString:
-    case C.LiteralName:
-    case C.ClassReference: // can be applied to static function result
-    case C.FunctionReference: // can be applied to function result
-    case C.LanguageConstant:
-    case C.ClassConstant:
-    case C.VariableReference:
-    case C.ClassVariable:
     case C.LocalVariable:
+    case C.VariableReference:
         return true;
     case C.Operator:
     default:

@@ -1,3 +1,4 @@
+import { ClassNamingRule } from "../../lib/lint/ast-rules/ClassNamingRule";
 import { db } from "../state";
 import { vscode } from "../vscode";
 
@@ -11,7 +12,34 @@ export class CompletionProvider implements vscode.CompletionItemProvider {
         context: vscode.CompletionContext
     ): Promise<vscode.CompletionList<vscode.CompletionItem> | vscode.CompletionItem[]> {
 
-        db.updateDocumentAndGetAst(document, token);
+        const ast = db.updateDocumentAndGetAst(document, token);
+        // TODO move completion logic inside lib
+        if (context.triggerKind === vscode.CompletionTriggerKind.Invoke) {
+            if (!ast.name) {
+                const expectedName = new ClassNamingRule().getExpectedClassName(document.uri.toString());
+                return {
+                    items: [
+                        {
+                            label: 'class ' + expectedName + ' extends ',
+                            kind: vscode.CompletionItemKind.Class,
+                            command: {
+                                command: 'editor.action.triggerSuggest',
+                                title: 'Complete superclass',
+                            }
+                        }
+                    ]
+                };
+            }
+            if (document.lineAt(position.line).text.match(/extends|expands\\s*$/)){
+                const list = await db.getAllExtendableClassNames(token);
+                return list.map(item => ({
+                    label: item,
+                    kind: vscode.CompletionItemKind.Class,
+                }) as vscode.CompletionItem);
+
+            }
+        }
+        
         if (context.triggerKind === vscode.CompletionTriggerKind.TriggerCharacter){
             if (context.triggerCharacter === '.') {
                 const line = document.lineAt(position.line).text;

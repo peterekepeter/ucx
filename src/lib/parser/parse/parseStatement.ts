@@ -19,7 +19,7 @@ export function parseStatement(parser: UcParser, token: Token)
     case "for":
     case "while":
     case "if":
-    case "switch":
+    case "switch": {
         parser.rootFn = parseControlStatement;
         token.type = C.Keyword;
         const statement: UnrealClassStatement = {
@@ -35,7 +35,8 @@ export function parseStatement(parser: UcParser, token: Token)
         parser.lastCodeBlock.push(statement);
         parser.codeBlockStack.push(statement);
         break;
-    case "foreach":
+    }
+    case "foreach": {
         parser.rootFn = parseForeachStatement;
         parser.expressionSplitter.clear();
         token.type = C.Keyword;
@@ -52,7 +53,8 @@ export function parseStatement(parser: UcParser, token: Token)
         parser.lastCodeBlock.push(foreach);
         parser.codeBlockStack.push(foreach);
         break;
-    case "{":
+    }
+    case "{": {
         // codeblock
         const body = parser.lastCodeBlock;
         const codeBlock: UnrealClassStatement = {
@@ -68,6 +70,7 @@ export function parseStatement(parser: UcParser, token: Token)
         body.push(codeBlock);
         parser.codeBlockStack.push(codeBlock);
         break;
+    }
     case "}":
         endCurrentStatementOrFunctionBlock(parser, token);
         break;
@@ -344,25 +347,20 @@ function endCurrentStatementBlock(parser: UcParser, endingToken: Token){
 
 function parseForeachStatement(parser: UcParser, token: Token)
 {
-    switch (token.text)
-    {
-    case '{':
+    if (token.text === '{') {
         parser.lastStatement.args.push(resolveExpression(parser.expressionSplitter.getTokens()));
         parser.expressionSplitter.clear();
         parser.rootFn = parseStatement;
         parser.lastStatement.bodyFirstToken = token;
-        break;
-    default:
-        if (parser.expressionSplitter.canContinueWithToken(token)){
-            parser.expressionSplitter.addToken(token);
-        }
-        else {
-            parser.lastStatement.args.push(resolveExpression(parser.expressionSplitter.getTokens()));
-            parser.expressionSplitter.clear();
-            parser.rootFn = parseSingleStatementBody;
-            parser.lastStatement.bodyFirstToken = token;
-            parser.rootFn(parser, token);
-        }
-        break;
+    }
+    else if (parser.expressionSplitter.canContinueWithToken(token)){
+        parser.expressionSplitter.addToken(token);
+    }
+    else {
+        parser.lastStatement.args.push(resolveExpression(parser.expressionSplitter.getTokens()));
+        parser.expressionSplitter.clear();
+        parser.rootFn = parseSingleStatementBody;
+        parser.lastStatement.bodyFirstToken = token;
+        parser.rootFn(parser, token);
     }
 }

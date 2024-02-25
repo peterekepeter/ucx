@@ -1,8 +1,10 @@
-import { LineToken as LineToken } from "./LineToken";
+import { LineToken } from "./LineToken";
 import { tokenizeLine } from "./tokenizeLine";
 
-//             identifiers     | linecomm | exec  | mlinecomm           | numeric                                       | strings                            | names | operators                                                                                               | syntax   
-const regex = /[_a-z][_a-z0-9]*|\/\/[^\n]*|#[^\n]*|\/\*+|\*+\/|(?:(?<=[=+-])[+-])?[0-9][0-9a-fx\.]*|".*?(?<![^\\]\\)(?<![^\\]\\\\\\)"|'[^']*'|!=|~=|==|!|&&|\^\^|\|\||\*=|\/=|\+=|\-=|\=|\+\+|--|~|-|\*\*|\*|\/|\+|<<|>>>|>>|<=|>=|<|>|&|\^|\||\*\*|%|~=|\$|@|\.|:|;|\(|\)|,|\{|\}|\]|\[/gi;
+const regex =
+    // identifiers  | linecomm | exec  | mlinecomm | numeric                       | strings                         | names | multi char operators                           | single char operators & syntax    
+    /[_a-z][_a-z\d]*|\/\/[^\n]*|#[^\n]*|\/\*+|\*+\/|(?:(?<=[=+-])[+-])?\d[\da-fx.]*|".*?(?<![^\\]\\)(?<![^\\]\\\\\\)"|'[^']*'|[-!~=*/+<>]=|&&|\^\^|\|\||\+\+|--|\*\*|<<|>>>|>>|[-+*/~<=>!&^|%$@.:;(),{}[\]]/gi
+;
 /**
  * assumes input is on single line, returned tokens be on given line
  */  
