@@ -30,7 +30,8 @@ export class CompletionProvider implements vscode.CompletionItemProvider {
                     ]
                 };
             }
-            if (document.lineAt(position.line).text.match(/extends|expands\\s*$/)){
+            const lineUntilCursor = document.lineAt(position.line).text.substring(0, position.character);
+            if (lineUntilCursor.match(/(?:extends|expands)\s*$/)){
                 const list = await db.getAllExtendableClassNames(token);
                 return list.map(item => ({
                     label: item,
