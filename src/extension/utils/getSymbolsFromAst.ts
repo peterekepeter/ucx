@@ -92,7 +92,10 @@ export function getSymbolsFromAst(ast: UnrealClass, uri: vscode.Uri): vscode.Sym
         if (!fnDecl.name) { continue };
         result.push(new vscode.SymbolInformation(
             fnDecl.name.text,
-            vscode.SymbolKind.Function,
+            fnDecl.isOperator ? vscode.SymbolKind.Operator : 
+                fnDecl.isEvent ? vscode.SymbolKind.Event : 
+                    fnDecl.isStatic ? vscode.SymbolKind.Function :
+                        vscode.SymbolKind.Method,
             mainContainer,
             new vscode.Location(
                 uri,

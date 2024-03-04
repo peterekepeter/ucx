@@ -13,10 +13,21 @@ export function parseFnBegin(parser: UcParser, token: Token)
     const container = parser.currentClassState 
         ? parser.lastState.functions 
         : parser.result.functions;
-    container.push({
+    const fndecl = {
         ...createEmptyUnrealClassFunction(),
         ...resolveFunctionModifiers(parser),
-    });
+    };
+    switch (token.textLower) {
+    case 'preoperator': 
+    case 'postoperator': 
+    case 'operator': 
+        fndecl.isOperator = true;
+        break;
+    case 'event':
+        fndecl.isEvent = true;
+        break;
+    }
+    container.push(fndecl);
     parser.rootFn = parseFnDeclaration;
     token.type = C.Keyword;
     clearModifiers(parser);

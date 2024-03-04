@@ -177,12 +177,12 @@ test("parse operator declarations", () => { parsing(`
     native(166) static final postoperator int  -- ( out int A );
     `)
     .hasNoErrors()
-    .hasFunction(0, { name: '+=', returns: 'int' })
-    .hasFunction(1, { name: '-=', returns: 'int' })
-    .hasFunction(2, { name: '++', returns: 'int' })
-    .hasFunction(3, { name: '--', returns: 'int' })
-    .hasFunction(4, { name: '++', returns: 'int' })
-    .hasFunction(5, { name: '--', returns: 'int' })
+    .hasFunction(0, { name: '+=', returns: 'int', operator: true })
+    .hasFunction(1, { name: '-=', returns: 'int', operator: true })
+    .hasFunction(2, { name: '++', returns: 'int', operator: true })
+    .hasFunction(3, { name: '--', returns: 'int', operator: true })
+    .hasFunction(4, { name: '++', returns: 'int', operator: true })
+    .hasFunction(5, { name: '--', returns: 'int', operator: true })
 ;});
 
 test("parse operator with skip-able parameters", () => { parsing(`
@@ -215,6 +215,8 @@ test("parse empty function", () => { parsing(`
         isFinal: false,
         isSimulated: false,
         isStatic: false,
+        operator: false,
+        isEvent: false,
     })
     .hasNoErrors();
 });
@@ -860,7 +862,7 @@ test("parse event as function", () => { parsing(`
         Log("entered");
     }`)
     .hasNoErrors()
-    .hasFunction(0, { name:"ActorEntered" });
+    .hasFunction(0, { name:"ActorEntered", isEvent: true });
 });
 
 
@@ -1876,6 +1878,8 @@ interface ParserTestChecks
         isLatent?: boolean,
         native?: boolean,
         iterator?: boolean,
+        operator?: boolean,
+        isEvent?: boolean,
         returns?: string,
         fnArgs?: { 
             type?: string,
@@ -1998,6 +2002,8 @@ function parsing(input: string): ParserTestChecks {
                 isLatent?: boolean,
                 native?: boolean,
                 iterator?: boolean,
+                operator?: boolean,
+                isEvent?: boolean,
                 returns?: string,
                 fnArgs?: { 
                     type?: string,
@@ -2026,6 +2032,8 @@ function parsing(input: string): ParserTestChecks {
                 isLatent: obj.isLatent,
                 native: obj.isNative,
                 iterator: obj.isIterator,
+                operator: obj.isOperator,
+                isEvent: obj.isEvent,
                 returns: obj.returnType?.text,
                 fnArgs: obj.fnArgs.map(a => ({ 
                     name:a.name?.text,

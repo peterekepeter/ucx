@@ -16,6 +16,8 @@ export interface UnrealClassFunction {
     isLatent: boolean;
     isNative: boolean,
     isIterator: boolean,
+    isOperator: boolean,
+    isEvent: boolean,
     returnType: Token | null;
     fnArgs: UnrealClassFunctionArgument[];
     fnArgsLastToken: Token | null;
@@ -38,6 +40,8 @@ export function createEmptyUnrealClassFunction(): UnrealClassFunction {
         isLatent: false,
         isNative: false,
         isIterator: false,
+        isOperator: false,
+        isEvent: false,
         returnType: null,
         fnArgs: [],
         fnArgsFirstToken: null,
