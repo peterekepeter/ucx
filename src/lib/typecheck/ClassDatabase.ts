@@ -15,12 +15,16 @@ export type TokenInformation = {
     classDefinition?: UnrealClass,
 };
 
+export type ClassFileEntry = {
+    ast: UnrealClass; 
+    url: string,
+    version: number,
+    source?: 'workspace'|'library',
+};
+
 export class ClassDatabase
 {
-    store: Record<string, {
-        ast: UnrealClass; 
-        version: number
-    }> = {};
+    store: Record<string, ClassFileEntry> = {};
 
     findTokenBeforePosition(uri: string, line: number, character: number): TokenInformation {
         const ast = this.getAst(uri);
@@ -152,16 +156,24 @@ export class ClassDatabase
         return Object.values(this.store).map(v => v.ast.name?.text).filter(n => n);
     }
 
-    updateAst(uri: string, ast: UnrealClass, version: number) {
+    updateAst(uri: string, ast: UnrealClass, version: number, source?: 'library'|'workspace') {
         if (!this.store[uri]) 
         {
-            this.store[uri] = { ast, version };
+            this.store[uri] = { 
+                ast,
+                version, 
+                url: uri,
+                source,
+            };
         }
         else {
             const entry = this.store[uri];
             if (entry.version >= version) return;
             entry.ast = ast;
             entry.version = version;
+            if (source) {
+                entry.source = source;
+            }
         }
     }
 
@@ -171,6 +183,25 @@ export class ClassDatabase
 
     getAst(uri: string): UnrealClass|undefined {
         return this.store[uri]?.ast;
+    }
+
+    tagSourceAndGetVersion(uri: string, source: 'workspace'|'library'): number {
+        const item = this.store[uri];
+        if (item) {
+            item.source = source;
+            return item.version;
+        }
+        return -Infinity;
+    }
+
+    *getAllFileEntries(options?: { includeWorkspace?: boolean, includeLibrary?: boolean}): Iterable<ClassFileEntry> {
+        for (const key in this.store) {
+            const item = this.store[key];
+            if (item.source === 'library' && options?.includeLibrary ||
+               item.source === 'workspace' && options?.includeWorkspace) {
+                yield item;
+            }
+        }
     }
 
     findChildClassesOf(className: string): TokenInformation[] {

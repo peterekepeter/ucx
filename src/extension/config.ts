@@ -7,6 +7,7 @@ import { parseIndentationType } from '../lib/lint/indentation';
 export type ExtensionConfiguration =
 {
     libraryPath: string,
+    searchLibrarySymbols: boolean,
     showErrors: boolean,
     showWarnings: boolean,
     overrideEditorIndentationStyle: boolean,
@@ -14,9 +15,12 @@ export type ExtensionConfiguration =
 };
 
 export function parseConfiguration(cfg: vscode.WorkspaceConfiguration): ExtensionConfiguration {
+    // TODO split and only parse what we need or find a way to cache this
     return {
         libraryPath: 
             cfg.get('libraryPath') ?? '',
+        searchLibrarySymbols: 
+            cfg.get('language.searchLibrarySymbols') ?? true,
         showErrors: 
             cfg.get('showErrors') ?? true,
         showWarnings: 

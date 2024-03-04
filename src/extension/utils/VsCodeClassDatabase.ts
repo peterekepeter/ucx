@@ -1,6 +1,6 @@
 import { UnrealClass } from '../../lib/parser';
 import { ClassDatabase } from '../../lib';
-import { TokenInformation } from '../../lib/typecheck/ClassDatabase';
+import { ClassFileEntry, TokenInformation } from '../../lib/typecheck/ClassDatabase';
 import { ucParseText } from '../../lib/parser/ucParse';
 import { activatedAt } from '../state';
 import { vscode } from '../vscode';
@@ -68,6 +68,21 @@ export class VsCodeClassDatabase {
 
         return result;
     }
+
+    async getAllFileEntries(token: vscode.CancellationToken, options?: { fromWorkspace: boolean, fromLibrary: boolean }): Promise<Iterable<ClassFileEntry>> {
+        if (options?.fromWorkspace) {
+            await this.requiresWorkspaceLoaded(token);
+            if (token.isCancellationRequested) return [];
+        }
+        if (options?.fromLibrary) {
+            await this.requiresLibraryLoaded(token);
+            if (token.isCancellationRequested) return [];
+        }
+        return this.libdb.getAllFileEntries({ 
+            includeWorkspace: options?.fromWorkspace, 
+            includeLibrary: options?.fromLibrary,
+        });
+    }
     
     async getAllExtendableClassNames(token: vscode.CancellationToken) {
         await this.requiresLibraryLoaded(token);
@@ -105,7 +120,7 @@ export class VsCodeClassDatabase {
 
     private async ensureWorkspaceIsNotOutdated(cancellation: vscode.CancellationToken) {
         const files = await vscode.workspace.findFiles("**/*.uc");
-        await this.updateFiles(files, cancellation);
+        await this.updateFiles(files, cancellation, "workspace");
     }
 
     private async ensureLibraryIsNotOutdated(cancellation: vscode.CancellationToken) {
@@ -114,16 +129,16 @@ export class VsCodeClassDatabase {
         if (config.libraryPath) {
             const searchPattern = new vscode.RelativePattern(config.libraryPath, '**/*.uc');
             const files = await vscode.workspace.findFiles(searchPattern);
-            await this.updateFiles(files, cancellation);
+            await this.updateFiles(files, cancellation, "library");
         }
     }
 
-    private async updateFiles(files: vscode.Uri[], cancellation: vscode.CancellationToken) {
+    private async updateFiles(files: vscode.Uri[], cancellation: vscode.CancellationToken, source: 'library'|'workspace') {
         for (const file of files) {
             const stats = await vscode.workspace.fs.stat(file);
             const fileVersion = this.versionFromFileStat(stats);
             const cacheKey = file.toString();
-            const dbVersion = this.libdb.getVersion(cacheKey);
+            const dbVersion = this.libdb.tagSourceAndGetVersion(cacheKey, source);
             if (fileVersion < dbVersion) continue;
 
             if (cancellation.isCancellationRequested) return;
@@ -131,7 +146,7 @@ export class VsCodeClassDatabase {
             const array = await vscode.workspace.fs.readFile(file);
             const str = Buffer.from(array).toString('utf8');
             const ast = ucParseText(str);
-            this.libdb.updateAst(file.toString(), ast, fileVersion);
+            this.libdb.updateAst(file.toString(), ast, fileVersion, source);
         }
     }
 

@@ -43,6 +43,7 @@ export interface UnrealClass {
     execInstructions: UnrealExecInstruction[];
     states: UnrealClassState[];
     replicationBlocks: UnrealClassReplicationBlock[];
+    source?: 'library'|'workspace',
 }
 
 export function createDefaultUnrealClass(): UnrealClass {

@@ -33,6 +33,13 @@
 					"description": "All UnrealScript files from this path will be scanned and be used to provide definition and references in your project. This can be the folder where you exported all your scripts from the editor. Example: C:/Games/Ut99",
 					"order": -180
 				},
+				"ucx.language.searchLibrarySymbols": {
+					"title": "Include library symbols",
+					"type": "boolean",
+					"description": "When searching for workspace symbols, provide search results from library as well as the workspace. This helps to quickly lookup library classes and functions.",
+					"default": true,
+					"order": -170
+				},
 				"ucx.showErrors": {
 					"title": "Report Errors",
 					"type": "boolean",
