@@ -11,25 +11,11 @@
 
 Dedicated language support and tooling UnrealScript, with primary focus on UT99.
 
-## Installation
-
- - VsCode/Codium extension available
-    - [Open VSX Registry](https://open-vsx.org/extension/peterekepeter/ucx)
-    - [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=peterekepeter.ucx)
- - Command line tool [avaliable via npm](https://www.npmjs.com/package/ucx) 
-    - requires [nodejs](https://nodejs.org/en)
-    - recommended install globally `npm i -g ucx@latest` 
-        - may need sudo on linux
-    - recommended env var `UCC_PATH=path_to_ut99/System/UCC.exe`
-
 ## VsCode Features
 
- - highlight:
-    - textmate grammar
-    - semantic syntax highlighting
  - language:
     - goto definition (`Ctrl-Click`)
-    - find document or workspace symbols (`Ctrl-P @` and `Ctrl-P #`)
+    - find symbols (`Ctrl-P @` and `Ctrl-P #` or `Ctrl-T`)
     - folding support for defaultproperties, states, labels, replication
     - completion support for methods (partially working)
     - function signature support
@@ -43,6 +29,9 @@ Dedicated language support and tooling UnrealScript, with primary focus on UT99.
  - diagnostics:
     - detect syntax parse errors
     - semicolon completion
+ - highlight:
+    - textmate grammar
+    - semantic syntax highlighting
 
 ## CLI Features
 
@@ -62,5 +51,16 @@ Dedicated language support and tooling UnrealScript, with primary focus on UT99.
  - wrapper for any ucc command
     - path to UCC configured via env or cli argument
     - supports windows/linux/wine
+
+## Installation
+
+ - VsCode/Codium extension available
+    - [Open VSX Registry](https://open-vsx.org/extension/peterekepeter/ucx)
+    - [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=peterekepeter.ucx)
+ - Command line tool [avaliable via npm](https://www.npmjs.com/package/ucx) 
+    - requires [nodejs](https://nodejs.org/en)
+    - recommended install globally `npm i -g ucx@latest` 
+        - may need sudo on linux
+    - recommended env var `UCC_PATH=path_to_ut99/System/UCC.exe`
 
 **Enjoy!**

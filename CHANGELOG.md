@@ -1,5 +1,11 @@
 # Change Log
 
+### v0.19.0
+- Better distinction between function types in symbol provider.
+- Library is now included into symbol search (can be disabled)
+- CLI: Improved log handling quiet/verbose modes.
+- CLI: Unique package build names disabled by default.
+
 ### v0.18.0
 - Adds support for function signature helper when calling functions
 
