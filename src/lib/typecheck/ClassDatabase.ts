@@ -260,7 +260,7 @@ export class ClassDatabase
                 break;
             }
 
-            if (t.text === ',') {
+            if (t.text === ',' && parens === 0) {
                 commas += 1;
             }
             else if (t.text === ')') {

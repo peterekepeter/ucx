@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.19.1
+- Fixes operator spacing for increment/decrement operators
+- Fixes signature helper for nested function calls
+- Adds comma as signature helper trigger character (previsoly open paren only)
+
 ### v0.19.0
 - Better distinction between function types in symbol provider.
 - Library is now included into symbol search (can be disabled)

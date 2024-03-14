@@ -30,7 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
     const cmds = vscode.commands;
 
     context.subscriptions.push(
-        lang.registerSignatureHelpProvider(langId.uc, new SignatureProvider(), '('),
+        lang.registerSignatureHelpProvider(langId.uc, new SignatureProvider(), '(', ','),
         lang.registerTypeHierarchyProvider(langId.uc, new TypeHierarchyProvider()),
         lang.registerDocumentFormattingEditProvider(langId.uc, new FormattingProvider()),
         lang.registerDefinitionProvider(langId.uc, new DefinitionProvider()),

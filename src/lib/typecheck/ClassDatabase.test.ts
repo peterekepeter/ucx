@@ -124,7 +124,8 @@ describe("definition across files", () => {
             'class ClassA;', // line 0
             '',
             'var int Count;',
-            'static function ShowStartMessage(){}'
+            'static function ShowStartMessage(){}',
+            'static function string Mid ( coerce string S, int i, optional int j );',
         ]);
         ast(uriCanvas, 1, [
             'class Canvas;', // line 0
@@ -154,7 +155,8 @@ describe("definition across files", () => {
             '   other.Count += 1;',
             "   class'ClassA'.static.ShowStartMessage(PP);",
             "   Log(class'ClassA'.default.Count);", // line 21
-            "   Log(ClassA(self).Count)",
+            "   Log(ClassA(self).Count);",
+            "   Mid(Mid(\"Some\", 1, 2), 1, 1);", // line 22
             '}',
         ]);
     });
@@ -200,6 +202,10 @@ describe("definition across files", () => {
     test.each([
         ['method signature', 18, 16, resetFnDef],
         ['static function signature', 20, 42, showStartMessageFnDef],
+        ['signature first param', 23, 7, { paramDefinition: { name: { text: 'S'}}}],
+        ['signature 2nd param', 23, 20, { paramDefinition: { name: { text: 'i'}}}],
+        ['signature 3rd param', 23, 23, { paramDefinition: { name: { text: 'j'}}}],
+        ['signature 2nd param but after nested call', 23, 27, { paramDefinition: { name: { text: 'i'}}}],
     ] as [string, number, number, TokenInformation][]
     )("findSignature finds %p at %p:%p", (_, line, column, expected) => {
         let signature = db.findSignature(uriB, line, column);
