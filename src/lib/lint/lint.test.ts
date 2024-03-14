@@ -507,10 +507,23 @@ test('lint operator space just right', () => { lintingStatements(
 ).hasNoLintResults();});
 
 test('lint operator negation should not have space', () => { lintingStatements(
-    'x = - 1;'
+    'x = - 1;',
 ).hasFormattedResult(statementWrapper(
     'x = -1;'
 ));});
+
+test('lint operator spacing not applied to increment/decrement', () => { lintingStatements(
+    'x++;',
+    '++x;',
+    'x--;',
+    '--x;',
+).hasFormattedResult(statementWrapper(
+    'x++;',
+    '++x;',
+    'x--;',
+    '--x;',
+));});
+
 
 test('lint operator spacing does not remove space between operator and parenthesis', () => { lintingStatements(
     'expre = ( !value );'
@@ -892,6 +905,16 @@ test('format if control condition spacing', () => { lintingStatements(
     "}",
 ).hasFormattedResult(statementWrapper(
     "if ( bDebug )",
+    "{",
+    "}",
+));});
+
+test('format for condition correctly spaced', () => { lintingStatements(
+    "for ( i = 0; i < PreventDeathListenerCount; i++ )",
+    "{",
+    "}",
+).hasFormattedResult(statementWrapper(
+    "for ( i = 0; i < PreventDeathListenerCount; i++ )",
     "{",
     "}",
 ));});

@@ -14,15 +14,16 @@ export class OperatorSpacing implements AstBasedLinter
             }
             const prev = ast.tokens[i-1];
             const next = ast.tokens[i+1];
-            const isPrefix = istPrefixOperator(prev, token, next);
+            const isPrefix = isPrefixOperator(prev, token, next);
             const isInDefaultProperties = isInDefaultPropertiesScope(token, ast);
             const isStringConcat = token.text === '$' || token.text === '@';
+            const isIncrementDecrement = token.text === '++' || token.text === '--';
             const prevIsParen = prev.text === '(';
             if (prev && prev.line === token.line && !prevIsParen)
             {
                 const prevEnd = prev.position + prev.text.length;
                 const distance = token.position - prevEnd;
-                const expectedDistance = isInDefaultProperties || isStringConcat ? 0 : 1;
+                const expectedDistance = isInDefaultProperties || isStringConcat || isIncrementDecrement ? 0 : 1;
                 if (distance !== expectedDistance){
                     const message = expectedDistance === 0 
                         ? 'Expected no space before operator' 
@@ -45,7 +46,27 @@ export class OperatorSpacing implements AstBasedLinter
             {
                 const tokenEnd = token.position + token.text.length;
                 const distance = next.position - tokenEnd;
-                const expectedDistance = isInDefaultProperties || isStringConcat || isPrefix ? 0 : 1;
+                const expectedDistance = isInDefaultProperties || isStringConcat || isPrefix || isIncrementDecrement ? 0 : 1;
+                let doNotInterfere = false;
+                if (next.text === ')') {
+                    let count = 1;
+                    // find opening
+                    for (let j=i-1; j>0; j-=1)
+                    {
+                        if (ast.tokens[j].textLower === ')')
+                            count += 1;
+                        else if (ast.tokens[j].textLower === '(')
+                            count -=1;
+                        else if (count === 0) {
+                            if (ast.tokens[j].textLower === 'for')
+                                doNotInterfere = true;
+                            break;
+                        }
+                    }
+                }
+                if (doNotInterfere) {
+                    continue;
+                }
                 if (distance !== expectedDistance){
                     const originalLine = ast.textLines[token.line];
                     const originalText = originalLine.slice(tokenEnd, next.position);
@@ -71,7 +92,7 @@ export class OperatorSpacing implements AstBasedLinter
     }
 }
 
-function istPrefixOperator(prev: ParserToken, token: ParserToken, next: ParserToken): boolean 
+function isPrefixOperator(prev: ParserToken, token: ParserToken, next: ParserToken): boolean 
 {
     if (token.type !== C.Operator ||
         !canBePrefixOperatorRegex.test(token.text))
