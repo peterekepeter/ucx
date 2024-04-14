@@ -48,7 +48,6 @@ export class UcParser{
         if (this.result.classFirstToken){
             this.result.classLastToken = token;
         }
-        this.result.tokens.push(token);
         resolveArrayCountExpressions(this.result);
     }
 

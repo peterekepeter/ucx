@@ -1,5 +1,5 @@
 import { ucParseLines } from "../parser/ucParse";
-import { ClassDatabase, TokenInformation } from "./ClassDatabase";
+import { ClassDatabase, CompletionInformation, TokenInformation } from "./ClassDatabase";
 import { renderDefinitionMarkdownLines } from "./renderDefinitonMarkdownLines";
 
 let db: ClassDatabase;
@@ -219,6 +219,135 @@ describe("definition across files", () => {
     test('find superclass', () => {
         expect(db.findParentClassOf("ClassB")).toMatchObject(classDefA);
     });
+
+});
+
+describe("completion", () => {
+    test("empty file suggests class declaration", () => {
+        const uri = '../Package/Classes/MyClass.uc';
+        ast(uri, 1, ['']);
+        expectCompletion(uri, 0, 0, { label: "class MyClass extends ", retrigger: true });
+    });
+
+    test("does not suggest class declaration if class declared", () => {
+        const uri = '../Package/Classes/MyClass.uc';
+        ast(uri, 1, ['class MyClass extends Actor;', '']);
+        expectCompletionCount(uri, 1, 0, 0);
+    });
+
+    test("empty file suggests class declaration", () => {
+        const uri = 'Awesome.uc';
+        ast(uri, 1, ['// new class', 'class ']);
+        expectCompletion(uri, 1, 6, { label: "Awesome extends ", retrigger: true });
+        expectCompletion(uri, 1, 5, { label: " Awesome extends ", retrigger: true });
+        expectCompletionCount(uri, 0, 0, 0);
+    });
+
+    test("after extends suggest extendable class names", () => {
+        ast("MyOther.uc", 1, ['class MyOther extends Actor;']);
+        ast("MyClass.uc", 1, ['class MyClass extends ']);
+        expectCompletion("MyClass.uc", 1, 22, "MyOther");
+        expectCompletion("MyClass.uc", 1, 22, "Actor");
+    });
+
+    describe("object member completion", () => {
+
+        beforeEach(() => {
+            ast("MyOther.uc", 1, [
+                'class MyOther;',
+                '',
+                'function Update(){}',
+            ]);
+            ast("MyClass.uc", 1, [
+                'class MyClass extends MyOther;',
+                '',
+                'var MyOther VObj;',
+                '',
+                'function Test(MyOther PObj) {', // line 4
+                '    local MyOther LObj; LObj = PObj;',
+                '',
+                '    PObj.;', // line 7 char 9
+                '    VObj.;', // line 8
+                '    LObj.;', // line 9
+                '    self.;', // line 10
+                '    super.;', // line 11 char 10
+                '}',
+            ]);
+        });
+
+        test('through function parameter reference', () => {
+            expectCompletion("MyClass.uc", 7, 9, "Update");
+        });
+
+        test('through class variable reference', () => {
+            expectCompletion("MyClass.uc", 8, 9, "Update");
+        });
+
+        test('through local variable reference', () => {
+            expectCompletion("MyClass.uc", 9, 9, "Update");
+        });
+
+        test('through self reference', () => {
+            expectCompletion("MyClass.uc", 10, 9, "Test");
+        });
+
+        test('through super reference', () => {
+            expectCompletion("MyClass.uc", 11, 10, "Update");
+        });
+        
+    });
+
+    describe("expression completion", () => {
+
+        beforeEach(() => {
+            ast("Object.uc", 1, [
+                'class Object;',
+                '',
+                'function Log(coerce string str){}',
+            ]);
+            ast("MyObject.uc", 1, [
+                'class MyObject extends Object;',
+                '',
+                'function Test(Object Other) {', // line 2
+                '    ', // line 3
+                '}',
+            ]);
+        });
+
+        test('suggests locally avaiable functions and variables', () => {
+            expectCompletion("MyObject.uc", 3, 4, "Other");
+            expectCompletion("MyObject.uc", 3, 4, "Test");
+        });
+
+        test('suggests inherited avaiable functions and variables', () => {
+            expectCompletion("MyObject.uc", 3, 4, "Log");
+        });
+
+    });
+
+    const expectCompletion = (uri: string, line: number, pos: number, expected: string|CompletionInformation) => {
+        const completions = db.findCompletions(uri, line, pos);
+        if (typeof expected === 'string') {
+            expected = {
+                label: expected
+            };
+        }
+        let last;
+        expect(completions).not.toHaveLength(0);
+        for (const completion of completions) {
+            last = completion;
+            if (completion.label === expected.label) {
+                expect(completion).toMatchObject(expected);
+                return;
+            }
+        }
+        expect(last).toMatchObject(expected);
+    };
+
+    const expectCompletionCount = (uri: string, line: number, pos: number, expectedCount: number) => { 
+        const completions = db.findCompletions(uri, line, pos);
+        expect(completions).toHaveLength(expectedCount);
+    };
 
 });
 

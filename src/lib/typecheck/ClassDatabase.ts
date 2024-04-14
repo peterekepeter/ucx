@@ -1,3 +1,4 @@
+import { ClassNamingRule } from "../lint/ast-rules/ClassNamingRule";
 import { ParserToken, SemanticClass, UnrealClass, isTokenAtOrBetween } from "../parser";
 import { UnrealClassFunction, UnrealClassFunctionArgument, UnrealClassFunctionLocal, UnrealClassVariable, getAllFunctions } from "../parser/ast";
 
@@ -13,6 +14,12 @@ export type TokenInformation = {
     varDefinition?: UnrealClassVariable,
     fnDefinition?: UnrealClassFunction,
     classDefinition?: UnrealClass,
+};
+
+export type CompletionInformation = {
+    label: string,
+    kind?: SemanticClass,
+    retrigger?: boolean,
 };
 
 export type ClassFileEntry = {
@@ -42,6 +49,127 @@ export class ClassDatabase
         if (!token) return { uri, found: false };
         const functionScope = this.findFunctionScope(ast, token);
         return { uri, found: true, token, ast, functionScope };
+    }
+
+    findCompletions(uri: string, line: number, character: number): CompletionInformation[] {
+        const expectedName = new ClassNamingRule().getExpectedClassName(uri.toString());
+        const ast = this.getAst(uri);
+        if (!ast) {
+            return [];
+        }
+        if (!ast.name) {
+            if (ast.classDeclarationFirstToken) {
+                const firstToken = ast.classDeclarationFirstToken;
+                if (firstToken.line === line) 
+                {
+                    let prepend = '';
+                    if (firstToken.position + firstToken.text.length === character) 
+                    {
+                        prepend = ' ';
+                    }
+                    return [{
+                        label: prepend + expectedName + ' extends ',
+                        kind: SemanticClass.ClassDeclaration,
+                        retrigger: true,
+                    }];
+                }
+
+            } else {
+                return [{
+                    label: 'class ' + expectedName + ' extends ',
+                    kind: SemanticClass.ClassDeclaration,
+                    retrigger: true,
+                }];
+            }
+        }
+        const before = this.findTokenBeforePosition(uri, line, character);
+        if (!before.token) {
+            return [];
+        }
+        if (before.token.type === SemanticClass.Keyword &&
+            (before.token.textLower === 'extends' ||
+            before.token.textLower === 'expands')
+        ) {
+            const list = this.findAllExtendableClassNames();
+            const results: CompletionInformation[] = [];
+            for (const item of list) {
+                if (item) {
+                    results.push({
+                        label: item,
+                        kind: SemanticClass.ClassReference,
+                    });
+                }
+            }
+            return results;
+        }
+        if (before.functionScope) {
+            if (before.token.type === SemanticClass.None)
+            {
+                if (before.token.text === ".") {
+                    const beforeDot = ast.tokens[before.token.index - 1];
+                    if (beforeDot) {
+                        const token = this.findToken(uri, beforeDot.line, beforeDot.position);
+                        const symboldef = this.findDefinition(token);
+                        const typedef = this.findTypeOfDefinition(symboldef);
+                        if (typedef.ast) {
+                            return [
+                                ...typedef.ast.functions.map(f => ({
+                                    label: f.name?.text ?? '',
+                                    kind: SemanticClass.FunctionReference,
+                                })),
+                                ...typedef.ast.variables.map(v => ({
+                                    label: v.name?.text ?? '',
+                                    kind: SemanticClass.VariableReference,
+                                })),
+                            ];
+                        }
+                    }
+                }
+                else if (before.token.text === ";" || before.token.text === '{')
+                {
+                    if (ast) {
+                        let results = [
+                            ...before.functionScope.fnArgs.map(v => ({
+                                label: v.name?.text ?? '',
+                                kind: SemanticClass.VariableReference,
+                            })),
+                            ...before.functionScope.locals.map(v => ({
+                                label: v.name?.text ?? '',
+                                kind: SemanticClass.VariableReference,
+                            })),
+                            ...ast.functions.map(f => ({
+                                label: f.name?.text ?? '',
+                                kind: SemanticClass.FunctionReference,
+                            })),
+                            ...ast.variables.map(v => ({
+                                label: v.name?.text ?? '',
+                                kind: SemanticClass.VariableReference,
+                            })),
+                        ];
+                        let parent = ast.parentName;
+                        while (parent) {
+                            const def = this.findClassDefinitionStr(parent.textLower);
+                            if (!def.found || !def.classDefinition) {
+                                break;
+                            }
+                            parent = def.classDefinition.parentName;
+                            results = results.concat(
+                                def.classDefinition.functions.map(f => ({
+                                    label: f.name?.text ?? '',
+                                    kind: SemanticClass.FunctionReference,
+                                })),
+                                def.classDefinition.variables.map(v => ({
+                                    label: v.name?.text ?? '',
+                                    kind: SemanticClass.VariableReference,
+                                }))
+                            );
+                        }
+                        return results;
+                    }
+                }
+            }
+        }
+        return [];
     }
     
     private astFindTokenAtPosition(ast: UnrealClass, line: number, character: number) {
@@ -87,17 +215,26 @@ export class ClassDatabase
         let result: TokenInformation|undefined;
         if (!query.token) return { found: false };
         if (!query.ast) return { missingAst: true };
-        if (this.isTypeQuery(query)) {
+        if (query.token.type === SemanticClass.Keyword) {
+            // console.log(query);
+            if (query.token.textLower === 'self' && query.ast.name) {
+                result = {
+                    token: query.ast.name,
+                    classDefinition: query.ast,
+                };
+            }
+        }
+        if (!result && this.isTypeQuery(query)) {
             // looking for a type in this file
             return { found: false }; // HACK assume types are always across files
         }
-        if (query.functionScope) {
+        if (!result && query.functionScope) {
             result = this.findFunctionScopedSymbol(query);
         }
         if (!result && query.ast) {
             result = this.findClassScopedSymbol(query.token.textLower, query.ast);
         }
-        if (query.token.textLower === query.ast.name?.textLower) {
+        if (!result && query.token.textLower === query.ast.name?.textLower) {
             result = {
                 token: query.ast.name,
                 classDefinition: query.ast,
@@ -114,6 +251,12 @@ export class ClassDatabase
 
     findCrossFileDefinition(query: TokenInformation): TokenInformation {
         if (query.token && query.ast) {
+            if (query.token.type === SemanticClass.Keyword) {
+                // console.log(query);
+                if (query.token.textLower === 'super' && query.ast.parentName) {
+                    return this.findClassDefinitionStr(query.ast.parentName.textLower);
+                }
+            }
             if (this.isTypeQuery(query)) {
                 // looking for parent definition
                 return this.findClassDefinitionForQueryToken(query);
@@ -153,7 +296,17 @@ export class ClassDatabase
     }
 
     findAllExtendableClassNames() {
-        return Object.values(this.store).map(v => v.ast.name?.text).filter(n => n);
+        const results: { [key:string]: string } = {};
+        for (const name in this.store) {
+            const ast = this.store[name].ast;
+            if (ast.parentName && !results[ast.parentName.textLower]) {
+                results[ast.parentName.textLower] = ast.parentName.text;
+            }
+            if (ast.name) {
+                results[ast.name.textLower] = ast.name.text;
+            }
+        }
+        return Object.values(results);
     }
 
     updateAst(uri: string, ast: UnrealClass, version: number, source?: 'library'|'workspace') {
@@ -356,7 +509,7 @@ export class ClassDatabase
                     type = member;
                 }
                 else {
-                    type = this.findTypeDefinition(member);
+                    type = this.findTypeOfDefinition(member);
                 }
                 member = null;
             }
@@ -378,7 +531,7 @@ export class ClassDatabase
         return this.findCrossFileDefinition(itemQuery);
     }
 
-    findMemberDefinition(typeDefinition: TokenInformation, memberReference: TokenInformation): TokenInformation {
+    private findMemberDefinition(typeDefinition: TokenInformation, memberReference: TokenInformation): TokenInformation {
         if (!typeDefinition.ast) return { found: false };
         for (const fn of typeDefinition.ast.functions) {
             if (fn.name && fn.name?.textLower === memberReference.token?.textLower) {
@@ -405,7 +558,10 @@ export class ClassDatabase
         return { found: false };
     }
 
-    findTypeDefinition(d: TokenInformation): TokenInformation {
+    findTypeOfDefinition(d: TokenInformation): TokenInformation {
+        if (d.classDefinition) {
+            return d;
+        }
         if (d.fnDefinition) {
             return this.findDefinition({
                 token: d.fnDefinition.name ?? undefined,
@@ -416,6 +572,14 @@ export class ClassDatabase
         if (d.paramDefinition) {
             return this.findDefinition({
                 token: d.paramDefinition.type ?? undefined,
+                ast: d.ast,
+                uri: d.uri,
+                functionScope: d.functionScope,
+            });
+        }
+        if (d.localDefinition) {
+            return this.findDefinition({
+                token: d.localDefinition.type ?? undefined,
                 ast: d.ast,
                 uri: d.uri,
                 functionScope: d.functionScope,
@@ -496,7 +660,7 @@ export class ClassDatabase
             classNameLower = parts[parts.length - 1];
             packageNameLower = parts[0];
         }
-        // TODO match pacage
+        // TODO match package
         for (const uri in this.store) {
             const entry = this.store[uri];
             const ast = entry.ast;

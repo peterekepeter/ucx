@@ -27,7 +27,7 @@ export class VsCodeClassDatabase {
     async findTypeDefinition(vscodeuri: vscode.Uri, position: vscode.Position, token: vscode.CancellationToken) {
         const defintion = await this.findDefinition(vscodeuri, position, token);
         if (token.isCancellationRequested) return { found: false };
-        return this.libdb.findTypeDefinition(defintion);
+        return this.libdb.findTypeOfDefinition(defintion);
     }
 
     async findChildClassesOf(name: string, token: vscode.CancellationToken) {
@@ -67,6 +67,15 @@ export class VsCodeClassDatabase {
         if (result.found || token.isCancellationRequested) return result;
 
         return result;
+    }
+
+    async findCompletion(vscodeuri: vscode.Uri, position: vscode.Position, token: vscode.CancellationToken) {
+        const uri = vscodeuri.toString();
+        await this.requiresWorkspaceAndLibraryLoaded(token);
+        if (token.isCancellationRequested) {
+            return [];
+        }
+        return this.libdb.findCompletions(uri, position.line, position.character);
     }
 
     async getAllFileEntries(token: vscode.CancellationToken, options?: { fromWorkspace: boolean, fromLibrary: boolean }): Promise<Iterable<ClassFileEntry>> {

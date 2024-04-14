@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.19.2
+- Improved completion queries
+
 ### v0.19.1
 - Fixes operator spacing for increment/decrement operators
 - Fixes signature helper for nested function calls
