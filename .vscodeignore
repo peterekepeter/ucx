@@ -11,5 +11,6 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/*.vsix
+docs/**
 
 out/ucx.js

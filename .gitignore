@@ -4,3 +4,4 @@ node_modules
 .vscode-test/
 *.vsix
 src/lib/coverage
+README.md

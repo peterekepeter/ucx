@@ -16,4 +16,5 @@ syntaxes/
 uc.language-configuration.json
 .vscodeignore
 assets/**
+docs/**
 out/extension.js

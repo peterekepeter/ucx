@@ -182,7 +182,7 @@
 	},
 	"scripts": {
 		"publish-all": "npm run npm-publish && npm run vsce-publish && npm run ovsx-publish",
-		"vscode:prepublish": "rm -rf ./out && npm run esbuild-base -- --minify",
+		"vscode:prepublish": "rm -rf ./out && npm run esbuild-base -- --minify && cp docs/README.vsix.md README.md",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"pretest": "npm run compile && npm run lint",
@@ -197,7 +197,7 @@
 		"esbuild-ucx": "esbuild ./src/ucx.ts --bundle --outfile=out/ucx.js --platform=node",
 		"esbuild": "npm run esbuild-base -- --sourcemap",
 		"npm-publish": "npm run prepublish && npm publish",
-		"prepublish": "rm -rf ./out && npm run esbuild-ucx -- --minify"
+		"prepublish": "rm -rf ./out && npm run esbuild-ucx -- --minify && cp docs/README.cli.md README.md"
 	},
 	"devDependencies": {
 		"@types/jest": "^29.5.11",
