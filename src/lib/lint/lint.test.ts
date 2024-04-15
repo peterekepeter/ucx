@@ -506,10 +506,10 @@ test('lint operator space just right', () => { lintingStatements(
     'count = 0;'
 ).hasNoLintResults();});
 
-test('lint operator negation should not have space', () => { lintingStatements(
-    'x = - 1;',
+test('lint operator space is not removed after subtracting from paren', () => { lintingStatements(
+    'x = (a >> 1) - c;',
 ).hasFormattedResult(statementWrapper(
-    'x = -1;'
+    'x = (a >> 1) - c;',
 ));});
 
 test('lint operator spacing not applied to increment/decrement', () => { lintingStatements(

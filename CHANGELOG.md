@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.19.3
+- Fixed spacing after subtract operator when parenthesis on left side
+
 ### v0.19.2
 - Improved completion queries
 

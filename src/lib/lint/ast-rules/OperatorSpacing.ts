@@ -99,18 +99,18 @@ function isPrefixOperator(prev: ParserToken, token: ParserToken, next: ParserTok
     {
         return false;
     }
-    if (!canOperatorBeAppliedTo(next)) 
+    if (!canOperatorBeAppliedTo(next, true)) 
     {
         return false;
     }
-    if (canOperatorBeAppliedTo(prev))
+    if (canOperatorBeAppliedTo(prev, false))
     {
         return false;
     }
     return true;
 }
 
-function canOperatorBeAppliedTo(token: ParserToken)
+function canOperatorBeAppliedTo(token: ParserToken, isRight: boolean)
 {
     if (!token){
         return false;
@@ -128,6 +128,8 @@ function canOperatorBeAppliedTo(token: ParserToken)
     case C.LocalVariable:
     case C.VariableReference:
         return true;
+    case C.None:
+        return isRight && token.text === '(' || !isRight && token.text === ')';
     case C.Operator:
     default:
         return false;
