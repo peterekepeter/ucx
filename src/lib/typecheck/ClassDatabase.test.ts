@@ -303,20 +303,28 @@ describe("completion", () => {
             ast("Object.uc", 1, [
                 'class Object;',
                 '',
-                'function Log(coerce string str){}',
+                'var float A,B;',
+                '',
+                'function Log(coerce string str, optional string tag){}',
             ]);
             ast("MyObject.uc", 1, [
                 'class MyObject extends Object;',
                 '',
                 'function Test(Object Other) {', // line 2
                 '    ', // line 3
+                '    A = ;',
+                '    Log();',
+                '    Log(A,);',
                 '}',
             ]);
         });
 
         test('suggests locally avaiable functions and variables', () => {
-            expectCompletion("MyObject.uc", 3, 4, "Other");
-            expectCompletion("MyObject.uc", 3, 4, "Test");
+            expectCompletion("MyObject.uc", 3, 4, "Other"); // start of statement
+            expectCompletion("MyObject.uc", 3, 4, "Test"); // start of statement
+            expectCompletion("MyObject.uc", 4, 8, "B"); // after assign operator
+            expectCompletion("MyObject.uc", 5, 8, "A"); // after open parenthesis
+            expectCompletion("MyObject.uc", 6, 10, "A"); // after comma
         });
 
         test('suggests inherited avaiable functions and variables', () => {

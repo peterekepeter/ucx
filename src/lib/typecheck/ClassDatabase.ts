@@ -103,69 +103,69 @@ export class ClassDatabase
             return results;
         }
         if (before.functionScope) {
-            if (before.token.type === SemanticClass.None)
+            if (before.token.type === SemanticClass.None && before.token.text === ".")
             {
-                if (before.token.text === ".") {
-                    const beforeDot = ast.tokens[before.token.index - 1];
-                    if (beforeDot) {
-                        const token = this.findToken(uri, beforeDot.line, beforeDot.position);
-                        const symboldef = this.findDefinition(token);
-                        const typedef = this.findTypeOfDefinition(symboldef);
-                        if (typedef.ast) {
-                            return [
-                                ...typedef.ast.functions.map(f => ({
-                                    label: f.name?.text ?? '',
-                                    kind: SemanticClass.FunctionReference,
-                                })),
-                                ...typedef.ast.variables.map(v => ({
-                                    label: v.name?.text ?? '',
-                                    kind: SemanticClass.VariableReference,
-                                })),
-                            ];
-                        }
-                    }
-                }
-                else if (before.token.text === ";" || before.token.text === '{')
-                {
-                    if (ast) {
-                        let results = [
-                            ...before.functionScope.fnArgs.map(v => ({
-                                label: v.name?.text ?? '',
-                                kind: SemanticClass.VariableReference,
-                            })),
-                            ...before.functionScope.locals.map(v => ({
-                                label: v.name?.text ?? '',
-                                kind: SemanticClass.VariableReference,
-                            })),
-                            ...ast.functions.map(f => ({
+                const beforeDot = ast.tokens[before.token.index - 1];
+                if (beforeDot) {
+                    const token = this.findToken(uri, beforeDot.line, beforeDot.position);
+                    const symboldef = this.findDefinition(token);
+                    const typedef = this.findTypeOfDefinition(symboldef);
+                    if (typedef.ast) {
+                        return [
+                            ...typedef.ast.functions.map(f => ({
                                 label: f.name?.text ?? '',
                                 kind: SemanticClass.FunctionReference,
                             })),
-                            ...ast.variables.map(v => ({
+                            ...typedef.ast.variables.map(v => ({
                                 label: v.name?.text ?? '',
                                 kind: SemanticClass.VariableReference,
                             })),
                         ];
-                        let parent = ast.parentName;
-                        while (parent) {
-                            const def = this.findClassDefinitionStr(parent.textLower);
-                            if (!def.found || !def.classDefinition) {
-                                break;
-                            }
-                            parent = def.classDefinition.parentName;
-                            results = results.concat(
-                                def.classDefinition.functions.map(f => ({
-                                    label: f.name?.text ?? '',
-                                    kind: SemanticClass.FunctionReference,
-                                })),
-                                def.classDefinition.variables.map(v => ({
-                                    label: v.name?.text ?? '',
-                                    kind: SemanticClass.VariableReference,
-                                }))
-                            );
-                        }
-                        return results;
                     }
+                }
+            }
+            else if (before.token.type === SemanticClass.None && (before.token.text === ";" || before.token.text === '{' || before.token.text === '(' || before.token.text === ',') 
+                || before.token.type === SemanticClass.Operator)
+            {
+                // expression completion
+                if (ast) {
+                    let results = [
+                        ...before.functionScope.fnArgs.map(v => ({
+                            label: v.name?.text ?? '',
+                            kind: SemanticClass.VariableReference,
+                        })),
+                        ...before.functionScope.locals.map(v => ({
+                            label: v.name?.text ?? '',
+                            kind: SemanticClass.VariableReference,
+                        })),
+                        ...ast.functions.map(f => ({
+                            label: f.name?.text ?? '',
+                            kind: SemanticClass.FunctionReference,
+                        })),
+                        ...ast.variables.map(v => ({
+                            label: v.name?.text ?? '',
+                            kind: SemanticClass.VariableReference,
+                        })),
+                    ];
+                    let parent = ast.parentName;
+                    while (parent) {
+                        const def = this.findClassDefinitionStr(parent.textLower);
+                        if (!def.found || !def.classDefinition) {
+                            break;
+                        }
+                        parent = def.classDefinition.parentName;
+                        results = results.concat(
+                            def.classDefinition.functions.map(f => ({
+                                label: f.name?.text ?? '',
+                                kind: SemanticClass.FunctionReference,
+                            })),
+                            def.classDefinition.variables.map(v => ({
+                                label: v.name?.text ?? '',
+                                kind: SemanticClass.VariableReference,
+                            }))
+                        );
+                    }
+                    return results;
                 }
             }
         }
