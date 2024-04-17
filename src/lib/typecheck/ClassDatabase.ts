@@ -103,7 +103,21 @@ export class ClassDatabase
             return results;
         }
         if (before.functionScope) {
-            if (before.token.type === SemanticClass.None && before.token.text === ".")
+            const next = before.ast?.tokens[before.token.index + 1];
+            if (before.token.type === SemanticClass.ObjectReferenceName && before.token.text.startsWith("'")) {
+                // is name completion        
+                if (before.token.text.endsWith("'") && before.token.text.length > 2) {
+                    return [];
+                }
+                const beforeBefore = before.ast?.tokens[before.token.index - 1];
+                if (beforeBefore && beforeBefore.type === SemanticClass.ClassReference && beforeBefore.textLower === 'class') {
+                    return this.findAllExtendableClassNames().map(c => ({
+                        label: c,
+                        kind: SemanticClass.ClassReference,
+                    }));
+                }
+            }
+            else if (before.token.type === SemanticClass.None && before.token.text === ".")
             {
                 const beforeDot = ast.tokens[before.token.index - 1];
                 if (beforeDot) {

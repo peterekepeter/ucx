@@ -2,8 +2,8 @@ import { LineToken } from "./LineToken";
 import { tokenizeLine } from "./tokenizeLine";
 
 const regex =
-    // identifiers  | linecomm | exec  | mlinecomm | numeric                       | strings                         | names | multi char operators                           | single char operators & syntax    
-    /[_a-z][_a-z\d]*|\/\/[^\n]*|#[^\n]*|\/\*+|\*+\/|(?:(?<=[=+-])[+-])?\d[\da-fx.]*|".*?(?<![^\\]\\)(?<![^\\]\\\\\\)"|'[^']*'|[-!~=*/+<>]=|&&|\^\^|\|\||\+\+|--|\*\*|<<|>>>|>>|[-+*/~<=>!&^|%$@.:;(),{}[\]]/gi
+    // identifiers  | linecomm | exec  | mlinecomm | numeric                       | strings                         | names      | multi char operators                           | single char operators & syntax    
+    /[_a-z][_a-z\d]*|\/\/[^\n]*|#[^\n]*|\/\*+|\*+\/|(?:(?<=[=+-])[+-])?\d[\da-fx.]*|".*?(?<![^\\]\\)(?<![^\\]\\\\\\)"|'[^'\n\r]*'?|[-!~=*/+<>]=|&&|\^\^|\|\||\+\+|--|\*\*|<<|>>>|>>|[-+*/~<=>!&^|%$@.:;(),{}[\]]/gi
 ;
 /**
  * assumes input is on single line, returned tokens be on given line

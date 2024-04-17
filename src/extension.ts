@@ -38,7 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
         lang.registerColorProvider(langId.uc, new ColorProvider()),
         lang.registerDocumentSymbolProvider(langId.uc, new DocumentSymbolProvider()),
         lang.registerHoverProvider(langId.uc, new HoverProvider()),
-        lang.registerCompletionItemProvider(langId.uc, new CompletionProvider(), '.'),
+        lang.registerCompletionItemProvider(langId.uc, new CompletionProvider(), '.', "'"),
         lang.registerDocumentSemanticTokensProvider(langId.uc, semanticTokensProvider, semanticTokensProvider.legend),
         cmds.registerCommand('ucx.restartServer', resetExtensionState),
         vscode.languages.registerFoldingRangeProvider(langId.uc, new FoldingRangeProvider()),

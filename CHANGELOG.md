@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.19.5
+- Provides name completion for class names
+
 ### v0.19.4
 - Fix missing completion in expressions
 

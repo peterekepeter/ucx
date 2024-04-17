@@ -81,7 +81,7 @@ test("tokenize name", () => verifyTokens(`
 ]));
 
 test("tokenize for loop", () => verifyTokens(`
-    for( P=Level.PawnList; P!=None; P=P.nextPawn )'
+    for( P=Level.PawnList; P!=None; P=P.nextPawn )
 `,[
     'for', '(', 'P', '=', 'Level', '.', 'PawnList', ';', 'P', '!=', 'None', ';', 'P', '=', 'P', '.', 'nextPawn', ')'
 ]));
@@ -166,6 +166,16 @@ test("tokenize infix math", () => verifyTokens(`
 `, [
     'x', '=', 'a', '+', '1', ';',
 ]));
+
+test("parses incomplete name until end of line", () => verifyTokens(`
+'
+';
+'crap
+`, [
+    "'", "';", "'crap"
+]));
+
+
 
 function verifyTokens(input: string, output: string[]){
     expect(tokenize(input)).toEqual(output);

@@ -333,6 +333,47 @@ describe("completion", () => {
 
     });
 
+    describe("name completion", () => {
+
+        beforeEach(() => {
+            ast("Object.uc", 1, [
+                'class Object;',
+            ]);
+            ast("MyObject.uc", 1, [
+                'class MyObject extends Object;',
+                '',
+                'function Test(Object Other) {', // line 2
+                "   class'';",
+                "   Class'';",
+                "   class'",
+                "   class'MyObject'",
+                '}',
+            ]);
+        });
+
+        test('suggests existing classes in class reference', () => {
+            expectCompletion("MyObject.uc", 3, 9, "Object");
+            expectCompletion("MyObject.uc", 3, 9, "MyObject");
+        });
+
+        test('suggests existing classes in class reference even if Class is uppercase', () => {
+            expectCompletion("MyObject.uc", 4, 9, "Object");
+            expectCompletion("MyObject.uc", 4, 9, "MyObject");
+        });
+
+        test('suggests existing classes if name is only opened', () => {
+            expectCompletion("MyObject.uc", 5, 9, "Object");
+            expectCompletion("MyObject.uc", 5, 9, "MyObject");
+        });
+
+
+        test('does not suggest clasnames after closing quote', () => {
+            expectNotCompletion("MyObject.uc", 6, 18, "MyObject");
+        });
+
+
+    });
+
     const expectCompletion = (uri: string, line: number, pos: number, expected: string|CompletionInformation) => {
         const completions = db.findCompletions(uri, line, pos);
         if (typeof expected === 'string') {
@@ -351,6 +392,21 @@ describe("completion", () => {
         }
         expect(last).toMatchObject(expected);
     };
+
+    const expectNotCompletion = (uri: string, line: number, pos: number, expected: string|CompletionInformation) => {
+        const completions = db.findCompletions(uri, line, pos);
+        if (typeof expected === 'string') {
+            expected = {
+                label: expected
+            };
+        }
+        for (const completion of completions) {
+            if (completion.label === expected.label) {
+                expect(completion).not.toMatchObject(expected);
+            }
+        }
+    };
+
 
     const expectCompletionCount = (uri: string, line: number, pos: number, expectedCount: number) => { 
         const completions = db.findCompletions(uri, line, pos);
