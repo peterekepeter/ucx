@@ -1,5 +1,4 @@
 import { CompletionItemKind } from "vscode";
-import { ClassNamingRule } from "../../lib/lint/ast-rules/ClassNamingRule";
 import { SemanticClass } from "../../lib/parser";
 import { db } from "../state";
 import { vscode } from "../vscode";

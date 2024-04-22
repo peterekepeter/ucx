@@ -415,6 +415,43 @@ describe("completion", () => {
 
 });
 
+
+describe("references", () => {
+    
+    describe("function local references", () => {
+
+        beforeEach(() => {
+            ast("MyClass.uc", 1, [
+                'class MyClass extends MyOther;',
+                '',
+                'var MyOther VObj;',
+                '',
+                'function Test(MyOther PObj) {', // line 4
+                '    local MyOther LObj;',
+                '    LObj = PObj;', // line 6
+                '    VObj = PObj;',
+                '}',
+            ]);
+        });
+
+        test('function local references', () => {
+            expectReferences('MyClass.uc', 4, 25, [
+                ["MyClass.uc", 4, 22],
+                ["MyClass.uc", 6, 11],
+                ["MyClass.uc", 7, 11],
+            ]);
+        });
+
+
+    });
+
+    function expectReferences(uri: string, line: number, char: number, refs: [string, number, number][]) {
+        const result = db.findReferences(uri, line, char);
+        expect(result.map(r => [r.uri, r.token?.line, r.token?.position])).toEqual(refs);
+    }
+
+});
+
 function ast(uri: string, version: number, lines: string[]) {
     db.updateAst(uri, ucParseLines(lines), version);
 }

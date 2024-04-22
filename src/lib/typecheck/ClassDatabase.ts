@@ -186,6 +186,41 @@ export class ClassDatabase
         return [];
     }
     
+    findReferences(uri: string, line: number, character: number): TokenInformation[] {
+        const token = this.findToken(uri, line, character);
+        const definition = this.findDefinition(token);
+
+        if (!definition.token) {
+            return [];
+        }
+        
+        if (definition.localDefinition || definition.paramDefinition) {
+            const ast = definition.ast;
+            const firstTokenIndex = definition.functionScope?.fnArgsFirstToken?.index;
+            const lastTokenIndex = definition.functionScope?.bodyLastToken?.index;
+            if (ast && firstTokenIndex != null && lastTokenIndex != null) {
+                const references: TokenInformation[] = [];
+                for (let i=firstTokenIndex; i<lastTokenIndex; i+=1){
+                    const token = ast.tokens[i];
+                    if (token.textLower === definition.token.textLower) {
+                        const possibleReference = { 
+                            ast, 
+                            token, 
+                            functionScope: definition.functionScope, 
+                            uri: definition.uri 
+                        } as TokenInformation;
+                        const targetDef = this.findLocalFileDefinition(possibleReference);
+                        if (targetDef.token === definition.token) {
+                            references.push(possibleReference);
+                        }
+                    }
+                }
+                return references;
+            }
+        }
+        return [];
+    }
+
     private astFindTokenAtPosition(ast: UnrealClass, line: number, character: number) {
         let token: ParserToken | undefined;
         for (const t of ast.tokens) {

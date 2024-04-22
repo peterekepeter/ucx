@@ -206,4 +206,11 @@ export class VsCodeClassDatabase {
         return ast;
     }
 
+    findReferences(document: vscode.TextDocument, position: vscode.Position, cancellationToken: vscode.CancellationToken) {
+        const uri = document.uri.toString();
+        const line = position.line;
+        const character = position.character;
+        return this.libdb.findReferences(uri, line, character);
+    }
+
 }
