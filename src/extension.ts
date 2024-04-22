@@ -16,7 +16,8 @@ import {
     FoldingRangeProvider,
     TypeHierarchyProvider,
     SignatureProvider,
-    ReferenceProvider
+    ReferenceProvider,
+    RenameProvider,
 } from './extension/providers';
 
 
@@ -41,6 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
         lang.registerHoverProvider(langId.uc, new HoverProvider()),
         lang.registerCompletionItemProvider(langId.uc, new CompletionProvider(), '.', "'"),
         lang.registerReferenceProvider(langId.uc, new ReferenceProvider()),
+        lang.registerRenameProvider(langId.uc, new RenameProvider()),
         lang.registerDocumentSemanticTokensProvider(langId.uc, semanticTokensProvider, semanticTokensProvider.legend),
         cmds.registerCommand('ucx.restartServer', resetExtensionState),
         vscode.languages.registerFoldingRangeProvider(langId.uc, new FoldingRangeProvider()),

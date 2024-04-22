@@ -21,6 +21,12 @@
 			"script": "unittest:watch",
 			"problemMatcher": [],
 			"label": "npm: unittest:watch"
+		},
+		{
+			"label": "build-extension",
+			"type": "npm",
+			"script": "esbuild",
+			"problemMatcher": []
 		}
 	]
 }

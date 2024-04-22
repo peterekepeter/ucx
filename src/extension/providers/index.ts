@@ -6,6 +6,7 @@ export * from './FoldingRangeProvider';
 export * from './FormattingProvider';
 export * from './HoverProvider';
 export * from './ReferenceProvider';
+export * from './RenameProvider';
 export * from './SemanticTokensProvider';
 export * from './SignatureProvider';
 export * from './TypeHierarchyProvider';
