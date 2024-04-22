@@ -9,9 +9,11 @@ Dedicated language support and tooling UnrealScript, with primary focus on UT99.
     - goto definition (`Ctrl-Click`)
     - find symbols (`Ctrl-P @` and `Ctrl-P #` or `Ctrl-T`)
     - folding support for defaultproperties, states, labels, replication
-    - completion support for methods (partially working)
-    - function signature support
+    - completion support
+    - function signature
     - class hierarcy: (right click on class & select Show Type Hierarchy)
+    - find all references
+    - rename symbol (`F2`)
  - formatter:
     - automatic indentation
     - operator spacing

@@ -66,16 +66,16 @@ jobs:
 
     strategy:
       matrix:
-        utversion: [451b, 469b]
+        utversion: [469b]
         include:
           # - utversion: 436
           #   zip: https://unrealarchive.org/unrealscript/ut99v436/Unreal_Tournament_v436.zip
           - utversion: 469b
             repo: https://github.com/Slipyx/UT99.git
             commit: 769bd788cb2c06077a26ff7c3e4fced521a2169e
-          - utversion: 451b
-            repo: https://github.com/Slipyx/UT99.git
-            commit: a26a3359704873df5a24d0b241a32ca5fc36a8b7
+          # - utversion: 451b
+          #   repo: https://github.com/Slipyx/UT99.git
+          #   commit: a26a3359704873df5a24d0b241a32ca5fc36a8b7
 
     steps:
       - name: Download a single artifact

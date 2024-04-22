@@ -1,5 +1,9 @@
 # Change Log
 
+### v0.20.0
+- Added support for find all references, currently works for function locals
+- Added support for rename, currently works for function locals
+
 ### v0.19.5
 - Provides name completion for class names
 
