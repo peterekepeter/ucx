@@ -1,5 +1,9 @@
 # Change Log
 
+### v0.21.0
+- Added check for unused local variable references
+- Added check for return statements inside functions
+
 ### v0.20.0
 - Added support for find all references, currently works for function locals
 - Added support for rename, currently works for function locals

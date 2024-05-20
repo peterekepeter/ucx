@@ -4,23 +4,23 @@ import { UnrealClassFunction, UnrealClassStatement } from "./UnrealClassFunction
 /** @returns all statements including from states and state functions */
 export function *getAllStatements(ast: UnrealClass): Iterable<UnrealClassStatement> {
     for (const fn of getAllFunctions(ast)){
-        for (const st of getAllRecursiveStatements(fn.body))
+        for (const st of getAllBodyStatements(fn.body))
         {
             yield st;
         }
     }
     for (const state of ast.states){
-        for (const st of getAllRecursiveStatements(state.body)){
+        for (const st of getAllBodyStatements(state.body)){
             yield st;
         }
     }
 }
 
-function *getAllRecursiveStatements(sts: UnrealClassStatement[]): Iterable<UnrealClassStatement>{
+export function *getAllBodyStatements(sts: UnrealClassStatement[]): Iterable<UnrealClassStatement>{
     for (const st of sts) {
         yield st;
         if (st.body && st.body.length > 0) {
-            for (const sub of getAllRecursiveStatements(st.body)) {
+            for (const sub of getAllBodyStatements(st.body)) {
                 yield sub;
             }
         }

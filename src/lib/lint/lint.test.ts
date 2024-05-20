@@ -962,6 +962,56 @@ test('do not complain about underscores in class names', () => { linting([
     'class AB_Something extends Object;'
 ], undefined, './something/AB_Something.uc').hasNoLintResults();});
 
+test('return statement warning when no return statement', () => { linting([
+    "static function string GetMessage()",
+    "{",
+    "}",
+]).hasResult({
+    message: "Function does not have return statement, expected a string return value!"
+});});
+
+test('return statement warning when no argument in return statement', () => { linting([
+    "static function string GetMessage()",
+    "{",
+    "    return;",
+    "}",
+]).hasResult({
+    message: "Missing argument on return statement, expected a string return value!"
+});});
+
+test('return statement warning when returning in function without return type', () => { linting([
+    "static function DoSomething()",
+    "{",
+    "    return 1;",
+    "}",
+]).hasResult({
+    message: "Should not have return value when function does not have a declared return type!"
+});});
+
+test('unused local variable is reported', () => { linting([
+    "static function DoSomething()",
+    "{",
+    "    local Projectile A;",
+    "}",
+]).hasResult({
+    message: "Unused local variable A!"
+});});
+
+test('unused local variable not reported when used', () => { linting([
+    "static function DoSomething()",
+    "{",
+    "    local Projectile A;",
+    "    Log(A);",
+    "}",
+]).hasNoLintResults();});
+
+test('unused local variable not repored when used in function call', () => { linting([
+    "function TestFn()",
+    "{",
+    "    local Color Color;",
+    "    PP.SetProgressColor(Color, 3);",
+    "}",
+]).hasNoLintResults();});
 
 
 function linting(lines: string[], options?: Partial<FullLinterConfig>, fileName?: string) {

@@ -2,7 +2,7 @@
 	"name": "ucx",
 	"displayName": "ucx",
 	"description": "Dedicated language support for Unreal Engine 1 UnrealScript",
-	"version": "0.20.0",
+	"version": "0.21.0",
 	"icon": "assets/ucx.png",
 	"repository": "https://github.com/peterekepeter/ucx",
 	"publisher": "peterekepeter",
@@ -127,6 +127,16 @@
 				"ucx.linter.keywordCasingRule.enabled": {
 					"type": "boolean",
 					"description": "Enforce formatting rules for keywords.",
+					"default": true
+				},
+				"ucx.linter.checkReturnTypes.enabled": {
+					"type": "boolean",
+					"description": "Check return statements on functions.",
+					"default": true
+				},
+				"ucx.linter.checkUnusedLocals.enabled": {
+					"type": "boolean",
+					"description": "Check and report unused local variables.",
 					"default": true
 				}
 			}
