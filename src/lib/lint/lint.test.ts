@@ -1005,13 +1005,23 @@ test('unused local variable not reported when used', () => { linting([
     "}",
 ]).hasNoLintResults();});
 
-test('unused local variable not repored when used in function call', () => { linting([
+test('unused local variable not reported when used in function call', () => { linting([
     "function TestFn()",
     "{",
     "    local Color Color;",
     "    PP.SetProgressColor(Color, 3);",
     "}",
 ]).hasNoLintResults();});
+
+test('unused local variable not reported when used in for loop', () => { linting([
+    "function TestFn()",
+    "{",
+    "    local int i;",
+    "    for ( i = 0; i < 10; i += 1 )",
+    "        Log(\"Hi!\");",
+    "}",
+]).hasNoLintResults();});
+
 
 
 function linting(lines: string[], options?: Partial<FullLinterConfig>, fileName?: string) {

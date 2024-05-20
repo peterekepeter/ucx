@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.21.1
+- Fix wrongly reported unused var when used in for loop
+
 ### v0.21.0
 - Added check for unused local variable references
 - Added check for return statements inside functions
