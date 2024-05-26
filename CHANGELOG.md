@@ -1,5 +1,9 @@
 # Change Log
 
+### v0.21.2
+- Fix easier to click on single character variables
+- Fix parsing of multiple local variable definitions in a single statement
+
 ### v0.21.1
 - Fix wrongly reported unused var when used in for loop
 

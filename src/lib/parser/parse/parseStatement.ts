@@ -106,6 +106,13 @@ function parseFnLocalVar(parser: UcParser, token: Token)
 {
     switch(token.text)
     {
+    case ',':
+        const fn = parser.lastFn;
+        fn.locals.push({
+            ...parser.lastFnLocal,
+            name: null
+        });
+        break;
     case ';':
         parser.rootFn = parseStatement;
         break;

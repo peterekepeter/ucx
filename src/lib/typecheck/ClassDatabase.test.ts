@@ -433,6 +433,13 @@ describe("references", () => {
                 '    VObj = PObj;',
                 '    for ( i=i; i<10; i+=1 ) Log(i);',
                 '}',
+                '', // line 11
+                '',
+                '',
+                'function Test2() {', // line 14
+                '    local int i, j;',
+                '    Log(i);',
+                '}',
             ]);
         });
 
@@ -484,6 +491,13 @@ describe("references", () => {
             test('works on right side of operator', () => {
                 expectReferences('MyClass.uc', 9, 12, 'i', refs);
             });
+        });
+
+        test('reference works when multiple vars are declared in single statement', () => {
+            expectReferences('MyClass.uc', 15, 14, 'i', [
+                ["MyClass.uc", 15, 14, 'i'],
+                ["MyClass.uc", 16, 8, 'i'],
+            ]);
         });
 
     });
