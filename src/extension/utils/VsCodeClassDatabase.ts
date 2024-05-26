@@ -44,7 +44,7 @@ export class VsCodeClassDatabase {
 
     async findDefinition(vscodeuri: vscode.Uri, position: vscode.Position, token: vscode.CancellationToken) {
         const uri = vscodeuri.toString();
-        const codeToken = this.libdb.findToken(uri, position.line, position.character);
+        const codeToken = this.libdb.findSymbolToken(uri, position.line, position.character);
 
         // quickly resolve references to the given file (assumes given URI is never out of date)
         let result = this.libdb.findLocalFileDefinition(codeToken);

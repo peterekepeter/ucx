@@ -87,13 +87,17 @@ describe("definitions inside single file", () => {
             token: { text: 'i', line: 5 }, 
             localDefinition: { type: { text: 'int' }},
         }],
+        [6, 10, { // also works on last char
+            token: { text: 'i', line: 5 }, 
+            localDefinition: { type: { text: 'int' }},
+        }],
         [7, 9, { 
             token: { text: 'DebugPrint' }, 
             fnDefinition: { name: { text: 'DebugPrint' }},
         }] as [number, number, TokenInformation],
     ] as [number, number, TokenInformation][]
     )("findLocalDefinition at (%p:%p) results %p", (line, column, expected) => {
-        const token = db.findToken(uri, line, column);
+        const token = db.findSymbolToken(uri, line, column);
         const definition = db.findLocalFileDefinition(token);
         expect(definition).toMatchObject(expected);
     });
