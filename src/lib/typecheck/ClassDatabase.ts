@@ -51,6 +51,20 @@ export class ClassDatabase
         return { uri, found: true, token, ast, functionScope };
     }
 
+    /** 
+     * same as find token, but prioritizes symbol token around the target,
+     * so it returns symbol token even when the target is the space next to the token
+     * */
+    findSymbolToken(uri: string, line: number, character: number): TokenInformation {
+        const ast = this.getAst(uri);
+        if (!ast) return { uri, missingAst: true };
+        let token = this.astFindSymbolTokenAtPosition(ast, line, character);
+        if (!token) return { uri, found: false };
+        const functionScope = this.findFunctionScope(ast, token);
+        return { uri, found: true, token, ast, functionScope };
+    }
+
+
     findCompletions(uri: string, line: number, character: number): CompletionInformation[] {
         const expectedName = new ClassNamingRule().getExpectedClassName(uri.toString());
         const ast = this.getAst(uri);
@@ -187,7 +201,7 @@ export class ClassDatabase
     }
     
     findReferences(uri: string, line: number, character: number): TokenInformation[] {
-        const token = this.findToken(uri, line, character);
+        const token = this.findSymbolToken(uri, line, character);
         const definition = this.findDefinition(token);
 
         if (!definition.token) {
@@ -233,6 +247,29 @@ export class ClassDatabase
         }
         return token;
     }
+
+    /** 
+     * makes symbols selectable on position right after the symbol text
+     * */
+    private astFindSymbolTokenAtPosition(ast: UnrealClass, line: number, character: number) {
+        let token: ParserToken | undefined;
+        for (const t of ast.tokens) {
+            if (t.line === line) {
+                let grow = 1;
+                if (t.type === SemanticClass.None || t.type === SemanticClass.Operator) {
+                    // reduce importance of operators and language symbols
+                    // in favor of symbols
+                    grow = 0;
+                }
+                if (t.position <= character && character < t.position + t.text.length + grow) {
+                    token = t;
+                    break;
+                }
+            }
+        }
+        return token;
+    }
+
 
     private astFindTokenBeforePosition(ast: UnrealClass, line: number, position: number) {
         let token: ParserToken | undefined;

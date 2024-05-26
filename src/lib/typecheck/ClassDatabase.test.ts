@@ -418,7 +418,7 @@ describe("completion", () => {
 
 describe("references", () => {
     
-    describe("function local references", () => {
+    describe("local variable references", () => {
 
         beforeEach(() => {
             ast("MyClass.uc", 1, [
@@ -428,26 +428,71 @@ describe("references", () => {
                 '',
                 'function Test(MyOther PObj) {', // line 4
                 '    local MyOther LObj;',
-                '    LObj = PObj;', // line 6
+                '    local int i;',
+                '    LObj = PObj;', // line 7
                 '    VObj = PObj;',
+                '    for ( i=i; i<10; i+=1 ) Log(i);',
                 '}',
             ]);
         });
 
-        test('function local references', () => {
-            expectReferences('MyClass.uc', 4, 25, [
-                ["MyClass.uc", 4, 22],
-                ["MyClass.uc", 6, 11],
-                ["MyClass.uc", 7, 11],
+        test('function parameter references', () => {
+            expectReferences('MyClass.uc', 4, 25, 'PObj', [
+                ["MyClass.uc", 4, 22, 'PObj'],
+                ["MyClass.uc", 7, 11, 'PObj'],
+                ["MyClass.uc", 8, 11, 'PObj'],
             ]);
         });
 
+        test('local variable references', () => {
+            expectReferences('MyClass.uc', 5, 20, 'LObj', [
+                ["MyClass.uc", 5, 18, 'LObj'],
+                ["MyClass.uc", 7, 4, 'LObj'],
+            ]);
+        });
+
+        describe('single letter variables', () => {
+            const refs: [string, number, number, string][] = [
+                ["MyClass.uc", 6, 14, 'i'],
+                ["MyClass.uc", 9, 10, 'i'],
+                ["MyClass.uc", 9, 12, 'i'],
+                ["MyClass.uc", 9, 15, 'i'],
+                ["MyClass.uc", 9, 21, 'i'],
+                ["MyClass.uc", 9, 32, 'i'],
+            ];
+
+            test('works on first char', () => {
+                expectReferences('MyClass.uc', 6, 14, 'i', refs);
+            });
+
+            test('works on space after last char', () => {
+                expectReferences('MyClass.uc', 6, 15, 'i', refs);
+            });
+
+            test('works on first usage', () => {
+                expectReferences('MyClass.uc', 9, 10, 'i', refs);
+            });
+
+            test('works on position right after usage', () => {
+                expectReferences('MyClass.uc', 9, 10, 'i', refs);
+            });
+
+            test('works on fn arg usage', () => {
+                expectReferences('MyClass.uc', 9, 32, 'i', refs);
+            });
+
+            test('works on right side of operator', () => {
+                expectReferences('MyClass.uc', 9, 12, 'i', refs);
+            });
+        });
 
     });
+    
 
-    function expectReferences(uri: string, line: number, char: number, refs: [string, number, number][]) {
+    function expectReferences(uri: string, line: number, char: number, symbol: string, refs: [string, number, number, string][]) {
+        expect(db.findSymbolToken(uri, line, char).token?.text).toEqual(symbol);
         const result = db.findReferences(uri, line, char);
-        expect(result.map(r => [r.uri, r.token?.line, r.token?.position])).toEqual(refs);
+        expect(result.map(r => [r.uri, r.token?.line, r.token?.position, r.token?.text])).toEqual(refs);
     }
 
 });
