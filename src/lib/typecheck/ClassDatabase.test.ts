@@ -159,8 +159,9 @@ describe("definition across files", () => {
             '   other.Count += 1;',
             "   class'ClassA'.static.ShowStartMessage(PP);",
             "   Log(class'ClassA'.default.Count);", // line 21
-            "   Log(ClassA(self).Count);",
-            "   Mid(Mid(\"Some\", 1, 2), 1, 1);", // line 22
+            "   Log(ClassA(self).Count);", // line 22
+            "   Mid(Mid(\"Some\", 1, 2), 1, 1);", // line 23
+            "   default.other = None;", // line 24
             '}',
         ]);
     });
@@ -194,6 +195,7 @@ describe("definition across files", () => {
         ['default var', 21, 30, varDefCount],
         ['typecast to class', 22, 10, classDefA],
         ['typecast to class member', 22, 23, varDefCount],
+        ['standalone default keyword', 24, 7, classDefB],
     ] as [string, number, number, TokenInformation][]
     )("findCrossFileDefinition finds %p at %p:%p", (_, line, column, expected) => {
         const token = db.findToken(uriB, line, column);
@@ -275,6 +277,7 @@ describe("completion", () => {
                 '    LObj.;', // line 9
                 '    self.;', // line 10
                 '    super.;', // line 11 char 10
+                '    default.;', // line 12 char 12
                 '}',
             ]);
         });
@@ -297,6 +300,10 @@ describe("completion", () => {
 
         test('through super reference', () => {
             expectCompletion("MyClass.uc", 11, 10, "Update");
+        });
+
+        test('through default reference', () => {
+            expectCompletion("MyClass.uc", 12, 12, "VObj");
         });
         
     });

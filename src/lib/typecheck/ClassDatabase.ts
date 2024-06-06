@@ -302,12 +302,21 @@ export class ClassDatabase
         if (!query.token) return { found: false };
         if (!query.ast) return { missingAst: true };
         if (query.token.type === SemanticClass.Keyword) {
-            // console.log(query);
             if (query.token.textLower === 'self' && query.ast.name) {
                 result = {
                     token: query.ast.name,
                     classDefinition: query.ast,
                 };
+            }
+            else if (query.token.textLower === 'default' && query.ast.name) {
+                const before = query.ast.tokens[query.token.index - 1];
+                if (before && before.text !== ".") { 
+                    // check if preceeded by dot, in which case it's the default of another class
+                    result = {
+                        token: query.ast.name,
+                        classDefinition: query.ast,
+                    };
+                }
             }
         }
         if (!result && this.isTypeQuery(query)) {

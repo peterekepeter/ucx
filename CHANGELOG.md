@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.21.3
+- Fix standalone default keyword points to current class
+
 ### v0.21.2
 - Fix easier to click on single character variables
 - Fix parsing of multiple local variable definitions in a single statement
