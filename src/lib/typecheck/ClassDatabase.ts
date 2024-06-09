@@ -297,6 +297,7 @@ export class ClassDatabase
         return functionScope;
     }
 
+    /** provides past lookup if type is in same file without needing full library scan */
     findLocalFileDefinition(query: TokenInformation): TokenInformation {
         let result: TokenInformation|undefined;
         if (!query.token) return { found: false };
@@ -323,11 +324,19 @@ export class ClassDatabase
             // looking for a type in this file
             return { found: false }; // HACK assume types are always across files
         }
-        if (!result && query.functionScope) {
-            result = this.findFunctionScopedSymbol(query);
+        const before = query.ast.tokens[query.token.index - 1];
+        if (before && before.text !== '.') {
+            // only handle if not member expression
+            if (!result && query.functionScope && query.token.type) {
+                result = this.findFunctionScopedSymbol(query);
+            }
+            if (!result) {
+                result = this.findClassScopedSymbol(query.token.textLower, query.ast);
+            }
         }
-        if (!result && query.ast) {
-            result = this.findClassScopedSymbol(query.token.textLower, query.ast);
+        else {
+            // there is high chance here that the symbol is in another class
+            // better let the smarter cross-file find handle this
         }
         if (!result && query.token.textLower === query.ast.name?.textLower) {
             result = {
@@ -335,6 +344,7 @@ export class ClassDatabase
                 classDefinition: query.ast,
             };
         }
+        // post processing the result to fill members
         if (result?.token) {
             result.found = true;
             result.ast = query.ast;

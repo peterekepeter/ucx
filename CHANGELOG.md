@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.21.4
+- Fix bad lookup when local symbol same as member of other class
+
 ### v0.21.3
 - Fix standalone default keyword points to current class
 

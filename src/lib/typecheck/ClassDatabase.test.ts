@@ -163,6 +163,10 @@ describe("definition across files", () => {
             "   Mid(Mid(\"Some\", 1, 2), 1, 1);", // line 23
             "   default.other = None;", // line 24
             '}',
+            '',
+            'function Reset(Canvas canvas) {', // line 27
+            '   canvas.Reset();', // line 28
+            '}',
         ]);
     });
 
@@ -171,7 +175,7 @@ describe("definition across files", () => {
     const varDefCount = { uri: uriA, varDefinition: { name: { text: 'Count' }} };
     const paramDefCanvas = { uri:uriB, paramDefinition: { name: { text: 'canvas'} }};
     const canvasClassDef = { token: { text: 'Canvas' }, classDefinition: { name: { text: 'Canvas' }}};
-    const resetFnDef = { uri:uriCanvas, token: { text: 'Reset', line: 2 }, fnDefinition: { name: { text: 'Reset' }}};
+    const canvasResetFnDef = { uri:uriCanvas, token: { text: 'Reset', line: 2 }, fnDefinition: { name: { text: 'Reset' }}};
     const showStartMessageFnDef = { uri: uriA, fnDefinition: { name: { text: 'ShowStartMessage' }}};
 
     // find definition
@@ -187,7 +191,7 @@ describe("definition across files", () => {
         ['absolute package.class reference', 14, 38, classDefA],
         ['function parameter reference', 17, 24, paramDefCanvas],
         ['function parameter type reference', 17, 16, canvasClassDef],
-        ['member method call', 18, 12, resetFnDef],
+        ['member method call', 18, 12, canvasResetFnDef],
         ['member variable', 19, 11, { uri: uriA, token: { text: 'Count' }}],
         ['static keyword in expression', 20, 20, classDefA],
         ['default keyword in expression', 21, 25, classDefA],
@@ -196,6 +200,7 @@ describe("definition across files", () => {
         ['typecast to class', 22, 10, classDefA],
         ['typecast to class member', 22, 23, varDefCount],
         ['standalone default keyword', 24, 7, classDefB],
+        ['member fn not shadowed by local fn', 28, 11, canvasResetFnDef],
     ] as [string, number, number, TokenInformation][]
     )("findCrossFileDefinition finds %p at %p:%p", (_, line, column, expected) => {
         const token = db.findToken(uriB, line, column);
@@ -206,7 +211,7 @@ describe("definition across files", () => {
 
     // find signature
     test.each([
-        ['method signature', 18, 16, resetFnDef],
+        ['method signature', 18, 16, canvasResetFnDef],
         ['static function signature', 20, 42, showStartMessageFnDef],
         ['signature first param', 23, 7, { paramDefinition: { name: { text: 'S'}}}],
         ['signature 2nd param', 23, 20, { paramDefinition: { name: { text: 'i'}}}],
