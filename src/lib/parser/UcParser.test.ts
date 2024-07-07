@@ -236,9 +236,27 @@ test("parse empty function with local var", () => { parsing(`
     .hasNoErrors();
 });
 
-test("parse empty function with multiple local var in statement", () => { parsing(`
+test("parse function with multiple local var in statement", () => { parsing(`
     function PostBeginPlay(){
         local int i, j;
+    }
+    `)
+    .hasFunction(0, {
+        name: 'PostBeginPlay',
+        locals: [{
+            type: 'int',
+            name: 'i',
+        },{
+            type: 'int',
+            name: 'j',
+        }]
+    })
+    .hasNoErrors();
+});
+
+test("parse function with multiple array local var in statement", () => { parsing(`
+    function PostBeginPlay(){
+        local int i[1024], j[16];
     }
     `)
     .hasFunction(0, {

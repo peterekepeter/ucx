@@ -116,10 +116,33 @@ function parseFnLocalVar(parser: UcParser, token: Token)
     case ';':
         parser.rootFn = parseStatement;
         break;
+    case '[':
+        parser.rootFn = praseFnLocalVarArrayCount;
+        break;
     default:
         const local = parser.lastFnLocal;
         local.name = token;
         token.type = C.LocalVariable;
+        break;
+    }
+}
+
+function praseFnLocalVarArrayCount(parser: UcParser, token: Token) {
+    switch (token.text) {
+    case ',':
+    case ';':
+        parser.result.errors.push({
+            token: token,
+            message: 'Unexpected token inside local array declaration, expeted number.',
+        });
+        parser.rootFn = parseFnLocalVar;
+        parseFnLocalVar(parser, token);
+        break;
+    case ']':
+        parser.rootFn = parseFnLocalVar;
+        break;
+    default:
+        token.type = C.LiteralNumber;
         break;
     }
 }
