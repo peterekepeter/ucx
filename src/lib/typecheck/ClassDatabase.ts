@@ -1,6 +1,6 @@
 import { ClassNamingRule } from "../lint/ast-rules/ClassNamingRule";
 import { ParserToken, SemanticClass, UnrealClass, isTokenAtOrBetween } from "../parser";
-import { UnrealClassFunction, UnrealClassFunctionArgument, UnrealClassFunctionLocal, UnrealClassVariable, getAllFunctions } from "../parser/ast";
+import { UnrealClassConstant, UnrealClassFunction, UnrealClassFunctionArgument, UnrealClassFunctionLocal, UnrealClassVariable, getAllFunctions } from "../parser/ast";
 
 export type TokenInformation = {
     found?: boolean,
@@ -13,7 +13,8 @@ export type TokenInformation = {
     paramDefinition?: UnrealClassFunctionArgument,
     varDefinition?: UnrealClassVariable,
     fnDefinition?: UnrealClassFunction,
-    classDefinition?: UnrealClass,
+    classDefinition?: UnrealClass
+    constDefinition?: UnrealClassConstant,
 };
 
 export type CompletionInformation = {
@@ -638,6 +639,18 @@ export class ClassDatabase
 
     private findMemberDefinition(typeDefinition: TokenInformation, memberReference: TokenInformation): TokenInformation {
         if (!typeDefinition.ast) return { found: false };
+        for (const c of typeDefinition.ast.constants) {
+            if (c.name && c.name?.textLower === memberReference.token?.textLower)
+            {
+                return {
+                    token: c.name,
+                    ast: typeDefinition.ast,
+                    uri: typeDefinition.uri,
+                    constDefinition: c,
+                    found: true,
+                }
+            }
+        }
         for (const fn of typeDefinition.ast.functions) {
             if (fn.name && fn.name?.textLower === memberReference.token?.textLower) {
                 return {

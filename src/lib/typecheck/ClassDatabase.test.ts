@@ -133,7 +133,7 @@ describe("definition across files", () => {
         ]);
         ast(uriCanvas, 1, [
             'class Canvas;', // line 0
-            '',
+            'const NOTHING = -1;',
             'function Reset() {}',
         ]);
         ast(uriB, 1, [
@@ -166,6 +166,7 @@ describe("definition across files", () => {
             '',
             'function Reset(Canvas canvas) {', // line 27
             '   canvas.Reset();', // line 28
+            '   Log(Canvas.NOTHING);',
             '}',
         ]);
     });
@@ -177,6 +178,7 @@ describe("definition across files", () => {
     const canvasClassDef = { token: { text: 'Canvas' }, classDefinition: { name: { text: 'Canvas' }}};
     const canvasResetFnDef = { uri:uriCanvas, token: { text: 'Reset', line: 2 }, fnDefinition: { name: { text: 'Reset' }}};
     const showStartMessageFnDef = { uri: uriA, fnDefinition: { name: { text: 'ShowStartMessage' }}};
+    const canvasNothingConstDef = { uri:uriCanvas, token: { text: 'NOTHING', line: 1 }};
 
     // find definition
     test.each([
@@ -201,6 +203,7 @@ describe("definition across files", () => {
         ['typecast to class member', 22, 23, varDefCount],
         ['standalone default keyword', 24, 7, classDefB],
         ['member fn not shadowed by local fn', 28, 11, canvasResetFnDef],
+        ['const member', 29, 18, canvasNothingConstDef],
     ] as [string, number, number, TokenInformation][]
     )("findCrossFileDefinition finds %p at %p:%p", (_, line, column, expected) => {
         const token = db.findToken(uriB, line, column);
