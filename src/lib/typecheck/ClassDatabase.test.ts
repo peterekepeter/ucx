@@ -42,7 +42,7 @@ describe("definitions inside single file", () => {
     beforeEach(() => {
         ast(uri, 1, [
             'class SomeClass extends Info;', // line 0
-            '',
+            'const NOTHING = -1;',
             'var config string tag;',
             '', // line 3
             'function PostBeginPlay(string name) {', // line 4
@@ -53,6 +53,7 @@ describe("definitions inside single file", () => {
             '',
             'function DebugPrint() {', // line 10
             '    Log(tag);',
+            '    Log(NOTHING);',
             '}',
         ]);
     });
@@ -61,8 +62,7 @@ describe("definitions inside single file", () => {
         expect(db.findToken('asdasdas', 0, 0).missingAst).toBe(true);
     });
     
-    // find token
-    test.each([
+    describe('findToken', () => test.each([
         [0, 1, { found: true }],
         [0, 100, { found: false }],
         [0, 1, { token: { text: 'class' } }],
@@ -77,12 +77,11 @@ describe("definitions inside single file", () => {
             token: { text: 'i' }, 
             functionScope: { name: { text: 'PostBeginPlay' }},
         }] as [number, number, TokenInformation],
-    ])("findToken at (%p:%p) results %p", (line, column, expected) => {
+    ])("at %p:%p results %p", (line, column, expected) => {
         expect(db.findToken(uri, line, column)).toMatchObject(expected);
-    });
+    }));
 
-    // find definition
-    test.each([
+    describe('findLocalDefinition', () => test.each([
         [6, 9, { 
             token: { text: 'i', line: 5 }, 
             localDefinition: { type: { text: 'int' }},
@@ -95,25 +94,28 @@ describe("definitions inside single file", () => {
             token: { text: 'DebugPrint' }, 
             fnDefinition: { name: { text: 'DebugPrint' }},
         }] as [number, number, TokenInformation],
+        [1, 9, { 
+            token: { text: 'NOTHING', line: 1 }, 
+            constDefinition: { name: { text: 'NOTHING' }},
+        }],
     ] as [number, number, TokenInformation][]
-    )("findLocalDefinition at (%p:%p) results %p", (line, column, expected) => {
+    )("at %p:%p results %p", (line, column, expected) => {
         const token = db.findSymbolToken(uri, line, column);
         const definition = db.findLocalFileDefinition(token);
         expect(definition).toMatchObject(expected);
-    });
+    }));
 
-    // markdown definition
-    test.each([
+    describe('markdown definition', () => test.each([
         [6, 9, ['\tlocal int i']],
         [6, 35, ['\t(parameter) string name']],
         [6, 31, ['\tvar config string tag']],
         [7, 9, ['\tfunction DebugPrint()']],
         [0, 9, ['\tclass SomeClass extends Info']],
     ] as [number, number, string[]][]
-    )("markdown definition at (%p:%p) is %p", (line, column, expected) => {
+    )("at %p:%p is %p", (line, column, expected) => {
         const info = db.findLocalFileDefinition(db.findToken(uri, line, column));
         expect(renderDefinitionMarkdownLines(info)).toEqual(expected);
-    });
+    }));
 
 });
 

@@ -757,6 +757,10 @@ export class ClassDatabase
         for (const fn of ast.functions)
             if (fn.name?.textLower === name)
                 return { token: fn.name, fnDefinition: fn };
+        for (const c of ast.constants) {
+            if (c.name?.textLower === name) 
+                return { token: c.name, constDefinition: c };
+        }
     }
 
     private findClassDefinitionForQueryToken(q: TokenInformation) {
