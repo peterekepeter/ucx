@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.21.5
+- Fix find reference for constants in same file
+- Fix lookup member constant
+- Fix parsing local arrays
+
 ### v0.21.4
 - Fix bad lookup when local symbol same as member of other class
 
