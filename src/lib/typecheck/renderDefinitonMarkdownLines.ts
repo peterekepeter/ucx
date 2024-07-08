@@ -1,4 +1,6 @@
-import { UnrealClass, UnrealClassFunction, UnrealClassFunctionArgument, UnrealClassFunctionLocal, UnrealClassVariable } from "../parser/ast";
+import { ParserToken } from "../parser";
+import { UnrealClass, UnrealClassConstant, UnrealClassExpression, UnrealClassFunction, UnrealClassFunctionArgument, UnrealClassFunctionLocal, UnrealClassVariable } from "../parser/ast";
+import { resolveArrayCountExpressions } from "../parser/parse/resolveArrayCountExpressions";
 import { TokenInformation } from "./ClassDatabase";
 
 
@@ -28,6 +30,9 @@ export function renderDefinitionMarkdownLines(info: TokenInformation): string[] 
         }
         if (info.classDefinition) {
             return renderClassDefinition(info.classDefinition);
+        }
+        if (info.constDefinition) {
+            return renderConstDef(info.constDefinition);
         }
     }
     return [ '???' ];
@@ -74,5 +79,31 @@ function renderClassDefinition(classDefinition: UnrealClass): string[] {
     if (classDefinition.name) result.push(' ', classDefinition.name.text);
     if (classDefinition.parentName) result.push(' extends ', classDefinition.parentName.text);
     return [`\t${result.join('')}`];
+}
+
+function renderConstDef(constDefinition: UnrealClassConstant): string[] {
+    const expr = renderExpression(constDefinition.valueExpression ?? constDefinition.value);
+    return [
+        `\tconst ${constDefinition.name?.text} = ${expr}`
+    ];
+}
+
+function renderExpression(expr: ParserToken | UnrealClassExpression | null) {
+    if (!expr) {
+        return '???';
+    }
+    if ('text' in expr) {
+        return expr.text;
+    }
+    const result = [];
+    if (expr.op?.text) {
+        result.push(expr.op.text);
+    }
+    for (const item of expr.args) {
+        if ('text' in item) {
+            result.push(item.text);
+        }
+    }
+    return result.join('');
 }
 

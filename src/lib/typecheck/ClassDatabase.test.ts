@@ -106,6 +106,7 @@ describe("definitions inside single file", () => {
     }));
 
     describe('markdown definition', () => test.each([
+        [1, 9, ['\tconst NOTHING = -1']],
         [6, 9, ['\tlocal int i']],
         [6, 35, ['\t(parameter) string name']],
         [6, 31, ['\tvar config string tag']],

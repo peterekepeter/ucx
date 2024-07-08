@@ -1,5 +1,9 @@
 # Change Log
 
+### v0.21.6
+- Fix render const definition on hover
+- Fix lookup default and static member on current class
+
 ### v0.21.5
 - Fix find reference for constants in same file
 - Fix lookup member constant
