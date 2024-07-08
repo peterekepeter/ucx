@@ -176,6 +176,7 @@ describe("definition across files", () => {
     const classDefA = { token: { text: 'ClassA' }, uri: uriA };
     const classDefB = { token: { text: 'ClassB' }, uri: uriB };
     const varDefCount = { uri: uriA, varDefinition: { name: { text: 'Count' }} };
+    const varDefOther = { uri: uriB, varDefinition: { name: { text: 'other' }} };
     const paramDefCanvas = { uri:uriB, paramDefinition: { name: { text: 'canvas'} }};
     const canvasClassDef = { token: { text: 'Canvas' }, classDefinition: { name: { text: 'Canvas' }}};
     const canvasResetFnDef = { uri:uriCanvas, token: { text: 'Reset', line: 2 }, fnDefinition: { name: { text: 'Reset' }}};
@@ -204,6 +205,7 @@ describe("definition across files", () => {
         ['typecast to class', 22, 10, classDefA],
         ['typecast to class member', 22, 23, varDefCount],
         ['standalone default keyword', 24, 7, classDefB],
+        ['standalone default keyword member', 24, 14, varDefOther],
         ['member fn not shadowed by local fn', 28, 11, canvasResetFnDef],
         ['const member', 29, 18, canvasNothingConstDef],
     ] as [string, number, number, TokenInformation][]

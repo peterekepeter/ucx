@@ -1,6 +1,13 @@
 import { ClassNamingRule } from "../lint/ast-rules/ClassNamingRule";
 import { ParserToken, SemanticClass, UnrealClass, isTokenAtOrBetween } from "../parser";
-import { UnrealClassConstant, UnrealClassFunction, UnrealClassFunctionArgument, UnrealClassFunctionLocal, UnrealClassVariable, getAllFunctions } from "../parser/ast";
+import { 
+    UnrealClassConstant, 
+    UnrealClassFunction, 
+    UnrealClassFunctionArgument, 
+    UnrealClassFunctionLocal, 
+    UnrealClassVariable, 
+    getAllFunctions 
+} from "../parser/ast";
 
 export type TokenInformation = {
     found?: boolean,
@@ -600,6 +607,15 @@ export class ClassDatabase
             
             if (item.type === SemanticClass.Keyword && 
                 (item.textLower === 'static' || item.textLower === 'default')) {
+                if (!type) {
+                    // standalone keyword references current type
+                    type = {
+                        found: true,
+                        ast: query.ast,
+                        classDefinition: query.ast,
+                        uri: query.uri,
+                    };
+                }
                 continue;
             }
             const itemQuery: TokenInformation = {
@@ -648,7 +664,7 @@ export class ClassDatabase
                     uri: typeDefinition.uri,
                     constDefinition: c,
                     found: true,
-                }
+                };
             }
         }
         for (const fn of typeDefinition.ast.functions) {
