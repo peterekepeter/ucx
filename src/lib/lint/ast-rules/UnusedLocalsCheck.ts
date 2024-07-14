@@ -62,6 +62,7 @@ export class UnusedLocalsCheck implements AstBasedLinter
                         line: state.token.line,
                         length: state.token.text.length,
                         message: `Unused local variable ${state.token.text}!`,
+                        unnecessary: true,
                     });
                 }
             }

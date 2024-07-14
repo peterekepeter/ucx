@@ -49,14 +49,24 @@ export class Diagnostics implements vscode.Disposable {
             {
                 const begin  = new vscode.Position(lintResult.line, lintResult.position);
                 const end = new vscode.Position(lintResult.line, lintResult.position + lintResult.length);
-                yield {
+                const diagnostic: vscode.Diagnostic = {
                     message: lintResult.message,
                     range: new vscode.Range(begin, end),
                     severity: lintResult.severity === 'error' 
                         ? vscode.DiagnosticSeverity.Error
                         : vscode.DiagnosticSeverity.Warning,
-                    source: 'ucx'
+                    source: 'ucx',
                 };
+                if (lintResult.unnecessary || lintResult.deprecated) {
+                    diagnostic.tags = [];
+                    if (lintResult.unnecessary){
+                        diagnostic.tags.push(vscode.DiagnosticTag.Unnecessary);
+                    }
+                    if (lintResult.deprecated) {
+                        diagnostic.tags.push(vscode.DiagnosticTag.Deprecated);
+                    }
+                }
+                yield diagnostic;
             }
         }
     }

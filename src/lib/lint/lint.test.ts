@@ -994,7 +994,8 @@ test('unused local variable is reported', () => { linting([
     "    local Projectile A;",
     "}",
 ]).hasResult({
-    message: "Unused local variable A!"
+    message: "Unused local variable A!",
+    unnecessary: true,
 });});
 
 test('unused local variable not reported when used', () => { linting([
