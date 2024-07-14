@@ -1,5 +1,9 @@
 # Change Log
 
+### v0.21.7
+- Fix unused local check when referenced by lvalue
+- Fix VsCode render unused variables
+
 ### v0.21.6
 - Fix render const definition on hover
 - Fix lookup default and static member on current class

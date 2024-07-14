@@ -1,5 +1,5 @@
 import { ParserToken, SemanticClass, UnrealClass } from "../../parser";
-import { getAllFunctions, getAllBodyStatements, getAllStatements, UnrealClassExpression } from "../../parser/ast";
+import { getAllFunctions, getAllBodyStatements, UnrealClassExpression } from "../../parser/ast";
 import { Token } from "../../parser/types";
 import { AstBasedLinter } from "../AstBasedLinter";
 import { LintResult } from "../LintResult";
@@ -30,6 +30,12 @@ export class UnusedLocalsCheck implements AstBasedLinter
 
             let toCheck: (UnrealClassExpression | Token)[][] = [];
             for (const st of getAllBodyStatements(fn.body)) {
+                // check op as well, since parser is incomplete the variable may be detected as an op
+                if (st.op && (st.op.type === SemanticClass.Identifier || st.op.type === SemanticClass.VariableReference)) {
+                    if (symbols[st.op.textLower]) {
+                        symbols[st.op.textLower].isUsed = true;
+                    }
+                }
                 toCheck.push(st.args);
                 while (toCheck.length > 0) {
                     const item = toCheck.pop();

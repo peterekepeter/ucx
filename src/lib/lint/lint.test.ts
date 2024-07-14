@@ -1023,6 +1023,15 @@ test('unused local variable not reported when used in for loop', () => { linting
     "}",
 ]).hasNoLintResults();});
 
+test('unused local variable not reported when used as lvalue', () => { linting([
+    "function Func()",
+    "{",
+    "    local SFClassFilter filter;",
+    "    filter = Spawn(class'SFClassFilter');",
+    "    filter.SaveConfig();",
+    "}",
+]).hasNoLintResults();});
+
 
 
 function linting(lines: string[], options?: Partial<FullLinterConfig>, fileName?: string) {
