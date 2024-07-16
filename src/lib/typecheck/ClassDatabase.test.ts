@@ -526,6 +526,37 @@ describe("references", () => {
 
     });
     
+    describe("cross file references", () => {
+
+        beforeEach(() => {
+            
+            ast("Canvas.uc", 1, [
+                'class Canvas extends Object;',
+                '',
+                'function Reset() {', // line 2
+                '}',
+            ]);
+            
+            ast("CustomHUD.uc", 1, [
+                'class CustomHUD extends Object;',
+                '',
+                'function Render(Canvas c) {', // line 2
+                '   c.Reset();',
+                '}',
+            ]);
+
+        });
+
+        test("method references", () => {
+            expectReferences("Canvas.uc", 2, 11, 'Reset', [
+                ["Canvas.uc", 2, 9, "Reset"],
+                ["CustomHUD.uc", 3, 5, "Reset"],
+            ]);
+        });
+
+    });
+
+
 
     function expectReferences(uri: string, line: number, char: number, symbol: string, refs: [string, number, number, string][]) {
         expect(db.findSymbolToken(uri, line, char).token?.text).toEqual(symbol);

@@ -6,7 +6,9 @@ import {
     UnrealClassFunctionArgument, 
     UnrealClassFunctionLocal, 
     UnrealClassVariable, 
-    getAllFunctions 
+    getAllBodyStatements, 
+    getAllFunctions, 
+    getAllStatementTokens
 } from "../parser/ast";
 
 export type TokenInformation = {
@@ -239,6 +241,46 @@ export class ClassDatabase
                 }
                 return references;
             }
+        }
+
+        if (definition.fnDefinition) {
+            const references: TokenInformation[] = [];
+            const fnDefinition = definition.fnDefinition;
+            const lowerName = fnDefinition.name?.textLower;
+            if (!lowerName) {
+                return references;
+            }
+            for (const file in this.store) {
+                const item  = this.store[file];
+                for (const fn of getAllFunctions(item.ast)) {
+                    if (fn.name?.textLower === lowerName) {
+                        // TODO check if inherited
+                        references.push({
+                            ast: item.ast,
+                            fnDefinition: fn,
+                            uri: item.url,
+                            found: true,
+                            token: fn.name,
+                        });
+                    }
+                    for (const statement of getAllBodyStatements(fn.body)) {
+                        for (const tok of getAllStatementTokens(statement)) {
+                            if (tok.type === SemanticClass.FunctionReference && tok.textLower === lowerName) {
+                                // TODO check if actually reference, not just coincidence
+                                references.push({
+                                    ast: item.ast,
+                                    functionScope: fn,
+                                    uri: item.url,
+                                    found: true,
+                                    token: tok,
+                                });
+                            }
+                        }
+                    }
+                }
+
+            }
+            return references;
         }
         return [];
     }
