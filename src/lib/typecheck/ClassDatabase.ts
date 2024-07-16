@@ -282,6 +282,53 @@ export class ClassDatabase
             }
             return references;
         }
+
+        if (definition.classDefinition) {
+            const references: TokenInformation[] = [];
+            const classDef = definition.classDefinition;
+            const lowerClassName = classDef.name?.textLower;
+            if (!lowerClassName) {
+                return references;
+            }
+            for (const file in this.store) {
+                const item  = this.store[file];
+                if (item.ast.name?.textLower === lowerClassName) {
+                    references.push({
+                        ast: item.ast,
+                        classDefinition: item.ast,
+                        uri: item.url,
+                        found: true,
+                        token: item.ast.name,
+                    });
+                }
+                for (const v of item.ast.variables) {
+                    if (v.type?.textLower === lowerClassName) {
+                        references.push({
+                            ast: item.ast,
+                            varDefinition: v,
+                            uri: item.url,
+                            found: true,
+                            token: v.type,
+                        });
+                    }
+                }
+                for (const fn of getAllFunctions(item.ast)) {
+                    for (const param of fn.fnArgs) {
+                        if (param.type?.textLower === lowerClassName) {
+                            references.push({
+                                ast: item.ast,
+                                functionScope: fn,
+                                paramDefinition: param,
+                                uri: item.url,
+                                found: true,
+                                token: param.type,
+                            });
+                        }
+                    }
+                }
+            }
+            return references;
+        }
         return [];
     }
 

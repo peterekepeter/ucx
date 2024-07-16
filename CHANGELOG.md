@@ -1,5 +1,9 @@
 # Change Log
 
+### v0.21.8
+- Fix find function references returns results
+- Fix find class references returns results
+
 ### v0.21.7
 - Fix unused local check when referenced by lvalue
 - Fix VsCode render unused variables
