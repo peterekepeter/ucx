@@ -1,5 +1,5 @@
 import { ParserToken } from "../parser";
-import { UnrealClass, UnrealClassConstant, UnrealClassExpression, UnrealClassFunction, UnrealClassFunctionArgument, UnrealClassFunctionLocal, UnrealClassVariable } from "../parser/ast";
+import { UnrealClass, UnrealClassConstant, UnrealClassExpression, UnrealClassFunction, UnrealClassFunctionArgument, UnrealClassFunctionLocal, UnrealClassStruct, UnrealClassVariable } from "../parser/ast";
 import { resolveArrayCountExpressions } from "../parser/parse/resolveArrayCountExpressions";
 import { TokenInformation } from "./ClassDatabase";
 
@@ -33,6 +33,9 @@ export function renderDefinitionMarkdownLines(info: TokenInformation): string[] 
         }
         if (info.constDefinition) {
             return renderConstDef(info.constDefinition);
+        }
+        if (info.structDefinition) {
+            return renderStructDef(info.structDefinition);
         }
     }
     return [ '???' ];
@@ -105,5 +108,16 @@ function renderExpression(expr: ParserToken | UnrealClassExpression | null) {
         }
     }
     return result.join('');
+}
+
+function renderStructDef(structDefinition: UnrealClassStruct): string[] {
+    const result = [
+        `\tstruct ${structDefinition.name?.text ?? '???'}`,
+    ];
+    if (structDefinition.parentName) {
+        result[0] += ` extends ${structDefinition.parentName?.text}`;
+    }
+
+    return result;
 }
 

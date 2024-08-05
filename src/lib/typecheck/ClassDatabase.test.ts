@@ -42,16 +42,18 @@ describe("definitions inside single file", () => {
     beforeEach(() => {
         ast(uri, 1, [
             'class SomeClass extends Info;', // line 0
+            'struct MyStruct { var string Name; };',
             'const NOTHING = -1;',
             'var config string tag;',
-            '', // line 3
-            'function PostBeginPlay(string name) {', // line 4
+            'var config MyStruct MyStructVar;',
+            '',
+            'function PostBeginPlay(string name) {', // line 6
             '    local int i;',
-            '    for (i=0; i<10; i+=1) Log(tag$name);', // line 6
-            '    DebugPrint();', // line 7
+            '    for (i=0; i<10; i+=1) Log(tag$name);',
+            '    DebugPrint();',
             '}',
             '',
-            'function DebugPrint() {', // line 10
+            'function DebugPrint() {', // line 12
             '    Log(tag);',
             '    Log(NOTHING);',
             '}',
@@ -67,13 +69,13 @@ describe("definitions inside single file", () => {
         [0, 100, { found: false }],
         [0, 1, { token: { text: 'class' } }],
         [0, 6, { token: { text: 'SomeClass' } }],
-        [4, 32, { 
+        [6, 32, { 
             token: {text: 'name'}, 
             functionScope: { name: { text: 'PostBeginPlay' }},
             uri: uri,
             ast: {},
         }],
-        [6, 9, { 
+        [8, 9, { 
             token: { text: 'i' }, 
             functionScope: { name: { text: 'PostBeginPlay' }},
         }] as [number, number, TokenInformation],
@@ -82,21 +84,25 @@ describe("definitions inside single file", () => {
     }));
 
     describe('findLocalDefinition', () => test.each([
-        [6, 9, { 
-            token: { text: 'i', line: 5 }, 
+        [8, 9, { 
+            token: { text: 'i', line: 7 }, 
             localDefinition: { type: { text: 'int' }},
         }],
-        [6, 10, { // also works on last char
-            token: { text: 'i', line: 5 }, 
+        [8, 10, { // also works on last char
+            token: { text: 'i', line: 7 }, 
             localDefinition: { type: { text: 'int' }},
         }],
-        [7, 9, { 
+        [9, 9, { 
             token: { text: 'DebugPrint' }, 
             fnDefinition: { name: { text: 'DebugPrint' }},
         }] as [number, number, TokenInformation],
-        [1, 9, { 
-            token: { text: 'NOTHING', line: 1 }, 
+        [2, 9, { 
+            token: { text: 'NOTHING', line: 2 }, 
             constDefinition: { name: { text: 'NOTHING' }},
+        }],
+        [4, 15, { 
+            token: { text: 'MyStruct', line: 1 }, 
+            structDefinition: { name: { text: 'MyStruct' }},
         }],
     ] as [number, number, TokenInformation][]
     )("at %p:%p results %p", (line, column, expected) => {
@@ -106,12 +112,13 @@ describe("definitions inside single file", () => {
     }));
 
     describe('markdown definition', () => test.each([
-        [1, 9, ['\tconst NOTHING = -1']],
-        [6, 9, ['\tlocal int i']],
-        [6, 35, ['\t(parameter) string name']],
-        [6, 31, ['\tvar config string tag']],
-        [7, 9, ['\tfunction DebugPrint()']],
+        [2, 9, ['\tconst NOTHING = -1']],
+        [8, 9, ['\tlocal int i']],
+        [8, 35, ['\t(parameter) string name']],
+        [8, 31, ['\tvar config string tag']],
+        [9, 9, ['\tfunction DebugPrint()']],
         [0, 9, ['\tclass SomeClass extends Info']],
+        [1, 9, ['\tstruct MyStruct']],
     ] as [number, number, string[]][]
     )("at %p:%p is %p", (line, column, expected) => {
         const info = db.findLocalFileDefinition(db.findToken(uri, line, column));

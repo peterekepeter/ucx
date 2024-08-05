@@ -447,11 +447,9 @@ export class ClassDatabase
             }
         }
         if (!result && this.isTypeQuery(query)) {
-            if (query.token.type === SemanticClass.StructDeclaration) {
-                // struct may be in same file
-                result = this.findClassScopedSymbol(query.token.textLower, query.ast);
-            }
-            else {
+            // struct may be in same file
+            result = this.findClassScopedSymbol(query.token.textLower, query.ast);
+            if (!result?.structDefinition) {
                 // looking for a type in this file
                 return { found: false }; // HACK assume types are always across files
             }
