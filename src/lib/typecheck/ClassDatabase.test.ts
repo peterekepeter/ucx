@@ -540,9 +540,14 @@ describe("references", () => {
             ast("CustomHUD.uc", 1, [
                 'class CustomHUD extends Object;',
                 '',
-                'var Canvas LastCanvas;',
+                'struct PlayerStats {',
+                '   var string Name;',
+                '};', // line 4
                 '',
-                'function Render(Canvas c) {', // line 4
+                'var Canvas LastCanvas;',
+                'var PlayerStats CurrentPlayerStats;', 
+                '',
+                'function Render(Canvas c) {', // line 9
                 '   c.Reset();',
                 '}',
             ]);
@@ -552,15 +557,21 @@ describe("references", () => {
         test("method references", () => {
             expectReferences("Canvas.uc", 2, 11, 'Reset', [
                 ["Canvas.uc", 2, 9, "Reset"],
-                ["CustomHUD.uc", 5, 5, "Reset"],
+                ["CustomHUD.uc", 10, 5, "Reset"],
             ]);
         });
 
         test("class references", () => {
             expectReferences("Canvas.uc", 0, 8, 'Canvas', [
                 ["Canvas.uc", 0, 6, "Canvas"],
-                ["CustomHUD.uc", 2, 4, "Canvas"],
-                ["CustomHUD.uc", 4, 16, "Canvas"],
+                ["CustomHUD.uc", 6, 4, "Canvas"],
+                ["CustomHUD.uc", 9, 16, "Canvas"],
+            ]);
+        });
+
+        test("struct references", () => {
+            expectReferences("CustomHUD.uc", 2, 7, 'PlayerStats', [
+                ["CustomHUD.uc", 7, 4, "PlayerStats"],
             ]);
         });
 

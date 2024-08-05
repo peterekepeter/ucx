@@ -5,6 +5,7 @@ import {
     UnrealClassFunction, 
     UnrealClassFunctionArgument, 
     UnrealClassFunctionLocal, 
+    UnrealClassStruct, 
     UnrealClassVariable, 
     getAllBodyStatements, 
     getAllFunctions, 
@@ -24,6 +25,7 @@ export type TokenInformation = {
     fnDefinition?: UnrealClassFunction,
     classDefinition?: UnrealClass
     constDefinition?: UnrealClassConstant,
+    structDefinition?: UnrealClassStruct,
 };
 
 export type CompletionInformation = {
@@ -329,6 +331,33 @@ export class ClassDatabase
             }
             return references;
         }
+
+        if (definition.structDefinition) {
+            const references: TokenInformation[] = [];
+            const structDef = definition.structDefinition;
+            const nameLower = structDef.name?.textLower;
+            if (!nameLower) {
+                return references;
+            }
+            for (const file in this.store) {
+                // TODO look only in descendants subtree instead of all classes
+                const item  = this.store[file];
+                for (const v of item.ast.variables) {
+                    // TODO check if inherited symbol
+                    if (v.type?.textLower === nameLower) {
+                        references.push({
+                            ast: item.ast,
+                            varDefinition: v,
+                            uri: item.url,
+                            found: true,
+                            token: v.type,
+                        });
+                    }
+                }
+            }
+            return references;
+        }
+
         return [];
     }
 
@@ -418,8 +447,14 @@ export class ClassDatabase
             }
         }
         if (!result && this.isTypeQuery(query)) {
-            // looking for a type in this file
-            return { found: false }; // HACK assume types are always across files
+            if (query.token.type === SemanticClass.StructDeclaration) {
+                // struct may be in same file
+                result = this.findClassScopedSymbol(query.token.textLower, query.ast);
+            }
+            else {
+                // looking for a type in this file
+                return { found: false }; // HACK assume types are always across files
+            }
         }
         const before = query.ast.tokens[query.token.index - 1];
         if (before && before.text !== '.') {
@@ -866,6 +901,10 @@ export class ClassDatabase
             if (c.name?.textLower === name) 
                 return { token: c.name, constDefinition: c };
         }
+        for (const s of ast.structs) {
+            if (s.name?.textLower === name) 
+                return { token: s.name, structDefinition: s };
+        }
     }
 
     private findClassDefinitionForQueryToken(q: TokenInformation) {
@@ -900,6 +939,9 @@ export class ClassDatabase
 
     private isTypeQuery(q: TokenInformation): boolean {
         if (!q.token || !q.ast) return false;
+        if (q.token.type === SemanticClass.StructDeclaration) {
+            return true;
+        }
         if (q.functionScope)
         {
             const fn = q.functionScope;
