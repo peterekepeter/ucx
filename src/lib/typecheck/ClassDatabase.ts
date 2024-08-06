@@ -354,6 +354,21 @@ export class ClassDatabase
                         });
                     }
                 }
+                for (const fn of getAllFunctions(item.ast)) {
+                    for (const l of fn.locals) {
+                        // TODO check if inherited symbol
+                        if (l.type?.textLower === nameLower) {
+                            references.push({
+                                ast: item.ast,
+                                functionScope: fn,
+                                localDefinition: l,
+                                uri: item.url,
+                                found: true,
+                                token: l.type,
+                            });
+                        }
+                    }
+                }
             }
             return references;
         }

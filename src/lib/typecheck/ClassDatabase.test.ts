@@ -555,6 +555,7 @@ describe("references", () => {
                 'var PlayerStats CurrentPlayerStats;', 
                 '',
                 'function Render(Canvas c) {', // line 9
+                '   local PlayerStats temp;',
                 '   c.Reset();',
                 '}',
             ]);
@@ -564,7 +565,7 @@ describe("references", () => {
         test("method references", () => {
             expectReferences("Canvas.uc", 2, 11, 'Reset', [
                 ["Canvas.uc", 2, 9, "Reset"],
-                ["CustomHUD.uc", 10, 5, "Reset"],
+                ["CustomHUD.uc", 11, 5, "Reset"],
             ]);
         });
 
@@ -579,6 +580,7 @@ describe("references", () => {
         test("struct references", () => {
             expectReferences("CustomHUD.uc", 2, 7, 'PlayerStats', [
                 ["CustomHUD.uc", 7, 4, "PlayerStats"],
+                ["CustomHUD.uc", 10, 9, "PlayerStats"],
             ]);
         });
 
