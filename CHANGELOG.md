@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.21.9
+- Fix var references for struct types
+- Adds hover information for struct types
+- Fix local var references for struct types
+
 ### v0.21.8
 - Fix find function references returns results
 - Fix find class references returns results
