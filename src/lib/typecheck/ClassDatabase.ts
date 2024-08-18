@@ -5,6 +5,7 @@ import {
     UnrealClassFunction, 
     UnrealClassFunctionArgument, 
     UnrealClassFunctionLocal, 
+    UnrealClassState, 
     UnrealClassStruct, 
     UnrealClassVariable, 
     getAllBodyStatements, 
@@ -19,6 +20,7 @@ export type TokenInformation = {
     ast?: UnrealClass,
     uri?: string,
     functionScope?: UnrealClassFunction
+    stateScope?: UnrealClassState,
     localDefinition?: UnrealClassFunctionLocal,
     paramDefinition?: UnrealClassFunctionArgument,
     varDefinition?: UnrealClassVariable,
@@ -50,8 +52,10 @@ export class ClassDatabase
         if (!ast) return { uri, missingAst: true };
         let token = this.astFindTokenBeforePosition(ast, line, character);
         if (!token) return { uri, found: false };
+        const stateScope = this.findStateScope(ast, token);
+        // TODO optimization only look for function inside state
         const functionScope = this.findFunctionScope(ast, token);
-        return { uri, found: true, token, ast, functionScope };
+        return { uri, found: true, token, ast, functionScope, stateScope };
     }
 
     findToken(uri: string, line: number, character: number): TokenInformation {
@@ -59,8 +63,10 @@ export class ClassDatabase
         if (!ast) return { uri, missingAst: true };
         let token = this.astFindTokenAtPosition(ast, line, character);
         if (!token) return { uri, found: false };
+        const stateScope = this.findStateScope(ast, token);
+        // TODO optimization only look for function inside state
         const functionScope = this.findFunctionScope(ast, token);
-        return { uri, found: true, token, ast, functionScope };
+        return { uri, found: true, token, ast, functionScope, stateScope };
     }
 
     /** 
@@ -72,8 +78,10 @@ export class ClassDatabase
         if (!ast) return { uri, missingAst: true };
         let token = this.astFindSymbolTokenAtPosition(ast, line, character);
         if (!token) return { uri, found: false };
+        const stateScope = this.findStateScope(ast, token);
+        // TODO optimization only look for function inside state
         const functionScope = this.findFunctionScope(ast, token);
-        return { uri, found: true, token, ast, functionScope };
+        return { uri, found: true, token, ast, functionScope, stateScope };
     }
 
 
@@ -438,6 +446,19 @@ export class ClassDatabase
         return functionScope;
     }
 
+    private findStateScope(ast: UnrealClass, token: ParserToken) {
+        let stateScope: UnrealClassState | undefined;
+        for (const s of ast.states) {
+            const from = s.name ?? s.bodyFirstToken;
+            const to = s.bodyLastToken;
+            if (from && to && isTokenAtOrBetween(token, from, to)) {
+                stateScope = s;
+                break;
+            };
+        }
+        return stateScope;
+    }
+
     /** provides past lookup if type is in same file without needing full library scan */
     findLocalFileDefinition(query: TokenInformation): TokenInformation {
         let result: TokenInformation|undefined;
@@ -475,6 +496,9 @@ export class ClassDatabase
             if (!result && query.functionScope && query.token.type) {
                 result = this.findFunctionScopedSymbol(query);
             }
+            if (!result && query.stateScope) {
+                result = this.findStateScopedSymbol(query);
+            }
             if (!result) {
                 result = this.findClassScopedSymbol(query.token.textLower, query.ast);
             }
@@ -502,7 +526,6 @@ export class ClassDatabase
     findCrossFileDefinition(query: TokenInformation): TokenInformation {
         if (query.token && query.ast) {
             if (query.token.type === SemanticClass.Keyword) {
-                // console.log(query);
                 if (query.token.textLower === 'super' && query.ast.parentName) {
                     return this.findClassDefinitionStr(query.ast.parentName.textLower);
                 }
@@ -878,7 +901,6 @@ export class ClassDatabase
         return chain;
     }
 
-
     private findFunctionScopedSymbol(q: TokenInformation) {
         let result: TokenInformation|undefined;
         if (!q.functionScope || !q.token) return;
@@ -897,6 +919,27 @@ export class ClassDatabase
         for (const local of fn.locals) 
             if (local.name?.textLower === nameLower)
                 return { token: local.name, localDefinition: local, };
+    }
+
+    private findStateScopedSymbol(q: TokenInformation) {
+        let result: TokenInformation|undefined;
+        if (!q.stateScope || !q.token) {
+            return result;
+        }
+        result = this.findStateScopedSymbolStr(q.token.textLower, q.stateScope);
+        if (result?.token) {
+            result.found = true;
+            result.stateScope = q.stateScope;
+        }
+        return result;
+    }
+
+    private findStateScopedSymbolStr(nameLower: string, state: UnrealClassState) {
+        for (const fn of state.functions) {
+            if (fn.name?.textLower === nameLower) {
+                return { token: fn.name, fnDefinition: fn };
+            }
+        }
     }
 
     private findClassScopedSymbol(name: string, ast: UnrealClass): TokenInformation|undefined {

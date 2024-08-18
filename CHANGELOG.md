@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.21.10
+- Fix lookup lookup for state only functions
+
 ### v0.21.9
 - Fix var references for struct types
 - Adds hover information for struct types

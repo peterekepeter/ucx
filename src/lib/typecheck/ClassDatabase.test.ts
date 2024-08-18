@@ -127,6 +127,52 @@ describe("definitions inside single file", () => {
 
 });
 
+describe("definition in states", () => {
+    
+    const uri = "SomeClass.uc";
+    
+    beforeEach(() => {
+        ast(uri, 1, [
+            'class Cow extends ScriptedPawn;', // line 0
+            '',
+            'state Grazing {',
+            '   function PickDestination() {', // line 3
+            '       TestDirection();',
+            '   }',
+            '   function TestDirection() {',
+            '   }', 
+            `}`,
+        ]);
+    });
+
+    describe('findToken', () => test.each([
+        [3, 14, { 
+            found: true, 
+            token: { text: 'PickDestination'},
+            stateScope: { name: { text: 'Grazing'} },
+        }],
+    ])("at %p:%p results %p", (line, column, expected) => {
+        expect(db.findToken(uri, line, column)).toMatchObject(expected);
+    }));
+
+    describe('findLocalDefinition', () => test.each([
+        [4, 10, { 
+            token: { text: 'TestDirection', line: 6 }, 
+            fnDefinition: { name: { text: 'TestDirection' } },
+            stateScope: { name: { text: 'Grazing'} },
+        }],
+    ] as [number, number, TokenInformation][]
+    )("at %p:%p results %p", (line, column, expected) => {
+        const token = db.findSymbolToken(uri, line, column);
+        const definition = db.findLocalFileDefinition(token);
+        expect(definition).toMatchObject(expected);
+    }));
+
+    // TODO test find all references for state function
+
+
+});
+
 describe("definition across files", () => {
 
     const uriA = "PackageName/Classes/ClassA.uc";
