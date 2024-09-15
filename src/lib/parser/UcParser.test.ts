@@ -318,6 +318,27 @@ test("parse static function call", () => { parsing(`
     );
 });
 
+test("parse nested function call", () => { parsing(`
+    function F(){
+        Render(a,GetData(b,c));
+    }`)
+    .hasNoErrors()
+    .hasTokens(
+        ['Render', C.FunctionReference], 
+        ['(', C.None], 
+        ['a', C.Identifier], 
+        [',', C.None], 
+        ['GetData', C.FunctionReference], 
+        ['(', C.None], 
+        ['b', C.Identifier], 
+        [',', C.None], 
+        ['c', C.Identifier], 
+        [')', C.None], 
+        [')', C.None], 
+    );
+});
+
+
 test("parse default variable access", () => { parsing(`
     function F(){
         r1 = class'Util'.default.Value;

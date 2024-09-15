@@ -1,5 +1,12 @@
 # Change Log
 
+### v0.21.11
+- Fix class reference when typecasting to class
+- Fix class references from defaultproperties
+- Fix rename symbol when using class'Name' syntax
+- Find reference triggers workspace parse for non local symbols
+- Fix class reference in extends syntax
+
 ### v0.21.10
 - Fix lookup lookup for state only functions
 

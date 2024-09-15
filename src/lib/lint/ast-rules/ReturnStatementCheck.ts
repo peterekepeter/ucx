@@ -1,5 +1,5 @@
 import { UnrealClass } from "../../parser";
-import { getAllFunctions, getAllBodyStatements, getAllStatements } from "../../parser/ast";
+import { getAllClassFunctions, getStatementsRecursively, getAllClassStatements } from "../../parser/ast";
 import { AstBasedLinter } from "../AstBasedLinter";
 import { LintResult } from "../LintResult";
 
@@ -7,10 +7,10 @@ export class ReturnStatementCheck implements AstBasedLinter
 {
     lint(ast: UnrealClass): LintResult[] | null {
         let results: LintResult[] | null = null;
-        for (const fn of getAllFunctions(ast)) {
+        for (const fn of getAllClassFunctions(ast)) {
             if (fn.returnType) {
                 let foundreturn = false;
-                for (const st of getAllBodyStatements(fn.body)) {
+                for (const st of getStatementsRecursively(fn.body)) {
                     if (st.op?.textLower === 'return') {
                         foundreturn = true;
                         if (st.args.length === 0) {
@@ -40,7 +40,7 @@ export class ReturnStatementCheck implements AstBasedLinter
             }
             else 
             {
-                for (const st of getAllBodyStatements(fn.body)) {
+                for (const st of getStatementsRecursively(fn.body)) {
                     if (st.op?.textLower === 'return') {
                         if (st.args.length !== 0) {
                             if (!results) {

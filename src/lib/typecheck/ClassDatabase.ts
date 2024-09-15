@@ -8,9 +8,9 @@ import {
     UnrealClassState, 
     UnrealClassStruct, 
     UnrealClassVariable, 
-    getAllBodyStatements, 
-    getAllFunctions, 
-    getAllStatementTokens
+    getStatementsRecursively, 
+    getAllClassFunctions, 
+    getExpressionTokensRecursively
 } from "../parser/ast";
 
 export type TokenInformation = {
@@ -262,7 +262,7 @@ export class ClassDatabase
             }
             for (const file in this.store) {
                 const item  = this.store[file];
-                for (const fn of getAllFunctions(item.ast)) {
+                for (const fn of getAllClassFunctions(item.ast)) {
                     if (fn.name?.textLower === lowerName) {
                         // TODO check if inherited
                         references.push({
@@ -273,8 +273,8 @@ export class ClassDatabase
                             token: fn.name,
                         });
                     }
-                    for (const statement of getAllBodyStatements(fn.body)) {
-                        for (const tok of getAllStatementTokens(statement)) {
+                    for (const statement of getStatementsRecursively(fn.body)) {
+                        for (const tok of getExpressionTokensRecursively(statement)) {
                             if (tok.type === SemanticClass.FunctionReference && tok.textLower === lowerName) {
                                 // TODO check if actually reference, not just coincidence
                                 references.push({
@@ -335,7 +335,7 @@ export class ClassDatabase
                         });
                     }
                 }
-                for (const fn of getAllFunctions(item.ast)) {
+                for (const fn of getAllClassFunctions(item.ast)) {
                     for (const param of fn.fnArgs) {
                         if (param.type?.textLower === lowerClassName) {
                             // class used as param type in fn decl
@@ -349,8 +349,8 @@ export class ClassDatabase
                             });
                         }
                     }
-                    for (const statement of getAllBodyStatements(fn.body)) {
-                        for (const tok of getAllStatementTokens(statement)) {
+                    for (const statement of getStatementsRecursively(fn.body)) {
+                        for (const tok of getExpressionTokensRecursively(statement)) {
                             if (tok.type === SemanticClass.ObjectReferenceName && tok.textLower === lowerDecoratedName) {
                                 // referenced by object name like class'MyClass'
                                 references.push({
@@ -361,17 +361,17 @@ export class ClassDatabase
                                     token: tok,
                                 });
                             }
-                            // TODO typecasts
-                            // if (tok.type === SemanticClass.FunctionReference && tok.textLower === lowerClassName) {
-                            //     // TODO check if actually reference, not just coincidence
-                            //     references.push({
-                            //         ast: item.ast,
-                            //         functionScope: fn,
-                            //         uri: item.url,
-                            //         found: true,
-                            //         token: tok,
-                            //     });
-                            // }
+                            if (tok.type === SemanticClass.FunctionReference && tok.textLower === lowerClassName) {
+                                // typecasts to class type MyClass(someobject)
+                                // TODO check if actually reference, not just coincidence
+                                references.push({
+                                    ast: item.ast,
+                                    functionScope: fn,
+                                    uri: item.url,
+                                    found: true,
+                                    token: tok,
+                                });
+                            }
                         }
                     }
                 }
@@ -382,7 +382,7 @@ export class ClassDatabase
                     }
                     if ('op' in value) {
                         const expr = value;
-                        for (const tok of getAllStatementTokens(expr)) {
+                        for (const tok of getExpressionTokensRecursively(expr)) {
                             if (tok.type === SemanticClass.ObjectReferenceName && tok.textLower === lowerDecoratedName) {
                                 // referenced by object name like class'MyClass'
                                 references.push({
@@ -421,7 +421,7 @@ export class ClassDatabase
                         });
                     }
                 }
-                for (const fn of getAllFunctions(item.ast)) {
+                for (const fn of getAllClassFunctions(item.ast)) {
                     for (const l of fn.locals) {
                         // TODO check if inherited symbol
                         if (l.type?.textLower === nameLower) {
@@ -1089,7 +1089,7 @@ export class ClassDatabase
                     return true; // look for type of var def
                 }
             }
-            for (const fn of getAllFunctions(q.ast)) {
+            for (const fn of getAllClassFunctions(q.ast)) {
                 if (q.token === fn.returnType) {
                     return true;
                 }

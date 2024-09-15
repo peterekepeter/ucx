@@ -1,5 +1,5 @@
 import { ParserToken, SemanticClass, UnrealClass } from "../../parser";
-import { getAllFunctions, getAllBodyStatements, UnrealClassExpression } from "../../parser/ast";
+import { getAllClassFunctions, getStatementsRecursively, UnrealClassExpression } from "../../parser/ast";
 import { Token } from "../../parser/types";
 import { AstBasedLinter } from "../AstBasedLinter";
 import { LintResult } from "../LintResult";
@@ -8,7 +8,7 @@ export class UnusedLocalsCheck implements AstBasedLinter
 {
     lint(ast: UnrealClass): LintResult[] | null {
         let results: LintResult[] | null = null;
-        for (const fn of getAllFunctions(ast)) {
+        for (const fn of getAllClassFunctions(ast)) {
             let symbols: { [key:string]: {
                 isUsed: boolean,
                 token: ParserToken,
@@ -29,7 +29,7 @@ export class UnusedLocalsCheck implements AstBasedLinter
             }
 
             let toCheck: (UnrealClassExpression | Token)[][] = [];
-            for (const st of getAllBodyStatements(fn.body)) {
+            for (const st of getStatementsRecursively(fn.body)) {
                 // check op as well, since parser is incomplete the variable may be detected as an op
                 if (st.op && (st.op.type === SemanticClass.Identifier || st.op.type === SemanticClass.VariableReference)) {
                     if (symbols[st.op.textLower]) {

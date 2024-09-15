@@ -606,7 +606,13 @@ describe("references", () => {
                 '}',
                 '',
                 'function Init() {', // line 14
-                '   LastCanvas = new class\'Canvas\'',
+                '   LastCanvas = new class\'Canvas\';',
+                '}',
+                '',
+                'function RenderSpecial(SpecialCanvas c) {', // line 18
+                '   if (c.bIsSpecial) {',
+                '       Render(Canvas(c));',
+                '   }',
                 '}',
             ]);
 
@@ -635,6 +641,7 @@ describe("references", () => {
                 ["CustomHUD.uc", 6, 4, "Canvas"], // used as var
                 ["CustomHUD.uc", 9, 16, "Canvas"], // used as param
                 ["CustomHUD.uc", 15, 25, "'Canvas'"], // class'Canvas'
+                ["CustomHUD.uc", 20, 14, "Canvas"], // typecast
                 ["SpecialCanvas.uc", 0, 28, "Canvas"], // extends
                 ["SpecialCanvas.uc", 5, 20, "'Canvas'"], // defaultprops
             ]);

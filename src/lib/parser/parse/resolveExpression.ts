@@ -1,4 +1,4 @@
-import { ParserToken as Token, SemanticClass } from "..";
+import { ParserToken as Token, SemanticClass, ParserToken } from "..";
 import { UnrealClassExpression, UnrealClassStatement } from "../ast/UnrealClassFunction";
 
 export function resolveStatementExpression(
@@ -244,5 +244,23 @@ function classifyExpressionToken(token: Token){
 function resolveCallArgs(
     tokens: Token[], begin: number, end: number
 ): (Token | UnrealClassExpression)[] {
-    return tokens.slice(begin, end);
+    var i: number, token: Token, result:(Token | UnrealClassExpression)[] = [];
+    var depth = 0, arg = begin;
+    for (i = begin; i < end; i += 1) {
+        token = tokens[i];
+        switch (token.text) {
+        case '(': depth += 1; break;
+        case ')': depth -= 1; break;
+        case ',':
+            if (depth === 0) {
+                result.push(resolveSubExpression(tokens, arg, i));
+                arg = i + 1;
+            }
+            break;
+        }
+    }
+    if (arg < end) {
+        result.push(resolveSubExpression(tokens, arg, end));
+    }
+    return result;
 }
