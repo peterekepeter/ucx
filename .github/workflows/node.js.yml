@@ -36,7 +36,7 @@ jobs:
     - run: npm ci
     - run: npm run unittest -- --coverage
     - name: Upload unit test coverage artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: unit-coverage
         path: ./src/lib/coverage
@@ -46,15 +46,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
       with:
         cache: 'npm'
 
     - run: npm ci
     - run: npm run esbuild-ucx
     - name: Upload cli-tool artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: cli-tool
         path: ./out/ucx.js
@@ -79,7 +79,7 @@ jobs:
 
     steps:
       - name: Download a single artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: cli-tool
       - run: ls
@@ -95,15 +95,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
       with:
         cache: 'npm'
 
     - run: npm ci
     - run: npm run pack
     - name: Upload vscode-extension artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: vscode-extension
         path: ucx*.vsix
@@ -117,7 +117,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Download unit test coverage artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: unit-coverage
         path: ./src/lib/coverage
