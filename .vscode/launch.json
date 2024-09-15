@@ -29,6 +29,17 @@
 				"${workspaceFolder}/out/test/**/*.js"
 			],
 			"preLaunchTask": "${defaultBuildTask}"
+		},
+		{
+			"name": "Jest",
+			"type": "node",
+			"request": "launch",
+			"runtimeArgs": [
+				"node_modules/jest/bin/jest.js",
+				"--runInBand",
+				"--watch"
+			  ],
+			"console": "integratedTerminal",
 		}
 	]
 }

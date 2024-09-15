@@ -375,6 +375,26 @@ export class ClassDatabase
                         }
                     }
                 }
+                for (const defaultprop of item.ast.defaultProperties) {
+                    const value = defaultprop.value;
+                    if (!value) {
+                        continue;
+                    }
+                    if ('op' in value) {
+                        const expr = value;
+                        for (const tok of getAllStatementTokens(expr)) {
+                            if (tok.type === SemanticClass.ObjectReferenceName && tok.textLower === lowerDecoratedName) {
+                                // referenced by object name like class'MyClass'
+                                references.push({
+                                    ast: item.ast,
+                                    uri: item.url,
+                                    found: true,
+                                    token: tok,
+                                });
+                            }
+                        }
+                    }
+                }
             }
             return references;
         }

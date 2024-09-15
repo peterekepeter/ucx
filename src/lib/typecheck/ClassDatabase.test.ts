@@ -611,7 +611,13 @@ describe("references", () => {
             ]);
 
             ast("SpecialCanvas.uc", 1, [
-                'class SpecialCanvas extends Canvas',
+                'class SpecialCanvas extends Canvas;',
+                '',
+                'var Class ParentClass;',
+                '',
+                'defaultproperties {', // line 4
+                '   ParentClass=Class\'Canvas\'',
+                '}',
             ]);
 
         });
@@ -623,13 +629,14 @@ describe("references", () => {
             ]);
         });
 
-        test.only("class references", () => {
+        test("class references", () => {
             expectReferences("Canvas.uc", 0, 8, 'Canvas', [
                 ["Canvas.uc", 0, 6, "Canvas"], // declaration
                 ["CustomHUD.uc", 6, 4, "Canvas"], // used as var
                 ["CustomHUD.uc", 9, 16, "Canvas"], // used as param
                 ["CustomHUD.uc", 15, 25, "'Canvas'"], // class'Canvas'
                 ["SpecialCanvas.uc", 0, 28, "Canvas"], // extends
+                ["SpecialCanvas.uc", 5, 20, "'Canvas'"], // defaultprops
             ]);
         });
 
