@@ -606,27 +606,32 @@ describe("references", () => {
                 '}',
             ]);
 
+            ast("SpecialCanvas.uc", 1, [
+                'class SpecialCanvas extends Canvas',
+            ]);
+
         });
 
         test("method references", () => {
             expectReferences("Canvas.uc", 2, 11, 'Reset', [
-                ["Canvas.uc", 2, 9, "Reset"],
-                ["CustomHUD.uc", 11, 5, "Reset"],
+                ["Canvas.uc", 2, 9, "Reset"], // declared
+                ["CustomHUD.uc", 11, 5, "Reset"], // member call
             ]);
         });
 
         test("class references", () => {
             expectReferences("Canvas.uc", 0, 8, 'Canvas', [
-                ["Canvas.uc", 0, 6, "Canvas"],
-                ["CustomHUD.uc", 6, 4, "Canvas"],
-                ["CustomHUD.uc", 9, 16, "Canvas"],
+                ["Canvas.uc", 0, 6, "Canvas"], // declaration
+                ["CustomHUD.uc", 6, 4, "Canvas"], // used as var
+                ["CustomHUD.uc", 9, 16, "Canvas"], // used as param
+                ["SpecialCanvas.uc", 0, 28, "Canvas"], // extends
             ]);
         });
 
         test("struct references", () => {
             expectReferences("CustomHUD.uc", 2, 7, 'PlayerStats', [
-                ["CustomHUD.uc", 7, 4, "PlayerStats"],
-                ["CustomHUD.uc", 10, 9, "PlayerStats"],
+                ["CustomHUD.uc", 7, 4, "PlayerStats"], // var decl
+                ["CustomHUD.uc", 10, 9, "PlayerStats"], // local decl
             ]);
         });
 

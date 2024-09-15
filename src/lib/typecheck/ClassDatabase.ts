@@ -303,6 +303,7 @@ export class ClassDatabase
             for (const file in this.store) {
                 const item  = this.store[file];
                 if (item.ast.name?.textLower === lowerClassName) {
+                    // class declared here
                     references.push({
                         ast: item.ast,
                         classDefinition: item.ast,
@@ -311,8 +312,19 @@ export class ClassDatabase
                         token: item.ast.name,
                     });
                 }
+                if (item.ast.parentName?.textLower === lowerClassName) {
+                    // class extends referenced class
+                    references.push({
+                        ast: item.ast,
+                        classDefinition: item.ast,
+                        uri: item.url,
+                        found: true,
+                        token: item.ast.parentName,
+                    });
+                }
                 for (const v of item.ast.variables) {
                     if (v.type?.textLower === lowerClassName) {
+                        // class used as var type in var decl
                         references.push({
                             ast: item.ast,
                             varDefinition: v,
@@ -325,6 +337,7 @@ export class ClassDatabase
                 for (const fn of getAllFunctions(item.ast)) {
                     for (const param of fn.fnArgs) {
                         if (param.type?.textLower === lowerClassName) {
+                            // class used as param type in fn decl
                             references.push({
                                 ast: item.ast,
                                 functionScope: fn,
