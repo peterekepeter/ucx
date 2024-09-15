@@ -199,7 +199,7 @@
 		"lint": "eslint src --ext ts",
 		"test": "node ./out/test/runTest.js",
 		"unittest": "jest",
-		"unittest:watch": "jest --watch --runInBand",
+		"unittest:watch": "jest --watch",
 		"pack": "npx vsce package",
 		"vsce-publish": "npx vsce publish",
 		"ovsx-publish": "bash -c ovsxpublish",

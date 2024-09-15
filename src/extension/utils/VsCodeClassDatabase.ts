@@ -206,10 +206,24 @@ export class VsCodeClassDatabase {
         return ast;
     }
 
-    findReferences(document: vscode.TextDocument, position: vscode.Position, cancellationToken: vscode.CancellationToken) {
+    async findReferences(document: vscode.TextDocument, position: vscode.Position, cancellationToken: vscode.CancellationToken) {
         const uri = document.uri.toString();
         const line = position.line;
         const character = position.character;
+
+        this.updateDocumentAndGetAst(document, cancellationToken);
+
+        const codeToken = this.libdb.findSymbolToken(uri, position.line, position.character);
+        let result = this.libdb.findLocalFileDefinition(codeToken);
+        if (result.paramDefinition || result.localDefinition) {
+            // symbol can be resolved locally without loading extra files
+            return this.libdb.findReferences(uri, line, character);
+        }
+
+        await this.requiresWorkspaceAndLibraryLoaded(cancellationToken);
+        if (cancellationToken.isCancellationRequested) return [];
+        
+        // find references for cross file symbols
         return this.libdb.findReferences(uri, line, character);
     }
 
