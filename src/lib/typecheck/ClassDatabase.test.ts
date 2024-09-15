@@ -604,6 +604,10 @@ describe("references", () => {
                 '   local PlayerStats temp;',
                 '   c.Reset();',
                 '}',
+                '',
+                'function Init() {', // line 14
+                '   LastCanvas = new class\'Canvas\'',
+                '}',
             ]);
 
             ast("SpecialCanvas.uc", 1, [
@@ -619,11 +623,12 @@ describe("references", () => {
             ]);
         });
 
-        test("class references", () => {
+        test.only("class references", () => {
             expectReferences("Canvas.uc", 0, 8, 'Canvas', [
                 ["Canvas.uc", 0, 6, "Canvas"], // declaration
                 ["CustomHUD.uc", 6, 4, "Canvas"], // used as var
                 ["CustomHUD.uc", 9, 16, "Canvas"], // used as param
+                ["CustomHUD.uc", 15, 25, "'Canvas'"], // class'Canvas'
                 ["SpecialCanvas.uc", 0, 28, "Canvas"], // extends
             ]);
         });

@@ -297,6 +297,7 @@ export class ClassDatabase
             const references: TokenInformation[] = [];
             const classDef = definition.classDefinition;
             const lowerClassName = classDef.name?.textLower;
+            const lowerDecoratedName = `'${lowerClassName}'`;
             if (!lowerClassName) {
                 return references;
             }
@@ -346,6 +347,31 @@ export class ClassDatabase
                                 found: true,
                                 token: param.type,
                             });
+                        }
+                    }
+                    for (const statement of getAllBodyStatements(fn.body)) {
+                        for (const tok of getAllStatementTokens(statement)) {
+                            if (tok.type === SemanticClass.ObjectReferenceName && tok.textLower === lowerDecoratedName) {
+                                // referenced by object name like class'MyClass'
+                                references.push({
+                                    ast: item.ast,
+                                    functionScope: fn,
+                                    uri: item.url,
+                                    found: true,
+                                    token: tok,
+                                });
+                            }
+                            // TODO typecasts
+                            // if (tok.type === SemanticClass.FunctionReference && tok.textLower === lowerClassName) {
+                            //     // TODO check if actually reference, not just coincidence
+                            //     references.push({
+                            //         ast: item.ast,
+                            //         functionScope: fn,
+                            //         uri: item.url,
+                            //         found: true,
+                            //         token: tok,
+                            //     });
+                            // }
                         }
                     }
                 }
