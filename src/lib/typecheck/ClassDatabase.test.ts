@@ -614,6 +614,10 @@ describe("references", () => {
                 '       Render(Canvas(c));',
                 '   }',
                 '}',
+                '',
+                'defaultproperties {', // line 24
+                '   LastCanvas=None',
+                '}',
             ]);
 
             ast("SpecialCanvas.uc", 1, [
@@ -624,6 +628,33 @@ describe("references", () => {
                 'defaultproperties {', // line 4
                 '   ParentClass=Class\'Canvas\'',
                 '}',
+            ]);
+            
+            ast("SpecialCustomHud.uc", 1, [
+                'class SpecialCustomHud extends CustomHUD;',
+                '',
+                'function Reset() {', // line 2
+                '   LastCanvas = None;', 
+                '}',
+            ]);
+
+            ast("Utils.uc", 1, [
+                'class Utils extends Object;',
+                '',
+                'static function ResetHudCanvas(CustomHUD hud) {',
+                '   hud.LastCanvas = None;',
+                '}'
+            ]);
+
+            ast("Unrelated.uc", 1, [
+                'class Unrelated extends Unknown;',
+                '',
+                'var int LastCanvas;',
+                '',
+                'function Init(Unknown hud) {',
+                '   LastCanvas = -1;',
+                '   hud.LastCanvas = -1;',
+                '}'
             ]);
 
         });
@@ -644,6 +675,16 @@ describe("references", () => {
                 ["CustomHUD.uc", 20, 14, "Canvas"], // typecast
                 ["SpecialCanvas.uc", 0, 28, "Canvas"], // extends
                 ["SpecialCanvas.uc", 5, 20, "'Canvas'"], // defaultprops
+            ]);
+        });
+
+        test("var references", () => {
+            expectReferences("CustomHUD.uc", 6, 15, 'LastCanvas', [
+                ["CustomHUD.uc", 6, 11, "LastCanvas"], // declaration
+                ["CustomHUD.uc", 15, 3, "LastCanvas"], // assignemnt in expression
+                ["CustomHUD.uc", 25, 3, "LastCanvas"], // defaultprop
+                ["SpecialCustomHud.uc", 3, 3, "LastCanvas"], // inherited var
+                ["Utils.uc", 3, 7, "LastCanvas"], // member access
             ]);
         });
 
