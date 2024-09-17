@@ -1,5 +1,9 @@
 # Change Log
 
+### v0.21.12
+- Fix find class variable references not returning results
+- Fix find struct references not returning struct declaration
+
 ### v0.21.11
 - Fix class reference when typecasting to class
 - Fix class references from defaultproperties

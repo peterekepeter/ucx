@@ -415,6 +415,79 @@ export class ClassDatabase
                 }
             }
         }
+
+        if (definition.varDefinition) {
+            const varDef = definition.varDefinition;
+            const nameLower = varDef.name?.textLower;
+            if (!nameLower || !varDef) {
+                return references;
+            }
+            const [subtypes, othertypes, lowersubtypenames] = this.findSubtreePartition(definition.ast);
+            // references from same class
+            for (const cls of subtypes) {
+                for (const fn of getAllClassFunctions(cls.ast)) {
+                    for (const statement of getStatementsRecursively(fn.body)) {
+                        for (const tok of getExpressionTokensRecursively(statement)) {
+                            if (tok.type === SemanticClass.VariableReference && tok.textLower === nameLower) {
+                                references.push({
+                                    uri: cls.url,
+                                    ast: cls.ast,
+                                    functionScope: fn,
+                                    token: tok,
+                                    found: true,
+                                });
+                            }
+                        }
+                    }
+                }
+                for (const prop of cls.ast.defaultProperties) {
+                    if (prop.name?.textLower === nameLower) {
+                        references.push({
+                            uri: cls.url,
+                            ast: cls.ast,
+                            token: prop.name,
+                            found: true,
+                        });
+                    }
+                }
+            }
+            // member references from othertypes 
+            for (const cls of othertypes) {
+                for (const fn of getAllClassFunctions(cls.ast)) {
+                    for (const statement of getStatementsRecursively(fn.body)) {
+                        for (const tok of getExpressionTokensRecursively(statement)) {
+                            if (tok.type === SemanticClass.VariableReference && tok.textLower === nameLower) {
+                                const before = cls.ast.tokens[tok.index-1];
+                                if (before && before.text === '.') {
+                                    const beforeBefore = cls.ast.tokens[tok.index-2];
+                                    if (beforeBefore) {
+                                        const def = this.findDefinition({
+                                            token: beforeBefore,
+                                            functionScope: fn,
+                                            uri: cls.url,
+                                            ast: cls.ast,
+                                        });
+                                        const type = this.findTypeOfDefinition(def);
+                                        if (lowersubtypenames.has(type.classDefinition?.name?.textLower ?? '')) {
+                                            // is var member access from subtype of queried type
+                                            references.push({
+                                                uri: cls.url,
+                                                ast: cls.ast,
+                                                functionScope: fn,
+                                                token: tok,
+                                                found: true,
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
         return references;
     }
 
@@ -884,6 +957,48 @@ export class ClassDatabase
             }
         }
         return { found: false };
+    }
+
+    /**
+     * @returns returns list of subtypes and non subtypes
+     * */
+    private findSubtreePartition(superClass?: UnrealClass): [ClassFileEntry[], ClassFileEntry[], Set<string>] {
+        var classnames = new Set<string>();
+        var list = Object.values(this.store);
+        var len = list.length;
+        var i, index = 0, tmp;
+        for (i=0; i<len; i+=1) {
+            if (list[i].ast === superClass) {
+                classnames.add(list[i].ast.name?.textLower ?? '');
+                tmp = list[index];
+                list[index] = list[i];
+                list[i] = tmp;
+                index += 1;
+                break;
+            }
+        }
+        if (index === 0) {
+            // not found? bug?
+            [[], list]; // all entries are not subclases of ast
+        }
+        var keepPartitioning = true;
+        while (keepPartitioning) {
+            keepPartitioning = false;
+            for (i = index; i < len; i += 1) {
+                var parentLowerName = list[i].ast.parentName?.textLower ?? '';
+                if (classnames.has(parentLowerName))
+                {
+                    var lowerName = list[i].ast.name?.textLower ?? '';
+                    classnames.add(lowerName);
+                    tmp = list[index];
+                    list[index] = list[i];
+                    list[i] = tmp;
+                    index += 1;
+                    keepPartitioning = true;
+                }
+            }
+        }
+        return [list.slice(0, index), list.slice(index), classnames];
     }
 
     findTypeOfDefinition(d: TokenInformation): TokenInformation {
