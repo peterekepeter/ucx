@@ -649,8 +649,9 @@ describe("references", () => {
 
         test("struct references", () => {
             expectReferences("CustomHUD.uc", 2, 7, 'PlayerStats', [
-                ["CustomHUD.uc", 7, 4, "PlayerStats"], // var decl
-                ["CustomHUD.uc", 10, 9, "PlayerStats"], // local decl
+                ["CustomHUD.uc", 2, 7, "PlayerStats"], // symbol declared here
+                ["CustomHUD.uc", 7, 4, "PlayerStats"], // used as var type
+                ["CustomHUD.uc", 10, 9, "PlayerStats"], // used as local type
             ]);
         });
 

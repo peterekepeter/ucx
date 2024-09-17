@@ -223,9 +223,10 @@ export class ClassDatabase
     findReferences(uri: string, line: number, character: number): TokenInformation[] {
         const token = this.findSymbolToken(uri, line, character);
         const definition = this.findDefinition(token);
+        const references: TokenInformation[] = [definition];
 
         if (!definition.token) {
-            return [];
+            return references;
         }
         
         if (definition.localDefinition || definition.paramDefinition) {
@@ -233,7 +234,8 @@ export class ClassDatabase
             const firstTokenIndex = definition.functionScope?.fnArgsFirstToken?.index;
             const lastTokenIndex = definition.functionScope?.bodyLastToken?.index;
             if (ast && firstTokenIndex != null && lastTokenIndex != null) {
-                const references: TokenInformation[] = [];
+                // reset, becase the token based algorithm will re-add the definition as well
+                references.length = 0; 
                 for (let i=firstTokenIndex; i<lastTokenIndex; i+=1){
                     const token = ast.tokens[i];
                     if (token.textLower === definition.token.textLower) {
@@ -249,12 +251,10 @@ export class ClassDatabase
                         }
                     }
                 }
-                return references;
             }
         }
 
         if (definition.fnDefinition) {
-            const references: TokenInformation[] = [];
             const fnDefinition = definition.fnDefinition;
             const lowerName = fnDefinition.name?.textLower;
             if (!lowerName) {
@@ -263,16 +263,7 @@ export class ClassDatabase
             for (const file in this.store) {
                 const item  = this.store[file];
                 for (const fn of getAllClassFunctions(item.ast)) {
-                    if (fn.name?.textLower === lowerName) {
-                        // TODO check if inherited
-                        references.push({
-                            ast: item.ast,
-                            fnDefinition: fn,
-                            uri: item.url,
-                            found: true,
-                            token: fn.name,
-                        });
-                    }
+                    // TODO add inherited versions
                     for (const statement of getStatementsRecursively(fn.body)) {
                         for (const tok of getExpressionTokensRecursively(statement)) {
                             if (tok.type === SemanticClass.FunctionReference && tok.textLower === lowerName) {
@@ -290,11 +281,9 @@ export class ClassDatabase
                 }
 
             }
-            return references;
         }
 
         if (definition.classDefinition) {
-            const references: TokenInformation[] = [];
             const classDef = definition.classDefinition;
             const lowerClassName = classDef.name?.textLower;
             const lowerDecoratedName = `'${lowerClassName}'`;
@@ -303,16 +292,6 @@ export class ClassDatabase
             }
             for (const file in this.store) {
                 const item  = this.store[file];
-                if (item.ast.name?.textLower === lowerClassName) {
-                    // class declared here
-                    references.push({
-                        ast: item.ast,
-                        classDefinition: item.ast,
-                        uri: item.url,
-                        found: true,
-                        token: item.ast.name,
-                    });
-                }
                 if (item.ast.parentName?.textLower === lowerClassName) {
                     // class extends referenced class
                     references.push({
@@ -396,11 +375,9 @@ export class ClassDatabase
                     }
                 }
             }
-            return references;
         }
 
         if (definition.structDefinition) {
-            const references: TokenInformation[] = [];
             const structDef = definition.structDefinition;
             const nameLower = structDef.name?.textLower;
             if (!nameLower) {
@@ -437,10 +414,8 @@ export class ClassDatabase
                     }
                 }
             }
-            return references;
         }
-
-        return [];
+        return references;
     }
 
     private astFindTokenAtPosition(ast: UnrealClass, line: number, character: number) {
