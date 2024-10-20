@@ -1,5 +1,11 @@
 # Change Log
 
+### v0.22.1
+- Unused locals check report vars when they are only written or read
+- Added find references support for goto labels
+- Can format selected text range
+- Ctrl+Click on symbol def takes you to reference 
+
 ### v0.21.12
 - Fix find class variable references not returning results
 - Fix find struct references not returning struct declaration
