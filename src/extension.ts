@@ -34,7 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         lang.registerSignatureHelpProvider(langId.uc, new SignatureProvider(), '(', ','),
         lang.registerTypeHierarchyProvider(langId.uc, new TypeHierarchyProvider()),
-        lang.registerDocumentFormattingEditProvider(langId.uc, new FormattingProvider()),
+        lang.registerDocumentRangeFormattingEditProvider(langId.uc, new FormattingProvider()),
         lang.registerDefinitionProvider(langId.uc, new DefinitionProvider()),
         lang.registerWorkspaceSymbolProvider(new WorkspaceSymbolProvider()),
         lang.registerColorProvider(langId.uc, new ColorProvider()),

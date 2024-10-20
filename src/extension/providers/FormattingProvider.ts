@@ -2,9 +2,25 @@ import { ExtensionConfiguration, parseConfiguration } from '../config';
 import { processLinterRules } from '../utils';
 import { vscode } from '../vscode';
 
-export class FormattingProvider implements vscode.DocumentFormattingEditProvider {
 
-    provideDocumentFormattingEdits(document: vscode.TextDocument, options: vscode.FormattingOptions, cancellation: vscode.CancellationToken): vscode.TextEdit[] {
+export class FormattingProvider implements vscode.DocumentRangeFormattingEditProvider {
+
+    provideDocumentRangeFormattingEdits(
+        document: vscode.TextDocument, range: vscode.Range, options: vscode.FormattingOptions, token: vscode.CancellationToken
+    ): vscode.ProviderResult<vscode.TextEdit[]> {
+        return this.provideDocumentRangesFormattingEdits(document, [range], options, token);
+    }
+
+    provideDocumentRangesFormattingEdits(
+        document: vscode.TextDocument, ranges: vscode.Range[], options: vscode.FormattingOptions, token: vscode.CancellationToken
+    ): vscode.ProviderResult<vscode.TextEdit[]> {
+        return this.provideDocumentFormattingEdits(document, options,token)
+            .filter(e => ranges.find(r => r.contains(e.range)));
+    }
+
+    private provideDocumentFormattingEdits(
+        document: vscode.TextDocument, options: vscode.FormattingOptions, cancellation: vscode.CancellationToken
+    ): vscode.TextEdit[] {
         const vscodeConfig = vscode.workspace.getConfiguration("ucx");
         const config = parseConfiguration(vscodeConfig);
         const edits = new Array<vscode.TextEdit>();
