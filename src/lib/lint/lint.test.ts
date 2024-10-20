@@ -1002,6 +1002,7 @@ test('unused local variable not reported when used', () => { linting([
     "static function DoSomething()",
     "{",
     "    local Projectile A;",
+    "    A = Spawn(class'Projectile');",
     "    Log(A);",
     "}",
 ]).hasNoLintResults();});
@@ -1010,6 +1011,7 @@ test('unused local variable not reported when used in function call', () => { li
     "function TestFn()",
     "{",
     "    local Color Color;",
+    "    Color.R = 255; Color.G = 255; Color.B = 255;",
     "    PP.SetProgressColor(Color, 3);",
     "}",
 ]).hasNoLintResults();});
@@ -1032,7 +1034,84 @@ test('unused local variable not reported when used as lvalue', () => { linting([
     "}",
 ]).hasNoLintResults();});
 
+test('local var not used after modify ', () => { linting([
+    "function DoSomething()",
+    "{",
+    "    local int i;",
+    "    i = 0;",
+    "}",
+]).hasResult({
+    message: "Local variable i is modified to but never used!",
+    unnecessary: true,
+});});
 
+test('usused local not mistaked for member', () => { linting([
+    "function F()",
+    "{",
+    "    local string Settings;",
+    "    Other.Settings = \"x\";",
+    "    Log(Other.Settings);",
+    "}",
+]).hasResult({
+    message: "Unused local variable Settings!",
+    unnecessary: true,
+});});
+
+test('unused local not misreported when var is modified in loop expression', () => { linting([
+    'function PrintMutators() ',
+    '{',
+    '    local Mutator M;',
+    '    for ( M = Level.Game.BaseMutator; M != None; M = M.NextMutator )',
+    '    {',
+    '        Log(M);',
+    '    }',
+    '}',
+]).hasNoLintResults();
+});
+
+test('unused locals not misreported for function with out parameter', () => linting([
+    'function Inc(out int a)',
+    '{',
+    '    a += 1;',
+    '}',
+    '',
+    'function F() ',
+    '{',
+    '    local int a;',
+    '    Inc(a);',
+    '}',
+]).hasNoLintResults());
+
+test('unused locals not misreported vars modified with postfix operators', () => linting([
+    'function F() ',
+    '{',
+    '    local int a,b;',
+    '    a++;',
+    '    b--;',
+    '    Log(a@""@b);',
+    '}',
+]).hasNoLintResults());
+
+test('unused local not misreported for arrays', () => linting([
+    'function F() ',
+    '{',
+    '    local int a[32];',
+    '    a[0] = 4;',
+    '    Log(a[0]);',
+    '}',
+]).hasNoLintResults());
+
+test('unused locals not misreported for assign operators', () => linting([
+    'function F() ',
+    '{',
+    '    local int a,b,c,d;',
+    '    a+=1;',
+    '    b-=1;',
+    '    c*=1;',
+    '    d/=1;',
+    '    Log(a + b + c + d);',
+    '}',
+]).hasNoLintResults());
 
 function linting(lines: string[], options?: Partial<FullLinterConfig>, fileName?: string) {
     const parser = new UcParser();
