@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.22.0
+- Added find references support for goto labels
+- Can format selected text range
+- Ctrl+Click on 
+
 ### v0.21.12
 - Fix find class variable references not returning results
 - Fix find struct references not returning struct declaration
