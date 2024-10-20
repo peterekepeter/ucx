@@ -228,6 +228,24 @@ export class ClassDatabase
         if (!definition.token) {
             return references;
         }
+
+        if (definition.token.type === SemanticClass.StatementLabel && definition.functionScope) {
+            for (const st of getStatementsRecursively(definition.functionScope.body)) {
+                if (st.op?.type === SemanticClass.Keyword && st.op.textLower === 'goto') {
+                    const arg = st.args[0];
+                    if (arg && 'text' in arg && definition.token.textLower === arg.textLower) {
+                        references.push({
+                            ast: definition.ast,
+                            token: arg,
+                            functionScope: definition.functionScope,
+                            stateScope: definition.stateScope,
+                            uri: definition.uri,
+                        });
+                    }
+                }
+            }
+            return references;
+        }
         
         if (definition.localDefinition || definition.paramDefinition) {
             const ast = definition.ast;
@@ -571,6 +589,23 @@ export class ClassDatabase
         let result: TokenInformation|undefined;
         if (!query.token) return { found: false };
         if (!query.ast) return { missingAst: true };
+        if (query.token.type === SemanticClass.StatementLabel && query.functionScope) {
+            for (const st of getStatementsRecursively(query.functionScope.body)) {
+                if (st.op?.text === ':' && st.args.length > 0) {
+                    // this is a label
+                    const arg = st.args[0];
+                    if ('text' in arg && arg.textLower === query.token.textLower){
+                        result = {
+                            token: arg,
+                            classDefinition: query.ast,
+                            functionScope: query.functionScope,
+                            stateScope: query.stateScope,
+                        };
+                        break;
+                    }
+                }
+            }
+        }
         if (query.token.type === SemanticClass.Keyword) {
             if (query.token.textLower === 'self' && query.ast.name) {
                 result = {

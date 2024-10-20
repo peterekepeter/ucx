@@ -223,6 +223,8 @@ describe("definition across files", () => {
             'function Reset(Canvas canvas) {', // line 27
             '   canvas.Reset();', // line 28
             '   Log(Canvas.NOTHING);',
+            '   goto END;',
+            'END:', // line 31
             '}',
         ]);
     });
@@ -236,6 +238,7 @@ describe("definition across files", () => {
     const canvasResetFnDef = { uri:uriCanvas, token: { text: 'Reset', line: 2 }, fnDefinition: { name: { text: 'Reset' }}};
     const showStartMessageFnDef = { uri: uriA, fnDefinition: { name: { text: 'ShowStartMessage' }}};
     const canvasNothingConstDef = { uri:uriCanvas, token: { text: 'NOTHING', line: 1 }};
+    const gotoLabelDef = { uri:uriB, token: { text: 'END', line: 31 }, functionScope: { name: { text: 'Reset' }}};
 
     // find definition
     test.each([
@@ -262,6 +265,7 @@ describe("definition across files", () => {
         ['standalone default keyword member', 24, 14, varDefOther],
         ['member fn not shadowed by local fn', 28, 11, canvasResetFnDef],
         ['const member', 29, 18, canvasNothingConstDef],
+        ['goto label', 30, 10, gotoLabelDef],
     ] as [string, number, number, TokenInformation][]
     )("findCrossFileDefinition finds %p at %p:%p", (_, line, column, expected) => {
         const token = db.findToken(uriB, line, column);
@@ -634,7 +638,9 @@ describe("references", () => {
                 'class SpecialCustomHud extends CustomHUD;',
                 '',
                 'function Reset() {', // line 2
-                '   LastCanvas = None;', 
+                '   LastCanvas = None;',
+                '   goto END;',
+                'END:',
                 '}',
             ]);
 
@@ -693,6 +699,13 @@ describe("references", () => {
                 ["CustomHUD.uc", 2, 7, "PlayerStats"], // symbol declared here
                 ["CustomHUD.uc", 7, 4, "PlayerStats"], // used as var type
                 ["CustomHUD.uc", 10, 9, "PlayerStats"], // used as local type
+            ]);
+        });
+
+        test("label references", () => {
+            expectReferences("SpecialCustomHud.uc", 4, 9, 'END', [
+                ["SpecialCustomHud.uc", 5, 0, "END"], // symbol declared here
+                ["SpecialCustomHud.uc", 4, 8, "END"], // forward reference
             ]);
         });
 
