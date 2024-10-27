@@ -1,5 +1,5 @@
 import { ParserToken } from "../parser";
-import { UnrealClass, UnrealClassConstant, UnrealClassExpression, UnrealClassFunction, UnrealClassFunctionArgument, UnrealClassFunctionLocal, UnrealClassStruct, UnrealClassVariable } from "../parser/ast";
+import { UnrealClass, UnrealClassConstant, UnrealClassExpression, UnrealClassFunction, UnrealClassFunctionArgument, UnrealClassFunctionLocal, UnrealClassState, UnrealClassStruct, UnrealClassVariable } from "../parser/ast";
 import { resolveArrayCountExpressions } from "../parser/parse/resolveArrayCountExpressions";
 import { TokenInformation } from "./ClassDatabase";
 
@@ -10,42 +10,50 @@ export function renderDefinitionMarkdownLines(info: TokenInformation): string[] 
     }
     if (info.token)
     {
-        if (info.functionScope) {
-            if (info.paramDefinition) 
-            {
-                return renderFunctionParameter(info.paramDefinition);
+        if (info.ast) {
+            if (info.functionScope) {
+                if (info.paramDefinition) 
+                {
+                    return renderFunctionParameter(info.paramDefinition);
+                }
+                if (info.localDefinition)
+                {
+                    return renderLocalVar(info.localDefinition);
+                }
             }
-            if (info.localDefinition)
+            if (info.varDefinition) 
             {
-                return renderLocalVar(info.localDefinition);
+                return renderVar(info.varDefinition);
             }
-        }
-        if (info.varDefinition) 
-        {
-            return renderVar(info.varDefinition);
-        }
-        if (info.fnDefinition)
-        {
-            return renderFn(info.fnDefinition);
-        }
-        if (info.classDefinition) {
-            return renderClassDefinition(info.classDefinition);
-        }
-        if (info.constDefinition) {
-            return renderConstDef(info.constDefinition);
-        }
-        if (info.structDefinition) {
-            return renderStructDef(info.structDefinition);
+            if (info.fnDefinition)
+            {
+                return renderFnWrapper(info.ast, info, info.fnDefinition);
+            }
+            if (info.classDefinition) {
+                return renderClassDefinition(info.classDefinition);
+            }
+            if (info.constDefinition) {
+                return renderConstDef(info.constDefinition);
+            }
+            if (info.structDefinition) {
+                return renderStructDef(info.structDefinition);
+            }
         }
     }
     return [ '???' ];
 }
 
 function renderFunctionParameter(def: UnrealClassFunctionArgument): string[] {
-    const result = ['(parameter)'];
-    if (def.type) result.push(def.type.text);
+    const result = ['(parameter) '];
+    renderFunctionParameterIntoResult(def, result);
+    return [`\t${result.join('')}`];
+}
+
+function renderFunctionParameterIntoResult(def: UnrealClassFunctionArgument, result: string[]) {
+    if (def.isSkip) result.push('skip ');
+    if (def.isOut) result.push('out ');
+    if (def.type) result.push(def.type.text, ' ');
     if (def.name) result.push(def.name.text);
-    return [`\t${result.join(' ')}`];
 }
 
 function renderLocalVar(def: UnrealClassFunctionLocal): string[] {
@@ -63,18 +71,66 @@ function renderVar(def: UnrealClassVariable): string[] {
     return [`\t${result.join(' ')}`];
 }
 
-function renderFn(fnDefinition: UnrealClassFunction): string[] {      
-    const result = ['function '];
-    if (fnDefinition.name) result.push(fnDefinition.name.text);
-    if (fnDefinition.fnArgs.length > 0) {
-        result.push('(');
-        result.push(fnDefinition.fnArgs.map(a => `${a.type?.text} ${a.name?.text}`).join(', '));
+function renderFnWrapper(ast: UnrealClass, info: TokenInformation|undefined, fn: UnrealClassFunction): string[] {
+    let result: string[] = [];
+    for (let n = info; n != null; n = n.overload){
+        result = [...result, ...renderFn(n.ast ?? ast, n.stateScope, n.fnDefinition ?? fn)];
+    }
+    return result;
+}
+
+function renderFn(ast: UnrealClass, state: UnrealClassState | undefined, def: UnrealClassFunction): string[] {    
+    const result: string[] = [];
+    if (def.isNative) {
+        if (def.nativeIndex >= 0) {
+            result.push('native(', def.nativeIndex.toString(), ') ');
+        }
+        else {
+            result.push('native ');
+        }
+    }
+    if (def.isStatic) result.push('static ');
+    if (def.isFinal) result.push('final ');
+    if (def.isLatent) result.push('latent ');
+    if (def.isOperator) {
+        if (def.isPreOperator) {
+            result.push('preoperator');
+        }
+        else if (def.isPostOperator) {
+            result.push('postoperator');
+        }
+        else
+        {
+            result.push('operator');
+        }
+        if (def.operatorPrecedence !== -1) {
+            result.push('(', def.operatorPrecedence.toString(), ') ');
+        }
+        else {
+            result.push(' ');
+        }
+    }
+    else {
+        result.push(def.isEvent ? 'event ': 'function ');
+    }
+    if (def.returnType) result.push(def.returnType.text, ' ');
+    if (ast.name) result.push(ast.name.text, '.');
+    if (state?.name) result.push(state.name.text, '.');
+    if (def.name) result.push(def.name.text);
+    if (def.fnArgs.length > 0) {
+        let separator = ('(');
+        for (const a of def.fnArgs) {
+            result.push(separator);
+            renderFunctionParameterIntoResult(a, result);
+            separator = ', ';
+        }
+        
         result.push(')');
     }
     else {
         result.push('()');
     }
-    return [`\t${result.join('')}`];
+    return [`\t${result.join('')};`];
 }
 
 function renderClassDefinition(classDefinition: UnrealClass): string[] {

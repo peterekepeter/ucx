@@ -9,6 +9,9 @@ export class ReturnStatementCheck implements AstBasedLinter
         let results: LintResult[] | null = null;
         for (const fn of getAllClassFunctions(ast)) {
             if (fn.returnType) {
+                if (fn.bodyFirstToken === fn.bodyLastToken) {
+                    continue;
+                }
                 let foundreturn = false;
                 for (const st of getStatementsRecursively(fn.body)) {
                     if (st.op?.textLower === 'return') {

@@ -26,6 +26,7 @@ export class UcParser{
     expressionSplitter = new ExpressionSplitter();
     codeBlockStack: UnrealClassStatement[] = [];
     parenOpenCount = 0;
+    nativeModifierIndex = -1;
     modifiers: Token[] = [];
     fnArgTokens: Token[] = [];
     isMultilineComment = false;

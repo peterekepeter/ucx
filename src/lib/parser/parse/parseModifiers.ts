@@ -2,6 +2,7 @@ import { UcParser } from "../UcParser";
 import { ParserToken, SemanticClass } from "../token";
 
 export function clearModifiers(parser: UcParser) {
+    parser.nativeModifierIndex = -1;
     if (parser.modifiers.length > 0) {
         parser.modifiers = [];
     }

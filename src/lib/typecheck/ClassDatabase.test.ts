@@ -4,9 +4,10 @@ import { renderDefinitionMarkdownLines } from "./renderDefinitonMarkdownLines";
 
 let db: ClassDatabase;
 
-beforeEach(() => db = new ClassDatabase());
 
 describe("ast versioning", () => {
+
+    beforeEach(() => db = new ClassDatabase());
 
     const uri = "MyClass.uc";
 
@@ -39,7 +40,8 @@ describe("definitions inside single file", () => {
 
     const uri = "SomeClass.uc";
 
-    beforeEach(() => {
+    beforeAll(() => {
+        db = new ClassDatabase();
         ast(uri, 1, [
             'class SomeClass extends Info;', // line 0
             'struct MyStruct { var string Name; };',
@@ -53,7 +55,7 @@ describe("definitions inside single file", () => {
             '    DebugPrint();',
             '}',
             '',
-            'function DebugPrint() {', // line 12
+            'function bool DebugPrint() {', // line 12
             '    Log(tag);',
             '    Log(NOTHING);',
             '}',
@@ -116,7 +118,7 @@ describe("definitions inside single file", () => {
         [8, 9, ['\tlocal int i']],
         [8, 35, ['\t(parameter) string name']],
         [8, 31, ['\tvar config string tag']],
-        [9, 9, ['\tfunction DebugPrint()']],
+        [9, 9, ['\tfunction bool SomeClass.DebugPrint();']],
         [0, 9, ['\tclass SomeClass extends Info']],
         [1, 9, ['\tstruct MyStruct']],
     ] as [number, number, string[]][]
@@ -127,11 +129,61 @@ describe("definitions inside single file", () => {
 
 });
 
+describe(renderDefinitionMarkdownLines, () => {
+
+    const uri = "MyClass.uc";
+
+    beforeAll(reset);
+
+    describe("functions", () => {
+
+        beforeAll(() => {
+            ast("Object.uc", 1, [
+                'class Object;',
+                'native(163) static final preoperator  int  ++ ( out byte A );',
+            ]);
+            ast(uri, 1, [
+                'class MyClass extends Object;',
+                'native function string ConsoleCommand( string Command );',
+                'event Spawned();',
+                'state Swimming{ event BeginState(){} }',
+                'native(256) final latent function Sleep( float Seconds );',
+                'native(130) static final operator(30) bool  && ( bool A, skip bool B );',
+                'native(129) static final preoperator  bool  !  ( bool A );',
+                'native(165) static final postoperator int  ++ ( out int A );',
+                'native(163) static final preoperator  int  ++ ( out int A );',
+            ]);   
+        });
+
+        test.each([
+            [1, 30, ['\tnative function string MyClass.ConsoleCommand(string Command);']],
+            [2, 9, ['\tevent MyClass.Spawned();']],
+            [3, 25, ['\tevent MyClass.Swimming.BeginState();']],
+            [3, 25, ['\tevent MyClass.Swimming.BeginState();']],
+            [4, 36, ['\tnative(256) final latent function MyClass.Sleep(float Seconds);']],
+            [5, 44, ['\tnative(130) static final operator(30) bool MyClass.&&(bool A, skip bool B);']],
+            [6, 44, ['\tnative(129) static final preoperator bool MyClass.!(bool A);']],
+            [7, 44, [
+                '\tnative(165) static final postoperator int MyClass.++(out int A);', // markdown renders
+                '\tnative(163) static final preoperator int MyClass.++(out int A);', // all overloads 
+                '\tnative(163) static final preoperator int Object.++(out byte A);', // even from parent
+            ]]
+        ] as [number, number, string[]][]
+        )("at %p:%p is %p", (line, column, expected) => {
+            const info = db.findDefinition(db.findToken(uri, line, column));
+            expect(renderDefinitionMarkdownLines(info)).toEqual(expected);
+        });
+
+    });
+
+});
+
 describe("definition in states", () => {
     
     const uri = "SomeClass.uc";
     
-    beforeEach(() => {
+    beforeAll(() => {
+        db = new ClassDatabase();
         ast(uri, 1, [
             'class Cow extends ScriptedPawn;', // line 0
             '',
@@ -179,7 +231,8 @@ describe("definition across files", () => {
     const uriB = "PackageName/Classes/ClassB.uc";
     const uriCanvas = "Engine/Classes/Canvas.uc";
 
-    beforeEach(() => {
+    beforeAll(() => {
+        db = new ClassDatabase();
         ast(uriA, 1, [
             'class ClassA;', // line 0
             '',
@@ -299,36 +352,44 @@ describe("definition across files", () => {
 });
 
 describe("completion", () => {
-    test("empty file suggests class declaration", () => {
-        const uri = '../Package/Classes/MyClass.uc';
-        ast(uri, 1, ['']);
-        expectCompletion(uri, 0, 0, { label: "class MyClass extends ", retrigger: true });
-    });
 
-    test("does not suggest class declaration if class declared", () => {
-        const uri = '../Package/Classes/MyClass.uc';
-        ast(uri, 1, ['class MyClass extends Actor;', '']);
-        expectCompletionCount(uri, 1, 0, 0);
-    });
+    describe("class name completion", () => {
+        
+        beforeEach(() => db = new ClassDatabase());
 
-    test("empty file suggests class declaration", () => {
-        const uri = 'Awesome.uc';
-        ast(uri, 1, ['// new class', 'class ']);
-        expectCompletion(uri, 1, 6, { label: "Awesome extends ", retrigger: true });
-        expectCompletion(uri, 1, 5, { label: " Awesome extends ", retrigger: true });
-        expectCompletionCount(uri, 0, 0, 0);
-    });
+        test("empty file suggests class declaration", () => {
+            const uri = '../Package/Classes/MyClass.uc';
+            ast(uri, 1, ['']);
+            expectCompletion(uri, 0, 0, { label: "class MyClass extends ", retrigger: true });
+        });
 
-    test("after extends suggest extendable class names", () => {
-        ast("MyOther.uc", 1, ['class MyOther extends Actor;']);
-        ast("MyClass.uc", 1, ['class MyClass extends ']);
-        expectCompletion("MyClass.uc", 1, 22, "MyOther");
-        expectCompletion("MyClass.uc", 1, 22, "Actor");
+        test("does not suggest class declaration if class declared", () => {
+            const uri = '../Package/Classes/MyClass.uc';
+            ast(uri, 1, ['class MyClass extends Actor;', '']);
+            expectCompletionCount(uri, 1, 0, 0);
+        });
+
+        test("empty file suggests class declaration", () => {
+            const uri = 'Awesome.uc';
+            ast(uri, 1, ['// new class', 'class ']);
+            expectCompletion(uri, 1, 6, { label: "Awesome extends ", retrigger: true });
+            expectCompletion(uri, 1, 5, { label: " Awesome extends ", retrigger: true });
+            expectCompletionCount(uri, 0, 0, 0);
+        });
+
+        test("after extends suggest extendable class names", () => {
+            ast("MyOther.uc", 1, ['class MyOther extends Actor;']);
+            ast("MyClass.uc", 1, ['class MyClass extends ']);
+            expectCompletion("MyClass.uc", 1, 22, "MyOther");
+            expectCompletion("MyClass.uc", 1, 22, "Actor");
+        });
+
     });
 
     describe("object member completion", () => {
 
-        beforeEach(() => {
+        beforeAll(() => {
+            db = new ClassDatabase();
             ast("MyOther.uc", 1, [
                 'class MyOther;',
                 '',
@@ -380,7 +441,8 @@ describe("completion", () => {
 
     describe("expression completion", () => {
 
-        beforeEach(() => {
+        beforeAll(() => {
+            db = new ClassDatabase();
             ast("Object.uc", 1, [
                 'class Object;',
                 '',
@@ -416,7 +478,8 @@ describe("completion", () => {
 
     describe("name completion", () => {
 
-        beforeEach(() => {
+        beforeAll(() => {
+            reset();
             ast("Object.uc", 1, [
                 'class Object;',
             ]);
@@ -501,7 +564,8 @@ describe("references", () => {
     
     describe("local variable references", () => {
 
-        beforeEach(() => {
+        beforeAll(() => {
+            reset();
             ast("MyClass.uc", 1, [
                 'class MyClass extends MyOther;',
                 '',
@@ -585,8 +649,9 @@ describe("references", () => {
     
     describe("cross file references", () => {
 
-        beforeEach(() => {
-            
+        beforeAll(() => {
+            reset();
+
             ast("Canvas.uc", 1, [
                 'class Canvas extends Object;',
                 '',
@@ -711,8 +776,6 @@ describe("references", () => {
 
     });
 
-
-
     function expectReferences(uri: string, line: number, char: number, symbol: string, refs: [string, number, number, string][]) {
         expect(db.findSymbolToken(uri, line, char).token?.text).toEqual(symbol);
         const result = db.findReferences(uri, line, char);
@@ -720,6 +783,10 @@ describe("references", () => {
     }
 
 });
+
+function reset() {
+    db = new ClassDatabase();
+}
 
 function ast(uri: string, version: number, lines: string[]) {
     db.updateAst(uri, ucParseLines(lines), version);

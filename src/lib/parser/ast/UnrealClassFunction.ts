@@ -7,6 +7,8 @@ export interface UnrealClassFunction {
     body: UnrealClassStatement[];
     bodyFirstToken: Token | null;
     bodyLastToken: Token | null;
+    nativeIndex: number,
+    operatorPrecedence: number,
     isStatic: boolean;
     isSimulated: boolean;
     isFinal: boolean;
@@ -17,6 +19,8 @@ export interface UnrealClassFunction {
     isNative: boolean,
     isIterator: boolean,
     isOperator: boolean,
+    isPreOperator: boolean,
+    isPostOperator: boolean,
     isEvent: boolean,
     returnType: Token | null;
     fnArgs: UnrealClassFunctionArgument[];
@@ -31,6 +35,8 @@ export function createEmptyUnrealClassFunction(): UnrealClassFunction {
         body: [],
         bodyFirstToken: null,
         bodyLastToken: null,
+        nativeIndex: -1,
+        operatorPrecedence: -1,
         isStatic: false,
         isSimulated: false,
         isFinal: false,
@@ -41,6 +47,8 @@ export function createEmptyUnrealClassFunction(): UnrealClassFunction {
         isNative: false,
         isIterator: false,
         isOperator: false,
+        isPreOperator: false,
+        isPostOperator: false,
         isEvent: false,
         returnType: null,
         fnArgs: [],

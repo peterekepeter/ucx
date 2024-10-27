@@ -1,5 +1,9 @@
 # Change Log
 
+### v0.22.2
+- Improve function highlight text
+- Do not issue missing return warning for function prototypes
+
 ### v0.22.1
 - Unused locals check report vars when they are only written or read
 - Added find references support for goto labels

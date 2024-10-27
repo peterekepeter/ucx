@@ -28,6 +28,7 @@ export type TokenInformation = {
     classDefinition?: UnrealClass
     constDefinition?: UnrealClassConstant,
     structDefinition?: UnrealClassStruct,
+    overload?: TokenInformation,
 };
 
 export type CompletionInformation = {
@@ -584,7 +585,7 @@ export class ClassDatabase
         return stateScope;
     }
 
-    /** provides past lookup if type is in same file without needing full library scan */
+    /** provides fast lookup if type is in same file without needing full library scan */
     findLocalFileDefinition(query: TokenInformation): TokenInformation {
         let result: TokenInformation|undefined;
         if (!query.token) return { found: false };
@@ -660,6 +661,9 @@ export class ClassDatabase
             result.found = true;
             result.ast = query.ast;
             result.uri = query.uri;
+            if (result?.fnDefinition?.isOperator) {
+                this.findOperatorOverloads(result, result.ast, result.uri ?? '');
+            }
             return result;
         }
         return { found: false };
@@ -682,6 +686,9 @@ export class ClassDatabase
             // look for symbol in parent class
             const inheritedSymbol = this.findInheritedSybol(query);
             if (inheritedSymbol?.found) {
+                // if (inheritedSymbol.fnDefinition?.isOperator) {
+                //     this.findInheritedOperatorOverloads(inheritedSymbol);
+                // }
                 return inheritedSymbol;
             }
             // maybe its a typecast to another class
@@ -691,6 +698,34 @@ export class ClassDatabase
             }
         }
         return { found: false };
+    }
+
+    private findInheritedOperatorOverloads(localResult: TokenInformation) {
+        let item = localResult;
+        while (true) {
+            const name = item.ast?.name?.textLower;
+            if (!name) return;
+            item = this.findParentClassOf(name);
+            if (!item.found || !item.ast || !item.uri) return;
+            this.findOperatorOverloads(localResult, item.ast, item.uri);
+        }
+    }
+    
+    private findOperatorOverloads(result: TokenInformation, ast: UnrealClass, uri: string) {
+        let tail = result;
+        while (tail.overload) {
+            tail = tail.overload;
+        }
+        for (const fn of ast.functions) {
+            if (result.fnDefinition?.name?.textLower === fn.name?.textLower && result.fnDefinition !== fn) {
+                tail = tail.overload = {
+                    ast,
+                    uri,
+                    found: true,
+                    fnDefinition: fn,
+                };
+            }
+        }
     }
 
     private findInheritedSybol(query: TokenInformation) {
@@ -950,9 +985,14 @@ export class ClassDatabase
     }
 
     findDefinition(itemQuery: TokenInformation): TokenInformation {
-        const localResult = this.findLocalFileDefinition(itemQuery);
-        if (localResult.found) return localResult;
-        return this.findCrossFileDefinition(itemQuery);
+        let result = this.findLocalFileDefinition(itemQuery);
+        if (!result.found) {
+            result = this.findCrossFileDefinition(itemQuery);
+        }
+        if (result.fnDefinition?.isOperator) {
+            this.findInheritedOperatorOverloads(result);
+        }
+        return result;
     }
 
     private findMemberDefinition(typeDefinition: TokenInformation, memberReference: TokenInformation): TokenInformation {

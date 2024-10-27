@@ -988,6 +988,10 @@ test('return statement warning when returning in function without return type', 
     message: "Should not have return value when function does not have a declared return type!"
 });});
 
+test('return statement warning not issued for prototypes', () => { linting([
+    "static function bool DoSomething();",
+]).hasNoLintResults();});
+
 test('unused local variable is reported', () => { linting([
     "static function DoSomething()",
     "{",

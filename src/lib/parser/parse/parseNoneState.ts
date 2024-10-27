@@ -122,6 +122,9 @@ function parseNativeModifierContent(parser: UcParser, token: Token) {
         parser.result.errors.push({ 
             token, message: "Expected number." });
     }
+    else {
+        parser.nativeModifierIndex = parsedInt;
+    }
 }
 
 function parseNetiveModifierEnd(parser: UcParser, token: Token) {

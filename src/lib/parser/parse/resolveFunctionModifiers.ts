@@ -60,5 +60,6 @@ export function resolveFunctionModifiers(parser: UcParser): Partial<UnrealClassF
         isNative,
         isIterator,
         isSingular,
+        nativeIndex: parser.nativeModifierIndex,
     };
 }

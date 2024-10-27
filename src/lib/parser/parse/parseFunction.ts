@@ -19,7 +19,13 @@ export function parseFnBegin(parser: UcParser, token: Token)
     };
     switch (token.textLower) {
     case 'preoperator': 
+        fndecl.isPreOperator = true;
+        fndecl.isOperator = true;
+        break;
     case 'postoperator': 
+        fndecl.isPostOperator = true;
+        fndecl.isOperator = true;
+        break;
     case 'operator': 
         fndecl.isOperator = true;
         break;
@@ -40,9 +46,42 @@ function parseFnDeclaration(parser: UcParser, token: Token){
         fn.isPrivate = true;
         return;
     }
+    if (token.text === '(' && fn.isOperator) {
+        // operators may have precedence defined
+        parser.rootFn = parseFnPrecedence;
+        return;
+    }
     fn.name = token;
     token.type = C.FunctionDeclaration;
     parser.rootFn = parseFnParamBeginOrName;
+}
+
+function parseFnPrecedence(parser: UcParser, token:Token) {
+    if (token.text === ')') {
+        parser.rootFn = parseFnParamBeginOrName;
+        return;
+    }
+    const fn = parser.lastFn;
+    const parsedInt = parseInt(token.text);
+    if (isNaN(parsedInt)){
+        parser.result.errors.push({ 
+            token, message: "Expected number." });
+    }
+    fn.operatorPrecedence = parsedInt;
+    parser.rootFn = parseFnPrecedenceEnd;
+}
+
+function parseFnPrecedenceEnd(parser: UcParser, token: Token) {
+    if (token.text === ')') {
+        parser.rootFn = parseFnParamBeginOrName;
+        return;
+    }
+    else {
+        parser.result.errors.push({ 
+            token, message: "Expected closing parenthesis."
+        });
+        parseFnParamBeginOrName(parser, token);
+    }
 }
 
 function parseFnParamBeginOrName(parser: UcParser, token:Token){
