@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.22.3
+- Hover on var tooltip includes classname where the var is declared
+
 ### v0.22.2
 - Improve function highlight text
 - Do not issue missing return warning for function prototypes

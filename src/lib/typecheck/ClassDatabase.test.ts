@@ -117,7 +117,7 @@ describe("definitions inside single file", () => {
         [2, 9, ['\tconst NOTHING = -1']],
         [8, 9, ['\tlocal int i']],
         [8, 35, ['\t(parameter) string name']],
-        [8, 31, ['\tvar config string tag']],
+        [8, 31, ['\tvar config string SomeClass.tag']],
         [9, 9, ['\tfunction bool SomeClass.DebugPrint();']],
         [0, 9, ['\tclass SomeClass extends Info']],
         [1, 9, ['\tstruct MyStruct']],

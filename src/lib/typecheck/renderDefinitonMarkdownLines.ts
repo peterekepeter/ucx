@@ -23,7 +23,7 @@ export function renderDefinitionMarkdownLines(info: TokenInformation): string[] 
             }
             if (info.varDefinition) 
             {
-                return renderVar(info.varDefinition);
+                return renderVar(info.ast, info.varDefinition);
             }
             if (info.fnDefinition)
             {
@@ -63,12 +63,13 @@ function renderLocalVar(def: UnrealClassFunctionLocal): string[] {
     return [`\t${result.join(' ')}`];
 }
 
-function renderVar(def: UnrealClassVariable): string[] {         
-    const result = ['var'];
-    if (def.isConfig) result.push('config');
-    if (def.type) result.push(def.type.text);
+function renderVar(ast: UnrealClass, def: UnrealClassVariable): string[] {         
+    const result = ['var '];
+    if (def.isConfig) result.push('config ');
+    if (def.type) result.push(def.type.text, ' ');
+    if (ast?.name) result.push(ast.name.text, '.');
     if (def.name) result.push(def.name.text);
-    return [`\t${result.join(' ')}`];
+    return [`\t${result.join('')}`];
 }
 
 function renderFnWrapper(ast: UnrealClass, info: TokenInformation|undefined, fn: UnrealClassFunction): string[] {
