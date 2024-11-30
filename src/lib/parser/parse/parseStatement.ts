@@ -93,13 +93,64 @@ export function parseStatement(parser: UcParser, token: Token)
 
 function parseFnLocalDeclaration(parser: UcParser, token: Token)
 {
+    const tokenTextLower = token.textLower;
     const fn = parser.lastFn;
     fn.locals.push({
         type: token,
-        name: null
+        name: null,
+        template: null,
     });
-    parser.rootFn = parseFnLocalVar;
+    parser.rootFn = tokenTextLower === 'class' ? parseFnLocalGenericBegin : parseFnLocalVar;
     token.type = C.TypeReference;
+}
+
+function parseFnLocalGenericBegin(parser: UcParser, token: Token)
+{
+    switch (token.text) {
+    case '<':
+        token.type = C.GenericArgBegin;
+        parser.rootFn = parseFnLocalGenericType;
+        break;
+    default:
+        parseFnLocalVar(parser, token);
+        break;
+    }
+}
+
+function parseFnLocalGenericType(parser: UcParser, token: Token) {
+    switch (token.text) {
+    case '>':
+        token.type = C.GenericArgEnd;
+        parser.rootFn = parseFnLocalVar;
+        parser.result.errors.push({
+            message: "Expected generic class type.",
+            token,
+        });
+        break;
+    default:
+        token.type = C.ClassReference;
+        parser.rootFn = parseFnLocalGenericEnd;
+        parser.lastFnLocal.template = token;
+        break;
+    }
+
+}
+
+function parseFnLocalGenericEnd(parser: UcParser, token: Token)
+{
+    switch (token.text) {
+    case '>':
+        token.type = C.GenericArgEnd;
+        parser.rootFn = parseFnLocalVar;
+        break;
+    default:
+        parser.result.errors.push({
+            message: 'Expected > to close generic type.',
+            token,
+        });
+        parseFnLocalVar(parser, token);
+        break;
+    }
 }
 
 function parseFnLocalVar(parser: UcParser, token: Token)
@@ -117,7 +168,7 @@ function parseFnLocalVar(parser: UcParser, token: Token)
         parser.rootFn = parseStatement;
         break;
     case '[':
-        parser.rootFn = praseFnLocalVarArrayCount;
+        parser.rootFn = parseFnLocalVarArrayCount;
         break;
     default:
         const local = parser.lastFnLocal;
@@ -127,7 +178,7 @@ function parseFnLocalVar(parser: UcParser, token: Token)
     }
 }
 
-function praseFnLocalVarArrayCount(parser: UcParser, token: Token) {
+function parseFnLocalVarArrayCount(parser: UcParser, token: Token) {
     switch (token.text) {
     case ',':
     case ';':
@@ -172,8 +223,8 @@ function parseExpression(parser: UcParser, token: Token)
             parser.expressionSplitter.addToken(token);
         }
         else {
-            const statement = resolveStatementExpressionAndApplyLabel(parser);
-            parser.lastCodeBlock.push(statement);
+            const st = resolveStatementExpressionAndApplyLabel(parser);
+            parser.lastCodeBlock.push(st);
             popSingleStatementCodeBlocks(parser, token);
             parser.rootFn = parseStatement;
             parseStatement(parser, token);

@@ -10,13 +10,14 @@ import { RedundantDefaultValue } from "./RedundantDefaultValue";
 import { SemicolonAutoFixer } from "./SemicolonAutoFixer";
 import { ReturnStatementCheck } from "./ReturnStatementCheck";
 import { UnusedLocalsCheck } from "./UnusedLocalsCheck";
+import { TypeDeclarationSpacing } from "./TypeDeclarationSpacing";
 
 export type AstLinterConfiguration =
 {
     linterEnabled: boolean,
     indentType: IndentationType,
     indentEnabled: boolean,
-    emptyLineBeforeFunctionEnabled: boolean,
+    emptyLineBeforeFunctionEnabled:  boolean,
     operatorSpacingEnabled: boolean,
     semicolorFixEnabled: boolean,
     classNamingRule: boolean,
@@ -24,6 +25,7 @@ export type AstLinterConfiguration =
     redundantDefaultValue: boolean,
     checkReturnTypes: boolean,
     checkUnusedLocals: boolean,
+    typeDeclarationSpacing: boolean,
 };
 
 export const DEFAULT_AST_LINTER_CONFIGURATION: AstLinterConfiguration = {
@@ -38,6 +40,7 @@ export const DEFAULT_AST_LINTER_CONFIGURATION: AstLinterConfiguration = {
     redundantDefaultValue: true,
     checkReturnTypes: true,
     checkUnusedLocals: true,
+    typeDeclarationSpacing: true,
 };
 
 export function buildAstLinter(partialConfig?: Partial<AstLinterConfiguration>): AstBasedLinter
@@ -86,6 +89,10 @@ export function buildAstLinter(partialConfig?: Partial<AstLinterConfiguration>):
 
     if (config.checkUnusedLocals) {
         children.push(new UnusedLocalsCheck());
+    }
+
+    if (config.typeDeclarationSpacing) {
+        children.push(new TypeDeclarationSpacing());
     }
 
     return {

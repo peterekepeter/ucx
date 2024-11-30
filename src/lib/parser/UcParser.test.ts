@@ -1150,7 +1150,12 @@ test("parse type variable", () => { parsing(`
     .hasVariable(0, 'class', 'EnterActor', {
         template: 'actor',
     })
-    .hasTokens(['var',C.Keyword], ['class', C.TypeReference], ['<', C.None], ['actor', C.ClassReference], ['>', C.None]);
+    .hasTokens(
+        ['var', C.Keyword],
+        ['class', C.TypeReference],
+        ['<', C.GenericArgBegin],
+        ['actor', C.ClassReference],
+        ['>', C.GenericArgEnd]);
 });
 
 test("parse class type in function parameter declaration", () => { parsing(`

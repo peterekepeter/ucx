@@ -60,6 +60,7 @@ export function createEmptyUnrealClassFunction(): UnrealClassFunction {
 export interface UnrealClassFunctionLocal {
     type: Token | null;
     name: Token | null;
+    template: Token | null;
 }
 
 export interface UnrealClassExpression {

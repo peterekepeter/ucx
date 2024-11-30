@@ -30,4 +30,6 @@ export enum SemanticClass {
     StructDeclaration,
     StructMember,
     StructMemberDeclaration,
+    GenericArgBegin,
+    GenericArgEnd,
 }

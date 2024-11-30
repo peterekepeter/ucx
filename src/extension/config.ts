@@ -42,6 +42,8 @@ export function parseConfiguration(cfg: vscode.WorkspaceConfiguration): Extensio
                 parseIndentationType(cfg.get<string>('linter.indentation.style')) ?? DEFAULT_A.indentType,
             operatorSpacingEnabled:
                 cfg.get('linter.operatorSpacing.enabled') ?? DEFAULT_A.operatorSpacingEnabled,
+            typeDeclarationSpacing:
+                cfg.get('linter.typeDeclarationSpacing.enabled') ?? DEFAULT_A.typeDeclarationSpacing,
             redundantDefaultValue:
                 cfg.get('linter.redundantDefaultValue.enabled') ?? DEFAULT_A.redundantDefaultValue,
             semicolorFixEnabled:

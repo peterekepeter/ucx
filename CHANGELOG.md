@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.23.0
+- Adds parser and formatter support for generic types
+
 ### v0.22.3
 - Hover on var tooltip includes classname where the var is declared
 

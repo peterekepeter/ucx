@@ -1106,7 +1106,7 @@ test('unused local not misreported for arrays', () => linting([
 ]).hasNoLintResults());
 
 test('unused locals not misreported for assign operators', () => linting([
-    'function F() ',
+    'function F()',
     '{',
     '    local int a,b,c,d;',
     '    a+=1;',
@@ -1116,6 +1116,34 @@ test('unused locals not misreported for assign operators', () => linting([
     '    Log(a + b + c + d);',
     '}',
 ]).hasNoLintResults());
+
+test('spaces around generic types get formatted', () => linting([
+    'var class < MV_Extension >  VarName;',
+    '',
+    'function Test()',
+    '{',
+    '    local class < MV_MainExtension >  ExtensionC;',
+    '    ExtensionC = class < MV_MainExtension > (DynamicLoadObject(ExtensionClass,class\'class\'));',
+    '}',
+]).hasFormattedResult([
+    'var class<MV_Extension> VarName;',
+    '',
+    'function Test()',
+    '{',
+    '    local class<MV_MainExtension> ExtensionC;',
+    '    ExtensionC = class<MV_MainExtension>(DynamicLoadObject(ExtensionClass,class\'class\'));',
+    '}',
+]));
+
+test('spaces around generic types are well formatted', () => linting([
+    'var class<MV_Extension> VarName;',
+    '',
+    'function Test()',
+    '{',
+    '    local class<MV_MainExtension> ExtensionC;',
+    '    ExtensionC = class<MV_MainExtension>(DynamicLoadObject(ExtensionClass,class\'class\'));',
+    '}',
+]).isAlreadyWellFormatted());
 
 function linting(lines: string[], options?: Partial<FullLinterConfig>, fileName?: string) {
     const parser = new UcParser();

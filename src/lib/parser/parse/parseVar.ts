@@ -97,7 +97,7 @@ function parseVarName(parser: UcParser, token: Token) {
     switch (token.text) {
     case '<':
         parser.rootFn = parseTemplateName;
-        token.type = C.None;
+        token.type = C.GenericArgBegin;
         break;
     case ';':
         const message = 'Expected variable name isntead of ";"';
@@ -126,6 +126,7 @@ function parseTemplateName(parser: UcParser, token: Token) {
         break;
     case '>':
         parser.rootFn = parseVarName;
+        token.type = C.GenericArgEnd;
         break;
     default:
         token.type = C.ClassReference;
@@ -147,7 +148,7 @@ function parseAfterTemplateName(parser: UcParser, token: Token) {
         break;
     case '>':
         parser.rootFn = parseVarName;
-        token.type = C.None;
+        token.type = C.GenericArgEnd;
         break;
     default:
         parser.result.errors.push({ token, message: "Expected '>'"});

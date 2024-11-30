@@ -2,7 +2,7 @@
 	"name": "ucx",
 	"displayName": "ucx",
 	"description": "Dedicated language support for Unreal Engine 1 UnrealScript",
-	"version": "0.22.3",
+	"version": "0.23.0",
 	"icon": "assets/ucx.png",
 	"repository": "https://github.com/peterekepeter/ucx",
 	"publisher": "peterekepeter",
@@ -87,6 +87,11 @@
 				"ucx.linter.operatorSpacing.enabled": {
 					"type": "boolean",
 					"description": "Check and format for operations inside code expressions.",
+					"default": true
+				},
+				"ucx.linter.typeDeclarationSpacing.enabled": {
+					"type": "boolean",
+					"description": "Check and format for type declatations.",
 					"default": true
 				},
 				"ucx.linter.semicolonFix.enabled": {

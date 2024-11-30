@@ -2,14 +2,20 @@ import { UnrealClass } from "../..";
 import { ParserToken, SemanticClass as C } from "../../parser";
 import { AstBasedLinter } from "../AstBasedLinter";
 import { LintResult } from "../LintResult";
+import { fixSpaceAroundToken, fixSpaceBetweenTokens } from "./fixSpacing";
 
 export class OperatorSpacing implements AstBasedLinter
 {
     lint(ast: UnrealClass): LintResult[] | null {
-        const results: LintResult[] = [];
+        var result: LintResult[] | null = null;
+        
         for (let i=0; i<ast.tokens.length; i++){
             const token = ast.tokens[i];
             if (token.type !== C.Operator){
+                if (token.type === C.GenericArgBegin && ast.tokens[i+2]?.type === C.GenericArgEnd && ast.tokens[i+3]?.text === '(') {
+                    result = fixSpaceAroundToken(result, ast, i, '', 'Expected no space', '', 'Expected no space');
+                    result = fixSpaceAroundToken(result, ast, i+2, '', 'Expected no space', '', 'Expected no space');
+                }
                 continue;
             }
             const prev = ast.tokens[i-1];
@@ -18,9 +24,10 @@ export class OperatorSpacing implements AstBasedLinter
             const isInDefaultProperties = isInDefaultPropertiesScope(token, ast);
             const isStringConcat = token.text === '$' || token.text === '@';
             const isIncrementDecrement = token.text === '++' || token.text === '--';
-            const prevIsParen = prev.text === '(';
+            const prevIsParen = prev?.text === '(';
             if (prev && prev.line === token.line && !prevIsParen)
             {
+                // handle space before operator
                 const prevEnd = prev.position + prev.text.length;
                 const distance = token.position - prevEnd;
                 const expectedDistance = isInDefaultProperties || isStringConcat || isIncrementDecrement ? 0 : 1;
@@ -31,19 +38,12 @@ export class OperatorSpacing implements AstBasedLinter
                     const originalLine = ast.textLines[token.line];
                     const originalText = originalLine.slice(prevEnd, token.position);
                     const fixedText = expectedDistance === 0 ? '' : ' ';
-                    results.push({
-                        fixedText,
-                        originalText,
-                        message,
-                        line: token.line,
-                        position: prevEnd,
-                        length : originalText.length,
-                        severity: "warning"
-                    });
+                    result = fixSpaceBetweenTokens(result, ast, prev, token, fixedText, message);
                 }
             }
             if (next && next.line === token.line)
             {
+                // handle space after operator
                 const tokenEnd = token.position + token.text.length;
                 const distance = next.position - tokenEnd;
                 const expectedDistance = isInDefaultProperties || isStringConcat || isPrefix || isIncrementDecrement ? 0 : 1;
@@ -68,27 +68,15 @@ export class OperatorSpacing implements AstBasedLinter
                     continue;
                 }
                 if (distance !== expectedDistance){
-                    const originalLine = ast.textLines[token.line];
-                    const originalText = originalLine.slice(tokenEnd, next.position);
                     const message = expectedDistance === 0 
                         ? 'Expected no space after operator' 
                         : 'Expected 1 space after operator';
                     const fixedText = expectedDistance === 0 ? '' : ' ';
-                    results.push({
-                        fixedText,
-                        originalText,
-                        message,
-                        line: token.line,
-                        position: tokenEnd,
-                        length: originalText.length,
-                        severity: "warning"
-                    });
+                    result = fixSpaceBetweenTokens(result, ast, token, next, fixedText, message);
                 }
             }
-
-            
         }   
-        return results;
+        return result;
     }
 }
 

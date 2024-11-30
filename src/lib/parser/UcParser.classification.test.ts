@@ -188,6 +188,40 @@ test('default property with object reference', () => parsing(`
     ["'Package.sound'", C.ObjectReferenceName],
 ));
 
+test('generic type parsing', () => {
+    const ast = parsing(`
+        var class<Weapon> C;
+        function f(Actor obj) { 
+            local class<Weapon> W; 
+            W=class<Weapon>(obj);
+            C=W;
+        }
+    `);
+    ast.hasTokens(
+        ['var', C.Keyword],
+        ['class', C.TypeReference],
+        ['<', C.GenericArgBegin],
+        ['Weapon', C.ClassReference],
+        ['>', C.GenericArgEnd],
+        ['C', C.ClassVariable]
+    );
+    ast.hasTokens(
+        ['local', C.Keyword],
+        ['class', C.TypeReference],
+        ['<', C.GenericArgBegin],
+        ['Weapon', C.ClassReference],
+        ['>', C.GenericArgEnd],
+        ['W', C.LocalVariable],
+        [';', C.None],
+        ['W', C.VariableReference],
+        ['=', C.Operator],
+        ['class', C.TypeReference],
+        ['<', C.GenericArgBegin],
+        ['Weapon', C.ClassReference],
+        ['>', C.GenericArgEnd],
+        ['(', C.None]
+    );
+});
 
 
 function parsing(input: string) {

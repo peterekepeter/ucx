@@ -78,18 +78,37 @@ export function resolveExpression(
     tokens: Token[]
 ): UnrealClassExpression | Token
 {
-    for (let i=0; i<tokens.length; i++){
-        classifyExpressionToken(tokens[i]);
-    }
-    for (let i=1; i<tokens.length; i++){
-        const prev = tokens[i-1];
-        const next = tokens[i];
-        if (next.type === SemanticClass.LiteralName && prev.type === SemanticClass.Identifier){
+    var i: number, len = tokens.length;
+    var prev: ParserToken|undefined, next: ParserToken;
+    for (i = 0; i < len; i += 1){
+        prev = tokens[i - 1] as ParserToken | undefined;
+        next = tokens[i];
+        switch (next.textLower){           
+        case "super":
+        case "self":
+        case "new":
+        case "static":
+        case "default":
+            next.type = SemanticClass.Keyword;
+            break;
+        }
+        if (next.type === SemanticClass.LiteralName && prev && prev.type === SemanticClass.Identifier){
             next.type = SemanticClass.ObjectReferenceName;
             prev.type = SemanticClass.ClassReference;
         }
+        if (next.type === SemanticClass.Operator && next.text === '<' && prev?.textLower === "class") {
+            prev.type = SemanticClass.TypeReference;
+            next.type = SemanticClass.GenericArgBegin;
+        }
+        if (prev?.type === SemanticClass.GenericArgBegin) {
+            next.type = SemanticClass.ClassReference;
+        }
+        if (prev?.type === SemanticClass.ClassReference && next.text === '>')
+        {
+            next.type = SemanticClass.GenericArgEnd;
+        }
     }
-    return resolveSubExpression(tokens, 0, tokens.length);
+    return resolveSubExpression(tokens, 0, len);
 }
 
 function resolveSubExpression(
@@ -227,18 +246,6 @@ function resolveSubExpression(
         argsFirstToken: tokens[begin],
         argsLastToken: tokens[end - 1],
     };
-}
-
-function classifyExpressionToken(token: Token){
-    switch (token.textLower){
-    case "super":
-    case "self":
-    case "new":
-    case "static":
-    case "default":
-        token.type = SemanticClass.Keyword;
-        break;
-    }
 }
 
 function resolveCallArgs(
