@@ -823,6 +823,13 @@ test("parse variable with array", () => { parsing(`
     });
 });
 
+test("parse variable error recovery", () => {
+    parsing(`var string x; event F1();`).hasFunction(0,{});
+    parsing(`var x;event F1();`).hasFunction(0,{});
+    parsing(`var;event F1();`).hasFunction(0,{});
+    parsing(`var\nevent F1();`).hasFunction(0,{});
+});
+
 
 test("parse config variable with array", () => { parsing(`
     var config string A;

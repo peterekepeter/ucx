@@ -60,6 +60,10 @@ function parseVarDeclaration(parser: UcParser, token: Token) {
         parser.typedefReturnFn = returnFromEnumDeclaration;
         parseEnumKeyword(parser, token);
         break;
+    case 'event':
+    case ';':
+        parseVarName(parser, token);
+        break;
     default:
         consumeAndProcessVariableModifiers(parser, variable);
         variable.type = token;
@@ -99,8 +103,18 @@ function parseVarName(parser: UcParser, token: Token) {
         parser.rootFn = parseTemplateName;
         token.type = C.GenericArgBegin;
         break;
+    case 'function':
+    case 'event':
+        parser.result.errors.push({ 
+            token: parser.lastVarScope.firstToken ?? token, 
+            message: "Invalid var declaration!",
+        });
+        variable.lastToken = token;
+        parser.lastVarScope.lastToken = token;
+        parseNoneState(parser, token);
+        break;
     case ';':
-        const message = 'Expected variable name isntead of ";"';
+        const message = 'Expected variable name varname of ";"';
         parser.result.errors.push({ token, message });
         parser.rootFn = parseNoneState;
         variable.lastToken = token;

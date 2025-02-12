@@ -382,8 +382,8 @@ describe("completion", () => {
         test("after extends suggest extendable class names", () => {
             ast("MyOther.uc", 1, ['class MyOther extends Actor;']);
             ast("MyClass.uc", 1, ['class MyClass extends ']);
-            expectCompletion("MyClass.uc", 1, 22, "MyOther");
-            expectCompletion("MyClass.uc", 1, 22, "Actor");
+            expectCompletion("MyClass.uc", 0, 22, "MyOther");
+            expectCompletion("MyClass.uc", 0, 22, "Actor");
         });
 
     });
@@ -517,6 +517,27 @@ describe("completion", () => {
             expectNotCompletion("MyObject.uc", 6, 18, "MyObject");
         });
 
+
+    });
+
+    describe("variable type definition completion", () => {
+        
+        test("after extends suggest extendable class names", () => {
+            ast("MyOther.uc", 1, ['class MyOther extends Actor;']);
+            ast("MyClass.uc", 1, [
+                'class MyClass extends MyOther;',
+                'var ;', // 1
+                'function Tick() {', // 2
+                '   local ;', // 3
+                '}',
+            ]);
+            expectCompletion("MyClass.uc", 1, 4, "Actor");
+            expectCompletion("MyClass.uc", 1, 4, "MyOther");
+            expectCompletion("MyClass.uc", 1, 4, "MyClass");
+            expectCompletion("MyClass.uc", 3, 9, "Actor");
+            expectCompletion("MyClass.uc", 3, 9, "MyOther");
+            expectCompletion("MyClass.uc", 3, 9, "MyClass");
+        });
 
     });
 

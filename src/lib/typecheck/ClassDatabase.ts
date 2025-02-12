@@ -123,7 +123,9 @@ export class ClassDatabase
         }
         if (before.token.type === SemanticClass.Keyword &&
             (before.token.textLower === 'extends' ||
-            before.token.textLower === 'expands')
+            before.token.textLower === 'expands' ||
+            before.token.textLower === 'var' ||
+            before.token.textLower === 'local')
         ) {
             const list = this.findAllExtendableClassNames();
             const results: CompletionInformation[] = [];
