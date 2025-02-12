@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.24.0
+- Improve type completion for var and local declaration
+- Render optional and coerce parameter decorators
+- Use Actor in foreach allactors snippet instead of PlayerStart
+
 ### v0.23.0
 - Adds parser and formatter support for generic types
 
