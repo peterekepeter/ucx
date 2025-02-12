@@ -13,9 +13,9 @@
 	"Iterate through all actors of type": {
 		"prefix": "foreach allactors",
 		"body": [
-            "local PlayerStart$1 S$2;",
+            "local ${1:Actor} ${2:A};",
             "",
-			"foreach AllActors(class'PlayerStart$1', S$2)",
+			"foreach AllActors(class'${1:Actor}', ${2:A})",
             "{",
             "\t$3",
             "}"
