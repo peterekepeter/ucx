@@ -152,6 +152,7 @@ describe(renderDefinitionMarkdownLines, () => {
                 'native(129) static final preoperator  bool  !  ( bool A );',
                 'native(165) static final postoperator int  ++ ( out int A );',
                 'native(163) static final preoperator  int  ++ ( out int A );',
+                'native(127) static final function string Mid( coerce string S, int i, optional int j)'
             ]);   
         });
 
@@ -167,7 +168,8 @@ describe(renderDefinitionMarkdownLines, () => {
                 '\tnative(165) static final postoperator int MyClass.++(out int A);', // markdown renders
                 '\tnative(163) static final preoperator int MyClass.++(out int A);', // all overloads 
                 '\tnative(163) static final preoperator int Object.++(out byte A);', // even from parent
-            ]]
+            ]],
+            [9, 43, ['\tnative(127) static final function string MyClass.Mid(coerce string S, int i, optional int j);']],
         ] as [number, number, string[]][]
         )("at %p:%p is %p", (line, column, expected) => {
             const info = db.findDefinition(db.findToken(uri, line, column));

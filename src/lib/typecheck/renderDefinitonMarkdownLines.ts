@@ -52,6 +52,8 @@ function renderFunctionParameter(def: UnrealClassFunctionArgument): string[] {
 function renderFunctionParameterIntoResult(def: UnrealClassFunctionArgument, result: string[]) {
     if (def.isSkip) result.push('skip ');
     if (def.isOut) result.push('out ');
+    if (def.isOptional) result.push('optional ');
+    if (def.isCoerce) result.push('coerce ');
     if (def.type) result.push(def.type.text, ' ');
     if (def.name) result.push(def.name.text);
 }
