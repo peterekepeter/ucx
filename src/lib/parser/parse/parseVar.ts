@@ -183,18 +183,22 @@ function parseVarNext(parser: UcParser, token: Token) {
         parser.rootFn = parseNoneState;
         break;
     default:
-        parseVarCheckSuddenTerminationAndRecover(parser, token);
+        parseVarCheckSuddenTerminationAndRecover(parser, token, true);
         break;
     }
 }
 
-function parseVarCheckSuddenTerminationAndRecover(parser: UcParser, token: Token, message = 'Expecting ";" after variable declaration.') {
+function parseVarCheckSuddenTerminationAndRecover(parser: UcParser, token: Token, isErrorForSure=false) {
     switch(token.textLower){
     case 'function':
     case 'event':
-        parser.result.errors.push({ token, message });
-        parseNoneState(parser, token);
-        return true;
+        if (isErrorForSure || parser.lastVar.firstToken?.line !== token.line) 
+        {
+            // assume not part of same decl
+            parser.result.errors.push({ token, message: 'Expecting ";" after variable declaration.' });
+            parseNoneState(parser, token);
+            return true;
+        }
     }
 }
 

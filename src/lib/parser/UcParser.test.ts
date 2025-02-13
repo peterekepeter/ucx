@@ -823,6 +823,14 @@ test("parse variable with array", () => { parsing(`
     });
 });
 
+test("parse var named event", () => { parsing(`
+        var(Events) name Event;
+    `)
+    .hasVariable(0, 'name', 'Event', {
+        group: 'Events',
+    });
+});
+
 test("parse variable error recovery", () => {
     parsing(`var string x; event F();`).hasFunction(0,{ name: 'F' });
     parsing(`var x;event F();`).hasFunction(0,{ name: 'F' });
@@ -831,13 +839,13 @@ test("parse variable error recovery", () => {
     parsing(`var\nfunction F();`).hasFunction(0,{ name: 'F' });
     parsing(`var string S event F();`).hasFunction(0,{ name: 'F' });
     parsing(`var string S function F();`).hasFunction(0,{ name: 'F' });
-    parsing(`var string S, event F();`).hasFunction(0,{ name: 'F' });
-    parsing(`var string S, function F();`).hasFunction(0,{ name: 'F' });
-    parsing(`var string S[ event F();`).hasFunction(0,{ name: 'F' });
-    parsing(`var string S[ function F();`).hasFunction(0,{ name: 'F' });
-    parsing(`var class< function F();`).hasFunction(0,{ name: 'F' });
-    parsing(`var class<Weapon function F();`).hasFunction(0,{ name: 'F' });
-    parsing(`var( function F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var string S,\nevent F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var string S,\nfunction F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var string S[\nevent F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var string S[\nfunction F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var class<\nfunction F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var class<Weapon\nfunction F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var(\nfunction F();`).hasFunction(0,{ name: 'F' });
 });
 
 
