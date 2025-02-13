@@ -411,6 +411,7 @@ describe("completion", () => {
                 '    self.;', // line 10
                 '    super.;', // line 11 char 10
                 '    default.;', // line 12 char 12
+                '    4.;',  // line 13 char 6
                 '}',
             ]);
         });
@@ -437,6 +438,10 @@ describe("completion", () => {
 
         test('through default reference', () => {
             expectCompletion("MyClass.uc", 12, 12, "VObj");
+        });
+
+        test('no completions for dot in floating point numbers', () => {
+            expectCompletions("MyClass.uc", 13, 6, { count: 0 });
         });
         
     });
@@ -498,87 +503,95 @@ describe("completion", () => {
         });
 
         test('suggests existing classes in class reference', () => {
-            expectCompletion("MyObject.uc", 3, 9, "Object");
-            expectCompletion("MyObject.uc", 3, 9, "MyObject");
+            expectCompletions("MyObject.uc", 3, 9, { include: ["Object", "MyObject"]});
         });
 
         test('suggests existing classes in class reference even if Class is uppercase', () => {
-            expectCompletion("MyObject.uc", 4, 9, "Object");
-            expectCompletion("MyObject.uc", 4, 9, "MyObject");
+            expectCompletions("MyObject.uc", 4, 9, { include: ["Object", "MyObject"]});
         });
 
         test('suggests existing classes if name is only opened', () => {
-            expectCompletion("MyObject.uc", 5, 9, "Object");
-            expectCompletion("MyObject.uc", 5, 9, "MyObject");
+            expectCompletions("MyObject.uc", 5, 9, { include: ["Object", "MyObject"]});
         });
 
 
         test('does not suggest clasnames after closing quote', () => {
-            expectNotCompletion("MyObject.uc", 6, 18, "MyObject");
+            expectCompletions("MyObject.uc", 6, 18, { exclude: ["MyObject"]});
         });
 
 
     });
 
-    describe("variable type definition completion", () => {
+    describe("variable definition type completion", () => {
         
-        test("after extends suggest extendable class names", () => {
+        beforeAll(() => {
+            reset();
             ast("MyOther.uc", 1, ['class MyOther extends Actor;']);
             ast("MyClass.uc", 1, [
                 'class MyClass extends MyOther;',
                 'var ;', // 1
-                'function Tick() {', // 2
-                '   local ;', // 3
+                'var My X;', //2
+                'var', // 3
+                'function Tick() {', // 4
+                '   local ;', // 5
                 '}',
             ]);
-            expectCompletion("MyClass.uc", 1, 4, "Actor");
-            expectCompletion("MyClass.uc", 1, 4, "MyOther");
-            expectCompletion("MyClass.uc", 1, 4, "MyClass");
-            expectCompletion("MyClass.uc", 3, 9, "Actor");
-            expectCompletion("MyClass.uc", 3, 9, "MyOther");
-            expectCompletion("MyClass.uc", 3, 9, "MyClass");
         });
 
+        test("var type completion", () => expectCompletions("MyClass.uc", 1, 4, { 
+            include: ["Actor", "MyOther", "MyClass"],
+        }));
+
+        test('var partial type completion', () => expectCompletions("MyClass.uc", 2, 6, {
+            include: ["MyOther", "MyClass"],
+            exclude: ["Actor"],
+        }));
+
+        test('local var type completion', () => expectCompletions("MyClass.uc", 5, 9, {
+            include: ["Actor", "MyOther", "MyClass"],
+        }));
     });
 
+    const expectCompletions = (uri: string, line: number, pos: number, options: { include?: Array<string|CompletionInformation>, exclude?: Array<string|CompletionInformation>, count?: number}) => {
+        const completions = db.findCompletions(uri, line, pos);
+        if (options.include) {
+            expect(completions).not.toHaveLength(0);
+            for (let include of options.include) {
+                if (typeof include === 'string') include = { label: include };
+                let item = null;
+                for (const completion of completions) {
+                    item = completion;
+                    if (completion.label === include.label) {
+                        break;
+                    }
+                }
+                expect(item).toMatchObject(include);
+            }
+        }
+        if (options.exclude) {
+            for (let exclude of options.exclude) {
+                if (typeof exclude === 'string') exclude = { label: exclude };
+                for (const completion of completions) {
+                    if (completion.label === exclude.label) {
+                        expect(completion).not.toMatchObject(exclude);
+                    }
+                }
+            }
+        }
+        if (options?.count != null) {
+            expect(completions).toHaveLength(options?.count);
+        }
+    };
+
     const expectCompletion = (uri: string, line: number, pos: number, expected: string|CompletionInformation) => {
-        const completions = db.findCompletions(uri, line, pos);
-        if (typeof expected === 'string') {
-            expected = {
-                label: expected
-            };
-        }
-        let last;
-        expect(completions).not.toHaveLength(0);
-        for (const completion of completions) {
-            last = completion;
-            if (completion.label === expected.label) {
-                expect(completion).toMatchObject(expected);
-                return;
-            }
-        }
-        expect(last).toMatchObject(expected);
+        expectCompletions(uri, line, pos, { include: [expected] });
     };
 
-    const expectNotCompletion = (uri: string, line: number, pos: number, expected: string|CompletionInformation) => {
-        const completions = db.findCompletions(uri, line, pos);
-        if (typeof expected === 'string') {
-            expected = {
-                label: expected
-            };
-        }
-        for (const completion of completions) {
-            if (completion.label === expected.label) {
-                expect(completion).not.toMatchObject(expected);
-            }
-        }
+    const expectCompletionCount = (uri: string, line: number, pos: number, count: number) => {
+        expectCompletions(uri, line, pos, { count });
     };
 
 
-    const expectCompletionCount = (uri: string, line: number, pos: number, expectedCount: number) => { 
-        const completions = db.findCompletions(uri, line, pos);
-        expect(completions).toHaveLength(expectedCount);
-    };
 
 });
 

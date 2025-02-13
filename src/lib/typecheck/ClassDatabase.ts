@@ -87,12 +87,12 @@ export class ClassDatabase
 
 
     findCompletions(uri: string, line: number, character: number): CompletionInformation[] {
-        const expectedName = new ClassNamingRule().getExpectedClassName(uri.toString());
         const ast = this.getAst(uri);
         if (!ast) {
             return [];
         }
         if (!ast.name) {
+            const expectedName = new ClassNamingRule().getExpectedClassName(uri.toString());
             if (ast.classDeclarationFirstToken) {
                 const firstToken = ast.classDeclarationFirstToken;
                 if (firstToken.line === line) 
@@ -117,7 +117,25 @@ export class ClassDatabase
                 }];
             }
         }
-        const before = this.findTokenBeforePosition(uri, line, character);
+        let before = this.findTokenBeforePosition(uri, line, character);
+        if (!before.token) {
+            return [];
+        }
+        let regexp: RegExp|undefined;
+        if (before.token.line === line 
+            && before.token.position + before.token.text.length === character 
+            && before.token.type !== SemanticClass.None) {
+            if (before.token.type === SemanticClass.LiteralNumber) {
+                return []; // do not continue numbers
+            }
+            // token continuation reuqest
+            let text = before.token.text;
+            if (text.startsWith("'")) text=text.substring(1);
+            if (text) {
+                regexp = new RegExp(before.token.text, 'i');
+                before = this.findTokenBeforePosition(uri, before.token.line, before.token.position);
+            }
+        }
         if (!before.token) {
             return [];
         }
@@ -127,7 +145,7 @@ export class ClassDatabase
             before.token.textLower === 'var' ||
             before.token.textLower === 'local')
         ) {
-            const list = this.findAllExtendableClassNames();
+            const list = this.findAllExtendableClassNames(regexp);
             const results: CompletionInformation[] = [];
             for (const item of list) {
                 if (item) {
@@ -747,15 +765,17 @@ export class ClassDatabase
         }
     }
 
-    findAllExtendableClassNames() {
+    findAllExtendableClassNames(regexp?: RegExp) {
         const results: { [key:string]: string } = {};
         for (const name in this.store) {
             const ast = this.store[name].ast;
             if (ast.parentName && !results[ast.parentName.textLower]) {
-                results[ast.parentName.textLower] = ast.parentName.text;
+                if (!regexp || regexp.test(ast.parentName.text))
+                    results[ast.parentName.textLower] = ast.parentName.text;
             }
             if (ast.name) {
-                results[ast.name.textLower] = ast.name.text;
+                if (!regexp || regexp.test(ast.name.text))
+                    results[ast.name.textLower] = ast.name.text;
             }
         }
         return Object.values(results);

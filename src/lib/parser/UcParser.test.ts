@@ -824,10 +824,20 @@ test("parse variable with array", () => { parsing(`
 });
 
 test("parse variable error recovery", () => {
-    parsing(`var string x; event F1();`).hasFunction(0,{});
-    parsing(`var x;event F1();`).hasFunction(0,{});
-    parsing(`var;event F1();`).hasFunction(0,{});
-    parsing(`var\nevent F1();`).hasFunction(0,{});
+    parsing(`var string x; event F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var x;event F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var;event F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var\nevent F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var\nfunction F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var string S event F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var string S function F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var string S, event F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var string S, function F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var string S[ event F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var string S[ function F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var class< function F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var class<Weapon function F();`).hasFunction(0,{ name: 'F' });
+    parsing(`var( function F();`).hasFunction(0,{ name: 'F' });
 });
 
 
@@ -2092,19 +2102,19 @@ function parsing(input: string): ParserTestChecks {
                     type: l.type?.text,
                 })),
                 body: mapBodyToCheck(obj?.body) ?? [],
-                isStatic: obj.isStatic,
-                isFinal: obj.isFinal,
-                isSimulated: obj.isSimulated,
-                isPrivate: obj.isPrivate,
-                isExec: obj.isExec,
-                isSingular: obj.isSingular,
-                isLatent: obj.isLatent,
-                native: obj.isNative,
-                iterator: obj.isIterator,
-                operator: obj.isOperator,
-                isEvent: obj.isEvent,
-                returns: obj.returnType?.text,
-                fnArgs: obj.fnArgs.map(a => ({ 
+                isStatic: obj?.isStatic,
+                isFinal: obj?.isFinal,
+                isSimulated: obj?.isSimulated,
+                isPrivate: obj?.isPrivate,
+                isExec: obj?.isExec,
+                isSingular: obj?.isSingular,
+                isLatent: obj?.isLatent,
+                native: obj?.isNative,
+                iterator: obj?.isIterator,
+                operator: obj?.isOperator,
+                isEvent: obj?.isEvent,
+                returns: obj?.returnType?.text,
+                fnArgs: obj?.fnArgs.map(a => ({ 
                     name:a.name?.text,
                     type: a.type?.text,
                     template: a.template?.text,

@@ -61,6 +61,7 @@ function parseVarDeclaration(parser: UcParser, token: Token) {
         parseEnumKeyword(parser, token);
         break;
     case 'event':
+    case 'function':
     case ';':
         parseVarName(parser, token);
         break;
@@ -74,6 +75,7 @@ function parseVarDeclaration(parser: UcParser, token: Token) {
 }
 
 function parseVarGroup(parser: UcParser, token: Token) {
+    if (parseVarCheckSuddenTerminationAndRecover(parser, token)) return;
     if (token.text === ')') {
         parser.rootFn = parseVarDeclaration;
         return;
@@ -103,16 +105,6 @@ function parseVarName(parser: UcParser, token: Token) {
         parser.rootFn = parseTemplateName;
         token.type = C.GenericArgBegin;
         break;
-    case 'function':
-    case 'event':
-        parser.result.errors.push({ 
-            token: parser.lastVarScope.firstToken ?? token, 
-            message: "Invalid var declaration!",
-        });
-        variable.lastToken = token;
-        parser.lastVarScope.lastToken = token;
-        parseNoneState(parser, token);
-        break;
     case ';':
         const message = 'Expected variable name varname of ";"';
         parser.result.errors.push({ token, message });
@@ -121,6 +113,7 @@ function parseVarName(parser: UcParser, token: Token) {
         parser.lastVarScope.lastToken = token;
         break;
     default:
+        if (parseVarCheckSuddenTerminationAndRecover(parser, token)) return;
         token.type = C.ClassVariable;
         variable.name = token;
         parser.rootFn = parseVarNext;
@@ -143,6 +136,7 @@ function parseTemplateName(parser: UcParser, token: Token) {
         token.type = C.GenericArgEnd;
         break;
     default:
+        if (parseVarCheckSuddenTerminationAndRecover(parser, token)) return;
         token.type = C.ClassReference;
         variable.template = token;
         parser.rootFn = parseAfterTemplateName;
@@ -165,6 +159,7 @@ function parseAfterTemplateName(parser: UcParser, token: Token) {
         token.type = C.GenericArgEnd;
         break;
     default:
+        if (parseVarCheckSuddenTerminationAndRecover(parser, token)) return;
         parser.result.errors.push({ token, message: "Expected '>'"});
         parser.rootFn = parseVarName;
         break;
@@ -188,12 +183,23 @@ function parseVarNext(parser: UcParser, token: Token) {
         parser.rootFn = parseNoneState;
         break;
     default:
-        parser.result.errors.push({ token, message: 'Expecting ";" after variable name.' });
+        parseVarCheckSuddenTerminationAndRecover(parser, token);
         break;
     }
 }
 
+function parseVarCheckSuddenTerminationAndRecover(parser: UcParser, token: Token, message = 'Expecting ";" after variable declaration.') {
+    switch(token.textLower){
+    case 'function':
+    case 'event':
+        parser.result.errors.push({ token, message });
+        parseNoneState(parser, token);
+        return true;
+    }
+}
+
 function parseExtraVariable(parser: UcParser, token: Token) {
+    if (parseVarCheckSuddenTerminationAndRecover(parser, token)) return;
     switch(token.text){
     default:
         const previousVar = parser.lastVar;
@@ -212,6 +218,11 @@ function parseExtraVariable(parser: UcParser, token: Token) {
 function parseArrayCount(parser: UcParser, token:Token){
     const variable = parser.lastVar;
     switch (token.text){
+    case 'function':
+    case 'event':
+        parser.result.errors.push({ token, message: 'Expecting ";" after variable declaration.' });
+        parseNoneState(parser, token);
+        break;
     case ';':
     case ']':
         variable.arrayCountExpression = resolveExpression(parser.expressionTokens);

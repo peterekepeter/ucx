@@ -30,6 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
     const semanticTokensProvider = new SemanticTokensProvider();
     const lang = vscode.languages;
     const cmds = vscode.commands;
+    const completion = new CompletionProvider();
 
     context.subscriptions.push(
         lang.registerSignatureHelpProvider(langId.uc, new SignatureProvider(), '(', ','),
@@ -40,7 +41,8 @@ export function activate(context: vscode.ExtensionContext) {
         lang.registerColorProvider(langId.uc, new ColorProvider()),
         lang.registerDocumentSymbolProvider(langId.uc, new DocumentSymbolProvider()),
         lang.registerHoverProvider(langId.uc, new HoverProvider()),
-        lang.registerCompletionItemProvider(langId.uc, new CompletionProvider(), '.', "'"),
+        lang.registerCompletionItemProvider(langId.uc, completion), // standard invoke
+        lang.registerCompletionItemProvider(langId.uc, completion, "'", '.', '<'), // invoke after trigger chars
         lang.registerReferenceProvider(langId.uc, new ReferenceProvider()),
         lang.registerRenameProvider(langId.uc, new RenameProvider()),
         lang.registerDocumentSemanticTokensProvider(langId.uc, semanticTokensProvider, semanticTokensProvider.legend),
