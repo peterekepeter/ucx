@@ -41,7 +41,6 @@ export function activate(context: vscode.ExtensionContext) {
         lang.registerColorProvider(langId.uc, new ColorProvider()),
         lang.registerDocumentSymbolProvider(langId.uc, new DocumentSymbolProvider()),
         lang.registerHoverProvider(langId.uc, new HoverProvider()),
-        lang.registerCompletionItemProvider(langId.uc, completion), // standard invoke
         lang.registerCompletionItemProvider(langId.uc, completion, "'", '.', '<'), // invoke after trigger chars
         lang.registerReferenceProvider(langId.uc, new ReferenceProvider()),
         lang.registerRenameProvider(langId.uc, new RenameProvider()),

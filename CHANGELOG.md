@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.24.2
+- Fix duplicate completion items showing up
+
 ### v0.24.0
 - Improve type completion for var and local declaration
 - Render optional and coerce parameter decorators
