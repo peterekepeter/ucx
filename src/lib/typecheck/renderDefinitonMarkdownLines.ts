@@ -77,13 +77,55 @@ function renderVar(ast: UnrealClass, def: UnrealClassVariable): string[] {
 function renderFnWrapper(ast: UnrealClass, info: TokenInformation|undefined, fn: UnrealClassFunction): string[] {
     let result: string[] = [];
     for (let n = info; n != null; n = n.overload){
-        result = [...result, ...renderFn(n.ast ?? ast, n.stateScope, n.fnDefinition ?? fn)];
+        result = [...result, ...renderFnDocumentationPrototypeMarkdown(n.ast ?? ast, n.stateScope, n.fnDefinition ?? fn)];
     }
     return result;
 }
 
-function renderFn(ast: UnrealClass, state: UnrealClassState | undefined, def: UnrealClassFunction): string[] {    
+export function renderFnDocumentationPrototypeToString(ast: UnrealClass, state: UnrealClassState | undefined, def: UnrealClassFunction) {
     const result: string[] = [];
+    renderFnDocumentationPrototypeRaw(result, ast, state, def);
+    return result.join('');
+}
+
+function renderFnDocumentationPrototypeMarkdown(ast: UnrealClass, state: UnrealClassState | undefined, def: UnrealClassFunction): string[] {    
+    const result: string[] = [];
+    renderFnDocumentationPrototypeRaw(result, ast, state, def);
+    return [`\t${result.join('')};`];
+}
+
+export function renderFnDocumentationPrototypeRaw(result: string[], ast: UnrealClass, state: UnrealClassState | undefined, def: UnrealClassFunction) {
+    renderFnDecorators(result, def);
+    if (ast.name) result.push(ast.name.text, '.');
+    if (state?.name) result.push(state.name.text, '.');
+    if (def.name) result.push(def.name.text);
+    renderFnArgList(result, def);
+}
+
+export function renderFnImplementationStubToString(def: UnrealClassFunction) 
+{
+    const result: string[] = []; 
+    renderFnImplementationStub(result, def); 
+    return result.join('');
+}
+
+function renderFnImplementationStub(result: string[], def: UnrealClassFunction) {
+    renderFnDecorators(result, def);
+    const name = def.name?.text ?? 'CustomFunction';
+    result.push(name);
+    renderFnArgList(result, def);
+    result.push('\n{\n\t'); 
+    if (def.returnType) result.push('return ');
+    result.push('super.', name, '(');
+    let separator = '';
+    for (const arg of def.fnArgs) {
+        result.push(separator, arg.name?.text ?? 'a');
+        separator = ', ';
+    }
+    result.push(');\n}\n');
+}
+
+function renderFnDecorators(result: string[], def: UnrealClassFunction) {
     if (def.isNative) {
         if (def.nativeIndex >= 0) {
             result.push('native(', def.nativeIndex.toString(), ') ');
@@ -117,9 +159,9 @@ function renderFn(ast: UnrealClass, state: UnrealClassState | undefined, def: Un
         result.push(def.isEvent ? 'event ': 'function ');
     }
     if (def.returnType) result.push(def.returnType.text, ' ');
-    if (ast.name) result.push(ast.name.text, '.');
-    if (state?.name) result.push(state.name.text, '.');
-    if (def.name) result.push(def.name.text);
+}
+
+function renderFnArgList(result: string[], def: UnrealClassFunction) {
     if (def.fnArgs.length > 0) {
         let separator = ('(');
         for (const a of def.fnArgs) {
@@ -133,7 +175,6 @@ function renderFn(ast: UnrealClass, state: UnrealClassState | undefined, def: Un
     else {
         result.push('()');
     }
-    return [`\t${result.join('')};`];
 }
 
 function renderClassDefinition(classDefinition: UnrealClass): string[] {

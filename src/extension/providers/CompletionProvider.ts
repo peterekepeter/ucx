@@ -14,16 +14,22 @@ export class CompletionProvider implements vscode.CompletionItemProvider {
     ): Promise<vscode.CompletionList<vscode.CompletionItem> | vscode.CompletionItem[]> {
 
         db.updateDocumentAndGetAst(document, token);
-
-        const result = await db.findCompletion(document.uri, position, token); 
-        return result.map(r =>( {
-            label: r.label,
-            kind: this.kindFromTokenType(r.kind),
-            command: r.retrigger ? {
-                command: 'editor.action.triggerSuggest',
-                title: 'Complete superclass',
-            } : undefined,
-        }));
+        const results: vscode.CompletionItem[] = [];
+        const items = await db.findCompletion(document.uri, position, token);
+        if (token.isCancellationRequested) return results;
+        for (const r of items) {
+            const obj: vscode.CompletionItem = { label: r.label };
+            if (r.kind) obj.kind = this.kindFromTokenType(r.kind);
+            if (r.retrigger) {
+                obj.command = {
+                    command: 'editor.action.triggerSuggest',
+                    title: 'Complete superclass',
+                };
+            }
+            if (r.text) obj.insertText = r.text;
+            results.push(obj);
+        }
+        return results;
     }
 
     kindFromTokenType(kind: SemanticClass | undefined): CompletionItemKind {
@@ -34,6 +40,7 @@ export class CompletionProvider implements vscode.CompletionItemProvider {
             return CompletionItemKind.Class;
         case SemanticClass.VariableReference:
             return CompletionItemKind.Variable;
+        case SemanticClass.FunctionDeclaration:
         case SemanticClass.FunctionReference:
             return CompletionItemKind.Function;
         default: 

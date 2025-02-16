@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.24.3
+- Provide completion for method overrides
+
 ### v0.24.2
 - Fix duplicate completion items showing up
 

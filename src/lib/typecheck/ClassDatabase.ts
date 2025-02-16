@@ -12,6 +12,7 @@ import {
     getAllClassFunctions, 
     getExpressionTokensRecursively
 } from "../parser/ast";
+import { renderFnDocumentationPrototypeToString, renderFnImplementationStubToString } from "./renderDefinitonMarkdownLines";
 
 export type TokenInformation = {
     found?: boolean,
@@ -35,6 +36,7 @@ export type CompletionInformation = {
     label: string,
     kind?: SemanticClass,
     retrigger?: boolean,
+    text?: string,
 };
 
 export type ClassFileEntry = {
@@ -92,6 +94,7 @@ export class ClassDatabase
             return [];
         }
         if (!ast.name) {
+            // class not declared
             const expectedName = new ClassNamingRule().getExpectedClassName(uri.toString());
             if (ast.classDeclarationFirstToken) {
                 const firstToken = ast.classDeclarationFirstToken;
@@ -238,7 +241,39 @@ export class ClassDatabase
                 }
             }
         }
+        
+        if (before.token.text === '}' || before.token.text === ';') {
+            // start of a new top level declaration
+            const results: CompletionInformation[] = [];
+            for (const fn of this.findOverriableFunctions(ast)) {
+                if (!fn.ast || !fn.fnDefinition) continue;
+                if (ast.functions.find(f => f.name?.textLower === fn.fnDefinition?.name?.textLower)) continue;
+                results.push({
+                    // TODO handle states
+                    label: renderFnDocumentationPrototypeToString(fn.ast, undefined, fn.fnDefinition),
+                    text: renderFnImplementationStubToString(fn.fnDefinition),
+                    kind: SemanticClass.FunctionDeclaration,
+                });
+            }
+            return results;
+        }
         return [];
+    }
+
+    findOverriableFunctions(ast: UnrealClass): TokenInformation[] {
+        const results: TokenInformation[] = [];
+        for (let parent = this.findParentClassOf(ast?.name?.textLower ?? ''); parent.found; parent = this.findParentClassOf(parent.ast?.name?.textLower ?? '')) 
+        {
+            if (!parent.ast) break;
+            for (let fn of parent.ast?.functions) {
+                if (fn.isFinal) continue;
+                results.push({
+                    ast: parent.ast,
+                    fnDefinition: fn,
+                });
+            }
+        }
+        return results;
     }
     
     findReferences(uri: string, line: number, character: number): TokenInformation[] {

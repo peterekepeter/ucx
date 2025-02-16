@@ -552,7 +552,46 @@ describe("completion", () => {
         }));
     });
 
-    const expectCompletions = (uri: string, line: number, pos: number, options: { include?: Array<string|CompletionInformation>, exclude?: Array<string|CompletionInformation>, count?: number}) => {
+    describe("override completion", () => {
+
+        beforeEach(reset);
+
+        test('suggest override at root level', () => {
+            ast("Mutator.uc", 1, ['class Mutator extends Object; function bool HandleEndGame();']);
+            ast("MyMutator", 1, [ 'class MyMutator extends Mutator;']);
+            expectCompletion("MyMutator", 1, 0, {
+                label: "function bool Mutator.HandleEndGame()",
+                text: "function bool HandleEndGame()\n{\n\treturn super.HandleEndGame();\n}\n",
+            });
+        });
+
+        test('does not suggest override for final functions', () => {
+            ast("A", 1, ['class A; final function Exit();']);
+            ast("B", 1, [ 'class B extends A;']);
+            expectCompletions("B", 1, 0, { excludePattern: /Exit/gi });
+        });
+
+        test('suggest override after existing function', () => {
+            ast("A", 1, ['class A; function bool HandleEndGame();']);
+            ast("B", 1, [ 'class B extends A; function Print(){}']);
+            expectCompletions("B", 1, 0, { include: ['function bool A.HandleEndGame()'] });
+        });
+
+        test('does not suggest override if already overwritten', () => {
+            ast("A", 1, ['class A; function bool HandleEndGame();']);
+            ast("B", 1, [ 'class B extends A; function bool HandleEndGame(){}']);
+            expectCompletions("B", 1, 0, { excludePattern: /HandleEndGame/gi });
+        });
+
+
+    });
+
+    const expectCompletions = (uri: string, line: number, pos: number, options: { 
+        include?: Array<string|CompletionInformation>, 
+        exclude?: Array<string|CompletionInformation>, 
+        count?: number,
+        excludePattern?: RegExp,
+    }) => {
         const completions = db.findCompletions(uri, line, pos);
         if (options.include) {
             expect(completions).not.toHaveLength(0);
@@ -576,6 +615,11 @@ describe("completion", () => {
                         expect(completion).not.toMatchObject(exclude);
                     }
                 }
+            }
+        }
+        if (options.excludePattern) {
+            for (const completion of completions) {
+                expect(completion.label).not.toMatch(options.excludePattern);
             }
         }
         if (options?.count != null) {
