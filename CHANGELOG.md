@@ -1,5 +1,9 @@
 # Change Log
 
+### v0.24.4
+- Fix missing completion for constants names
+- Fix completion for inherited symbols when accessing as object member
+
 ### v0.24.3
 - Provide completion for method overrides
 

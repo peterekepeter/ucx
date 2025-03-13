@@ -181,19 +181,26 @@ export class ClassDatabase
                 if (beforeDot) {
                     const token = this.findToken(uri, beforeDot.line, beforeDot.position);
                     const symboldef = this.findDefinition(token);
-                    const typedef = this.findTypeOfDefinition(symboldef);
-                    if (typedef.ast) {
-                        return [
-                            ...typedef.ast.functions.map(f => ({
+                    let typedef = this.findTypeOfDefinition(symboldef);
+                    let results: CompletionInformation[][] = [];
+                    while (typedef.ast) {
+                        results.push(
+                            typedef.ast.functions.map(f => ({
                                 label: f.name?.text ?? '',
                                 kind: SemanticClass.FunctionReference,
                             })),
-                            ...typedef.ast.variables.map(v => ({
+                            typedef.ast.variables.map(v => ({
                                 label: v.name?.text ?? '',
                                 kind: SemanticClass.VariableReference,
                             })),
-                        ];
+                            typedef.ast.constants.map(v => ({
+                                label: v.name?.text ?? '',
+                                kind: SemanticClass.ClassConstant,
+                            })),
+                        );
+                        typedef = this.findClassDefinitionStr(typedef.classDefinition?.parentName?.textLower ?? '');
                     }
+                    return results.flat();
                 }
             }
             else if (before.token.type === SemanticClass.None && (before.token.text === ";" || before.token.text === '{' || before.token.text === '(' || before.token.text === ',') 
@@ -218,6 +225,10 @@ export class ClassDatabase
                             label: v.name?.text ?? '',
                             kind: SemanticClass.VariableReference,
                         })),
+                        ...ast.constants.map(v => ({
+                            label: v.name?.text ?? '',
+                            kind: SemanticClass.ClassConstant,
+                        })),
                     ];
                     let parent = ast.parentName;
                     while (parent) {
@@ -234,7 +245,11 @@ export class ClassDatabase
                             def.classDefinition.variables.map(v => ({
                                 label: v.name?.text ?? '',
                                 kind: SemanticClass.VariableReference,
-                            }))
+                            })),
+                            def.classDefinition.constants.map(v => ({
+                                label: v.name?.text ?? '',
+                                kind: SemanticClass.ClassConstant,
+                            })),
                         );
                     }
                     return results;

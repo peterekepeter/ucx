@@ -586,6 +586,44 @@ describe("completion", () => {
 
     });
 
+    describe("const completion", () => {
+
+        beforeAll(() => {
+            reset();
+            ast("MyOther.uc", 1, [
+                'class MyOther extends Actor;',
+                'const PI=3.14159',
+            ]);
+            ast("MyClass.uc", 1, [
+                'class MyClass extends MyOther;',
+                'const MYVALUE=4 ;', // 1
+                'var int X;', //2
+                '', // 3
+                'function Tick() {', // 4
+                '   X = ;', // 5
+                '   X = self.;', //6
+                '}',
+            ]);
+        });
+
+        test('suggest class const in expression', () => {
+            expectCompletion("MyClass.uc", 5, 7, "MYVALUE");
+        });
+
+        test('suggest inherited const in expression', () => {
+            expectCompletion("MyClass.uc", 5, 7, "PI");
+        });
+
+        test('suggest const through self', () => {
+            expectCompletion("MyClass.uc", 6, 12, "MYVALUE");
+        });
+
+        test('suggest inhertied const through self', () => {
+            expectCompletion("MyClass.uc", 6, 12, "PI");
+        });
+
+    });
+
     const expectCompletions = (uri: string, line: number, pos: number, options: { 
         include?: Array<string|CompletionInformation>, 
         exclude?: Array<string|CompletionInformation>, 

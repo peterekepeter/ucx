@@ -43,6 +43,8 @@ export class CompletionProvider implements vscode.CompletionItemProvider {
         case SemanticClass.FunctionDeclaration:
         case SemanticClass.FunctionReference:
             return CompletionItemKind.Function;
+        case SemanticClass.ClassConstant:
+            return CompletionItemKind.Constant;
         default: 
             return CompletionItemKind.Text;
         }
