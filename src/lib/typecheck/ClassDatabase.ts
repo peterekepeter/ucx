@@ -1401,6 +1401,9 @@ export class ClassDatabase
 
     private isTypeQuery(q: TokenInformation): boolean {
         if (!q.token || !q.ast) return false;
+        if (q.token.type === SemanticClass.ClassReference) {
+            return true;
+        }
         if (q.token.type === SemanticClass.StructDeclaration) {
             return true;
         }
