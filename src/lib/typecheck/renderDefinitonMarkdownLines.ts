@@ -21,6 +21,9 @@ export function renderDefinitionMarkdownLines(info: TokenInformation): string[] 
                     return renderLocalVar(info.localDefinition);
                 }
             }
+            if (info.structDefinition && info.varDefinition) {
+                return renderStructVar(info.ast, info.structDefinition, info.varDefinition);
+            }
             if (info.varDefinition) 
             {
                 return renderVar(info.ast, info.varDefinition);
@@ -72,6 +75,18 @@ function renderVar(ast: UnrealClass, def: UnrealClassVariable): string[] {
     if (ast?.name) result.push(ast.name.text, '.');
     if (def.name) result.push(def.name.text);
     return [`\t${result.join('')}`];
+}
+
+function renderStructVar(ast: UnrealClass, struct: UnrealClassStruct, def: UnrealClassVariable): string[] {  
+    // TODO dedup with renderVar     
+    const result = ['(struct var) '];
+    if (def.isConfig) result.push('config ');
+    if (def.type) result.push(def.type.text, ' ');
+    if (ast?.name) result.push(ast.name.text, '.');
+    if (struct?.name) result.push(struct.name.text, '.');
+    if (def.name) result.push(def.name.text);
+    return [`\t${result.join('')}`];
+    
 }
 
 function renderFnWrapper(ast: UnrealClass, info: TokenInformation|undefined, fn: UnrealClassFunction): string[] {

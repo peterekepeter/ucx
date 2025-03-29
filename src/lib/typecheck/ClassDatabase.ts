@@ -380,7 +380,7 @@ export class ClassDatabase
                 return references;
             }
             for (const file in this.store) {
-                const item  = this.store[file];
+                const item = this.store[file];
                 if (item.ast.parentName?.textLower === lowerClassName) {
                     // class extends referenced class
                     references.push({
@@ -717,8 +717,47 @@ export class ClassDatabase
             }
         }
         else {
-            // there is high chance here that the symbol is in another class
+            // check if its a struct member
+            // but if it fails here then the symbol is in another class
             // better let the smarter cross-file find handle this
+            const tokens = query.ast.tokens;
+            let index = tokens.indexOf(query.token);
+            const chain = this.getMemberChain(tokens, index);
+            let member: TokenInformation|undefined;
+            if (chain.length >= 2) {
+                member = this.findLocalFileDefinition({ ast: query.ast, token: chain[0] });
+                for (let i=1; i<chain.length; i+=1){
+                    // member of parent
+                    let typename = member?.localDefinition?.type 
+                        ?? member?.varDefinition?.type 
+                        ?? member?.paramDefinition?.type;
+                    
+                    member = undefined; // this will be returned if it fails
+
+                    if (!typename) break;
+
+
+                    const tofind = chain[i].textLower;
+                    const type = this.findLocalFileDefinition({ ast: query.ast, token: typename });
+                    if (type.structDefinition) {
+                        for (const m of type.structDefinition.members) {
+                            if (m?.name?.textLower === tofind) {
+                                member = { 
+                                    ast: query.ast,
+                                    token: m.name,
+                                    varDefinition: m, 
+                                    structDefinition: type.structDefinition,
+                                    found: true,
+                                };
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (member && member.found) {
+                return member;
+            }
         }
         if (!result && query.token.textLower === query.ast.name?.textLower) {
             result = {
