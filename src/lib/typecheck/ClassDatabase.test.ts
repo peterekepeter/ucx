@@ -244,7 +244,7 @@ describe("definition across files", () => {
         db = new ClassDatabase();
         ast(uriA, 1, [
             'class ClassA;', // line 0
-            '',
+            'struct Item { var string GameName; };',
             'var int Count;',
             'static function ShowStartMessage(){}',
             'static function string Mid ( coerce string S, int i, optional int j );',
@@ -256,7 +256,7 @@ describe("definition across files", () => {
         ]);
         ast(uriB, 1, [
             'class ClassB extends ClassA;', // line 0
-            '',
+            'var Item myitem;',
             'var ClassA other;', // line 2
             '',
             'function Timer(){',
@@ -287,6 +287,7 @@ describe("definition across files", () => {
             '   Log(Canvas.NOTHING);',
             '   goto END;',
             'END:', // line 31
+            '   Log(myitem.GameName);',
             '}',
         ]);
     });
@@ -301,6 +302,7 @@ describe("definition across files", () => {
     const showStartMessageFnDef = { uri: uriA, fnDefinition: { name: { text: 'ShowStartMessage' }}};
     const canvasNothingConstDef = { uri:uriCanvas, token: { text: 'NOTHING', line: 1 }};
     const gotoLabelDef = { uri:uriB, token: { text: 'END', line: 31 }, functionScope: { name: { text: 'Reset' }}};
+    const nameStructMember = { uri:uriA, token: { text: 'GameName', line: 1 }, varDefinition: { name: { text: 'GameName' }}, structDefinition: { name: { text: 'Item' }} };
 
     // find definition
     test.each([
@@ -328,6 +330,7 @@ describe("definition across files", () => {
         ['member fn not shadowed by local fn', 28, 11, canvasResetFnDef],
         ['const member', 29, 18, canvasNothingConstDef],
         ['goto label', 30, 10, gotoLabelDef],
+        ['inherited struct member', 32, 18, nameStructMember],
     ] as [string, number, number, TokenInformation][]
     )("findCrossFileDefinition finds %p at %p:%p", (_, line, column, expected) => {
         const token = db.findToken(uriB, line, column);

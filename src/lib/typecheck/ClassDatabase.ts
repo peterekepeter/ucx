@@ -12,7 +12,7 @@ import {
     getAllClassFunctions, 
     getExpressionTokensRecursively
 } from "../parser/ast";
-import { renderFnDocumentationPrototypeToString, renderFnImplementationStubToString } from "./renderDefinitonMarkdownLines";
+import { renderDefinitionMarkdownLines, renderFnDocumentationPrototypeToString, renderFnImplementationStubToString } from "./renderDefinitonMarkdownLines";
 
 export type TokenInformation = {
     found?: boolean,
@@ -326,11 +326,11 @@ export class ClassDatabase
                 // reset, becase the token based algorithm will re-add the definition as well
                 references.length = 0; 
                 for (let i=firstTokenIndex; i<lastTokenIndex; i+=1){
-                    const token = ast.tokens[i];
-                    if (token.textLower === definition.token.textLower) {
+                    const tok = ast.tokens[i];
+                    if (tok.textLower === definition.token.textLower) {
                         const possibleReference = { 
                             ast, 
-                            token, 
+                            token: tok, 
                             functionScope: definition.functionScope, 
                             uri: definition.uri 
                         } as TokenInformation;
@@ -787,6 +787,8 @@ export class ClassDatabase
             }
             if (this.isTypeQuery(query)) {
                 // looking for parent definition
+                const result = this.findInheritedTypeSynmbol(query);
+                if (result.found) return result;
                 return this.findClassDefinitionForQueryToken(query);
             }
             if (this.isMemberQuery(query)) {
@@ -807,6 +809,34 @@ export class ClassDatabase
             }
         }
         return { found: false };
+    }
+
+    // goes up the inheritance tree to look for struct type matches
+    findInheritedTypeSynmbol(query: TokenInformation): TokenInformation {
+        const nameLower = query.token?.textLower;
+        let uri = query.uri;
+        let ast = query.ast;
+        for (let i=0; i<1000; i+=1) { // limit inheritance search depth to 1000
+            if (!ast) break;
+            if (ast?.structs) {
+                for (const struct of ast?.structs) {
+                    if (struct.name?.textLower === nameLower) {
+                        return {
+                            uri, ast,
+                            token: struct.name ?? undefined,
+                            structDefinition: struct,
+                            found: true,
+                        };
+                    }
+                }
+            }
+            if (ast.name) {
+                const parent = this.findParentClassOf(ast.name.textLower);
+                uri = parent.uri;
+                ast = parent.ast;
+            }
+        }
+        return { found:false };
     }
 
     private findInheritedOperatorOverloads(localResult: TokenInformation) {
@@ -1028,16 +1058,16 @@ export class ClassDatabase
             {
                 // is using result of function call or typecast
                 // find matching paren
-                const tokens = query.ast.tokens;
+                const toks = query.ast.tokens;
                 let count = 1;
                 let found = false;
                 for (let i = 1; i<item.index; i+=1) {
-                    const prev = tokens[item.index-i];
+                    const prev = toks[item.index-i];
                     if (prev.text === ')') count += 1;
                     if (prev.text === '(') {
                         count -= 1;
                         if (count === 0) {
-                            const fn = tokens[item.index - i - 1];
+                            const fn = toks[item.index - i - 1];
                             const subquery = { ...query, token: fn };
                             member = this.findDefinition(subquery);
                             if (!member.found) {
@@ -1108,8 +1138,24 @@ export class ClassDatabase
 
     private findMemberDefinition(typeDefinition: TokenInformation, memberReference: TokenInformation): TokenInformation {
         if (!typeDefinition.ast) return { found: false };
+        const tofind = memberReference.token?.textLower;
+        if (typeDefinition.structDefinition) {
+            // handle struct type
+            for (const member of typeDefinition.structDefinition.members) {
+                if (member.name?.textLower === tofind) {
+                    return {
+                        token: member.name ?? undefined,
+                        ast: typeDefinition.ast,
+                        uri: typeDefinition.uri,
+                        structDefinition: typeDefinition.structDefinition,
+                        varDefinition: member,
+                        found: true,
+                    };
+                }
+            }
+        }
         for (const c of typeDefinition.ast.constants) {
-            if (c.name && c.name?.textLower === memberReference.token?.textLower)
+            if (c.name && c.name?.textLower === tofind)
             {
                 return {
                     token: c.name,
@@ -1121,7 +1167,7 @@ export class ClassDatabase
             }
         }
         for (const fn of typeDefinition.ast.functions) {
-            if (fn.name && fn.name?.textLower === memberReference.token?.textLower) {
+            if (fn.name && fn.name?.textLower === tofind) {
                 return {
                     token: fn.name,
                     ast: typeDefinition.ast,
@@ -1132,7 +1178,7 @@ export class ClassDatabase
             }
         }
         for (const v of typeDefinition.ast.variables) {
-            if (v.name && v.name.textLower === memberReference.token?.textLower) {
+            if (v.name && v.name.textLower === tofind) {
                 return {
                     token: v.name,
                     ast: typeDefinition.ast,
