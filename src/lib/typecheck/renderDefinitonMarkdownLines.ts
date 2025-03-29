@@ -82,7 +82,7 @@ function renderStructVar(ast: UnrealClass, struct: UnrealClassStruct, def: Unrea
     const result = ['(struct var) '];
     if (def.isConfig) result.push('config ');
     if (def.type) result.push(def.type.text, ' ');
-    if (ast?.name) result.push(ast.name.text, '.');
+    // if (ast?.name) result.push(ast.name.text, '.');
     if (struct?.name) result.push(struct.name.text, '.');
     if (def.name) result.push(def.name.text);
     return [`\t${result.join('')}`];

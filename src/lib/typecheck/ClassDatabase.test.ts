@@ -47,7 +47,7 @@ describe("definitions inside single file", () => {
             'struct MyStruct { var string Name; };',
             'const NOTHING = -1;',
             'var config string tag;',
-            'var config MyStruct MyStructVar;',
+            'var config MyStruct MyStructVar, MyVars[4];',
             '',
             'function PostBeginPlay(string name) {', // line 6
             '    local int i;',
@@ -59,6 +59,7 @@ describe("definitions inside single file", () => {
             '    Log(tag);',
             '    Log(NOTHING);',
             '    Log(MyStructVar.Name);', // 15
+            '    Log(MyVars[0].Name);',
             '}',
         ]);
     });
@@ -111,11 +112,23 @@ describe("definitions inside single file", () => {
             token: { text: 'Name', line: 1 }, 
             structDefinition: { name: { text: 'MyStruct' }},
             varDefinition: { name: { text: 'Name' }},
+        }],
+        [15, 22,  {
+            token: { text: 'Name', line: 1 }, 
+            structDefinition: { name: { text: 'MyStruct' }},
+            varDefinition: { name: { text: 'Name' }},
+        }],
+        [16, 20,  {
+            token: { text: 'Name', line: 1 }, 
+            structDefinition: { name: { text: 'MyStruct' }},
+            varDefinition: { name: { text: 'Name' }},
         }]
     ] as [number, number, TokenInformation][]
     )("at %p:%p results %p", (line, column, expected) => {
         const token = db.findSymbolToken(uri, line, column);
         const definition = db.findLocalFileDefinition(token);
+        expect(definition.found).toBe(true);
+        expect(definition.uri).toBe(uri);
         expect(definition).toMatchObject(expected);
     }));
 
@@ -127,7 +140,7 @@ describe("definitions inside single file", () => {
         [9, 9, ['\tfunction bool SomeClass.DebugPrint();']],
         [0, 9, ['\tclass SomeClass extends Info']],
         [1, 9, ['\tstruct MyStruct']],
-        [15, 22, ['\t(struct var) string SomeClass.MyStruct.Name']],
+        [15, 22, ['\t(struct var) string MyStruct.Name']],
     ] as [number, number, string[]][]
     )("at %p:%p is %p", (line, column, expected) => {
         const info = db.findLocalFileDefinition(db.findToken(uri, line, column));
@@ -524,11 +537,9 @@ describe("completion", () => {
             expectCompletions("MyObject.uc", 5, 9, { include: ["Object", "MyObject"]});
         });
 
-
         test('does not suggest clasnames after closing quote', () => {
             expectCompletions("MyObject.uc", 6, 18, { exclude: ["MyObject"]});
         });
-
 
     });
 

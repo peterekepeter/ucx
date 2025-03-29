@@ -756,7 +756,7 @@ export class ClassDatabase
                 }
             }
             if (member && member.found) {
-                return member;
+                result = member;
             }
         }
         if (!result && query.token.textLower === query.ast.name?.textLower) {
@@ -1274,9 +1274,34 @@ export class ClassDatabase
     {
         const stack = [tokens[index]];
         while (index > 1) {
-            if (!this.isMemberToken(tokens, index)) break;
-            stack.push(tokens[index - 2]);
-            index -= 2;
+            if (tokens[index-1].text === ".") {
+                if (index > 2 && tokens[index-2].text === "]") {
+                    // find opening bracket
+                    let found = false;
+                    for (let i=index-3; i>0; i-=1) {
+                        if (tokens[i].text === "[") {
+                            // found
+                            index = i-1;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        stack.push(tokens[index]);
+                        continue;
+                    }
+                    else {
+                        break;
+                    }
+                }
+                else {
+                    stack.push(tokens[index - 2]);
+                    index -= 2;
+                }
+            }
+            else {
+                break;
+            }
         }
         const chain = stack.reverse();
         return chain;
