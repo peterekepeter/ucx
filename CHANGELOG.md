@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.24.5
+- Definition for member of inherited struct can be looked up
+- Array subscript does not break member chain lookup
+- Quick local struct member definition lookup
+
 ### v0.24.4
 - Fix missing completion for constants names
 - Fix completion for inherited symbols when accessing as object member
