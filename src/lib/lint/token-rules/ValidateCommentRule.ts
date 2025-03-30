@@ -24,6 +24,10 @@ export class ValidateCommentRule implements TokenBasedLinterV2
                 }
                 this.inComment = true;
             }
+            else if (token.text === '*/')
+            {
+                this.inComment = false;
+            }
         }
         else {
             this.inComment = false;

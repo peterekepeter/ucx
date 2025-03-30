@@ -478,12 +478,15 @@ test('lint multiline comment with space is before function empty line is not req
     ]).hasNoLintResults();
 });
 
-test('lint multiline comment for multiple comment open', () => { linting([
+test('lint multiline comment open token inside multiline comment', () => { linting([
     'class Object; /* /* * * */'
 ], undefined, './something/Object.uc').hasResult({
     message: "Comment start token inside comment can crash unreal script compilers!"
 });});
 
+test('lint multiline comment after multiline comment', () => { linting([
+    'class Object; /* */  /* */'
+], undefined, './something/Object.uc').hasNoLintResults(); });
 
 test('lint operator not enough space before operator', () => { lintingStatements(
     'count= 0;'
