@@ -56,6 +56,8 @@ export function parseConfiguration(cfg: vscode.WorkspaceConfiguration): Extensio
                 cfg.get('linter.validateNamesRule.enabled') ?? DEFAULT_T.enableValidateNamesRule,
             enableKeywordCasingRule:
                 cfg.get('linter.keywordCasingRule.enabled') ?? DEFAULT_T.enableValidateStringRule,
+            enableValidateCommentRule:
+                cfg.get('linter.validateCommentRule.enabled') ?? DEFAULT_T.enableValidateCommentRule,
             checkReturnTypes:
                 cfg.get('linter.checkReturnTypes.enabled') ?? DEFAULT_A.checkReturnTypes,
             checkUnusedLocals:

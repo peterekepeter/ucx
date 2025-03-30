@@ -6,6 +6,7 @@ import { BracketSpacingRule } from "./BracketSpacingRule";
 import { KeywordCasingRule } from "./KeywordCasingRule";
 import { ValidateNamesRule } from "./ValidateNamesRule";
 import { ValidateStringRule } from "./ValidateStringRule";
+import { ValidateCommentRule } from "./ValidateCommentRule";
 
 
 export type TokenBasedLinterConfiguration = typeof DEFAULT_TOKEN_BASED_LINTER_CONFIGURATION;
@@ -15,6 +16,7 @@ export const DEFAULT_TOKEN_BASED_LINTER_CONFIGURATION = {
     enableValidateStringRule: true,
     enableValidateNamesRule: true,
     enableKeywordCasingRule: true,
+    enableValidateCommentRule: true,
     indentType: '\t' as IndentationType,
 };
 
@@ -55,4 +57,5 @@ function* configureChildren(config: TokenBasedLinterConfiguration): Iterable<Tok
     if (c.enableValidateStringRule) { yield new ValidateStringRule() }
     if (c.enableValidateNamesRule) { yield new ValidateNamesRule() }
     if (c.enableKeywordCasingRule) { yield new KeywordCasingRule() }
+    if (c.enableValidateCommentRule) { yield new ValidateCommentRule() }
 }

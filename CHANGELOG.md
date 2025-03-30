@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.25.0
+- Add error check for comment start token inside comment body
+
 ### v0.24.5
 - Definition for member of inherited struct can be looked up
 - Array subscript does not break member chain lookup
