@@ -79,33 +79,37 @@ export function resolveExpression(
 ): UnrealClassExpression | Token
 {
     var i: number, len = tokens.length;
-    var prev: ParserToken|undefined, next: ParserToken;
+    var prev: ParserToken|undefined, curr: ParserToken, next: ParserToken|undefined;
     for (i = 0; i < len; i += 1){
         prev = tokens[i - 1] as ParserToken | undefined;
-        next = tokens[i];
-        switch (next.textLower){           
+        curr = tokens[i];
+        next = tokens[i + 1] as ParserToken | undefined;
+        switch (curr.textLower){           
         case "super":
         case "self":
         case "new":
         case "static":
         case "default":
-            next.type = SemanticClass.Keyword;
+            curr.type = SemanticClass.Keyword;
             break;
         }
-        if (next.type === SemanticClass.LiteralName && prev && prev.type === SemanticClass.Identifier){
-            next.type = SemanticClass.ObjectReferenceName;
+        if (curr.type === SemanticClass.LiteralName && prev && prev.type === SemanticClass.Identifier){
+            curr.type = SemanticClass.ObjectReferenceName;
             prev.type = SemanticClass.ClassReference;
         }
-        if (next.type === SemanticClass.Operator && next.text === '<' && prev?.textLower === "class") {
+        else if (curr.type === SemanticClass.Operator && curr.text === '<' && prev?.textLower === "class") {
             prev.type = SemanticClass.TypeReference;
-            next.type = SemanticClass.GenericArgBegin;
+            curr.type = SemanticClass.GenericArgBegin;
         }
-        if (prev?.type === SemanticClass.GenericArgBegin) {
-            next.type = SemanticClass.ClassReference;
+        else if (prev?.type === SemanticClass.GenericArgBegin) {
+            curr.type = SemanticClass.ClassReference;
         }
-        if (prev?.type === SemanticClass.ClassReference && next.text === '>')
+        else if (prev?.type === SemanticClass.ClassReference && curr.text === '>')
         {
-            next.type = SemanticClass.GenericArgEnd;
+            curr.type = SemanticClass.GenericArgEnd;
+        }
+        else if (curr.type === SemanticClass.Identifier && next?.type !== SemanticClass.LiteralName && next?.text !== "(") {
+            curr.type = SemanticClass.VariableReference;
         }
     }
     return resolveSubExpression(tokens, 0, len);

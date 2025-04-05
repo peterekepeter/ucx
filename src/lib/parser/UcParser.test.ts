@@ -314,7 +314,7 @@ test("parse static function call", () => { parsing(`
         ['.', C.None],
         ['static', C.Keyword],
         ['.', C.None],
-        ['Log', C.FunctionReference],
+        ['Log', C.FunctionReference],   
     );
 });
 
@@ -326,13 +326,13 @@ test("parse nested function call", () => { parsing(`
     .hasTokens(
         ['Render', C.FunctionReference], 
         ['(', C.None], 
-        ['a', C.Identifier], 
+        ['a', C.VariableReference], 
         [',', C.None], 
         ['GetData', C.FunctionReference], 
         ['(', C.None], 
-        ['b', C.Identifier], 
+        ['b', C.VariableReference], 
         [',', C.None], 
-        ['c', C.Identifier], 
+        ['c', C.VariableReference], 
         [')', C.None], 
         [')', C.None], 
     );
@@ -403,8 +403,13 @@ test("parse if statement", () => { parsing(`
             body: [{
                 op: "Init"
             }]
-        }] 
-    });
+        }]
+    })
+    .hasTokens(
+        ['if', C.Keyword],
+        ['(', C.None],
+        ['bFirstRun', C.VariableReference],
+    );
 });
 
 

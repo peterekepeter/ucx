@@ -68,7 +68,7 @@ test('tokens else if recognized as keyowrds', () => parsing(`
     ["else", C.Keyword],
     ["if", C.Keyword],
     ["(", C.None],
-    ["bAnotherFeature", C.Identifier]
+    ["bAnotherFeature", C.VariableReference]
 ));
 
 test('tokens static function', () => parsing(`

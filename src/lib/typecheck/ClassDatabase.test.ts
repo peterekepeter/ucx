@@ -747,7 +747,7 @@ describe("completion", () => {
 
 describe("references", () => {
     
-    describe("local variable references", () => {
+    describe("inside single file", () => {
 
         beforeAll(() => {
             reset();
@@ -958,6 +958,32 @@ describe("references", () => {
                 ["SpecialCustomHud.uc", 4, 8, "END"], // forward reference
             ]);
         });
+
+    });
+    
+    test("class bool var inside iff", () => {
+        reset();
+        ast("TestIfRef.uc", 1, [
+            "class TestIfRef extends Object;",
+            "",
+            "var bool bEnabled;", //2
+            "",
+            "function TestIfRef(bool bThird) ", //4
+            "{",
+            "    local bool bSecond;",
+            "    ",
+            "    bSecond = True;",
+            "    ",
+            "    if ( bEnabled && bSecond && bThird ) ", // 10
+            "        Log(\"Is enabled \"$bEnabled);", // 11
+            "    ",
+            "}",
+        ]);
+        expectReferences("TestIfRef.uc", 2, 13, "bEnabled", [
+            ["TestIfRef.uc", 2, 9, "bEnabled"],
+            ["TestIfRef.uc", 10, 9, "bEnabled"],
+            ["TestIfRef.uc", 11, 26, "bEnabled"],
+        ]);
 
     });
 

@@ -22,7 +22,7 @@ function foldConstantsInVariableDeclaration(editor: SourceEditor, variable: Unre
     }
     if ('text' in variable.arrayCountExpression){
         const token = variable.arrayCountExpression;
-        if (token.type === SemanticClass.Identifier)
+        if (token.type === SemanticClass.VariableReference)
         {
             replaceTokenWithConstantValue(editor, token, uc);
         }

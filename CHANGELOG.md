@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.25.1
+- Fix lookup of first var inside if statement
+
 ### v0.25.0
 - Add error check for comment start token inside comment body
 
