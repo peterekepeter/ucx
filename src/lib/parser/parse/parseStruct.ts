@@ -1,18 +1,25 @@
 import { UcParser } from "..";
 import { createEmptyStruct } from "../ast/UnrealClassStruct";
-import { createEmptyUnrealClassVariable } from "../ast/UnrealClassVariable";
 import { SemanticClass as C } from "../token";
 import { Token } from "../types";
-import { parseEnumKeyword } from "./parseEnum";
 import { clearModifiers } from "./parseModifiers";
 import { parseNoneState } from "./parseNoneState";
+import { parseVarBegin } from "./parseVar";
 
 
 export function parseStructKeyword(parser: UcParser, token: Token){
+    const struct = createEmptyStruct(token);
     parser.rootFn = parseStructDeclaration;
-    parser.result.structs.push(createEmptyStruct(token));
+    parser.result.structs.push(struct);
+    parser.currentStruct = struct;
     token.type = C.Keyword;
     clearModifiers(parser);
+    if (parser.currentVar || parser.currentVarScope) {
+        parser.parentVar = parser.currentVar;
+        parser.parentVarScope = parser.currentVarScope;
+        parser.currentVar = null;
+        parser.currentVarScope = null;
+    }
 }
 
 function parseStructDeclaration(parser: UcParser, token: Token) {
@@ -44,31 +51,33 @@ function parseStructBodyBegin(parser: UcParser, token: Token) {
     parser.rootFn = parseStructBody;
 }
 
-function parseStructBody(parser: UcParser, token: Token) {
+export function parseStructBody(parser: UcParser, token: Token) {
     switch (token.textLower){
     case 'var':
-        const variable = createEmptyUnrealClassVariable();
-        variable.firstToken = token;
-        variable.lastToken = token;
-        parser.lastStruct.members.push(variable);
-        token.type = C.Keyword;
-        parser.lastStruct.lastToken = token;
-        parser.rootFn = parseStructVar;
+        parseVarBegin(parser, token);
         break;
     case '}': 
         parser.rootFn = parseStructBodyClosed;
         parser.lastStruct.lastToken = token;
         parser.lastStruct.bodyLastToken = token;
+        parser.currentStruct = null;
         break;
     }
 }
 
 function parseStructBodyClosed(parser: UcParser, token: Token) {
     if (parser.typedefReturnFn != null){
+        if (parser.parentVar || parser.parentVarScope) {
+            parser.currentVar = parser.parentVar;
+            parser.currentVarScope = parser.parentVarScope;
+            parser.parentVar = null;
+            parser.parentVarScope = null;
+        }
         parser.typedefReturnFn(parser, token);
         return;
     }
     parser.rootFn = parseNoneState;
+    parser.currentStruct = null;
     if (token.text !== ';')
     {
         parser.result.errors.push({
@@ -76,69 +85,4 @@ function parseStructBodyClosed(parser: UcParser, token: Token) {
         });
         parseNoneState(parser, token);
     }
-}
-
-function parseStructVar(parser: UcParser, token: Token) {
-    const member = parser.lastStructMember;
-    switch (token.textLower){
-    case 'transient': 
-        member.isTransient = true;
-        token.type = C.Keyword;
-        break;
-    case 'localized':
-        member.localized = true;
-        token.type = C.Keyword;
-        break;
-    case 'const':
-        member.isConst = true;
-        token.type = C.Keyword;
-        break;
-    case 'globalconfig':
-        member.isConfig = true;
-        token.type = C.Keyword;
-        break;
-    case 'config':
-        member.isConfig = true;
-        token.type = C.Keyword;
-        break;
-    case 'enum':
-        parser.typedefReturnFn = parseReturnFromEnum;
-        parseEnumKeyword(parser, token);
-        break;
-    case '(':
-        parser.rootFn = parseStructVarGroup;
-        break;
-    default:
-        member.type = token;
-        token.type = C.TypeReference;
-        parser.rootFn = parseStructVarName;
-        break;
-    }
-}
-
-function parseStructVarGroup(parser: UcParser, token: Token) {
-
-    switch (token.text)
-    {
-    case ')':
-        parser.rootFn = parseStructVar;
-        break;
-    default:
-        parser.lastStructMember.group = token;
-        break;
-    }
-}
-
-function parseStructVarName(parser: UcParser, token: Token) {
-    const member = parser.lastStructMember;
-    member.name = token;
-    parser.rootFn = parseStructBody;
-    token.type = C.StructMemberDeclaration;
-}
-
-function parseReturnFromEnum(parser: UcParser, token: Token) {
-    parser.typedefReturnFn = null;
-    const member = parser.lastStructMember;
-    member.type = parser.lastEnum.name;
-    parseStructVarName(parser, token);
 }

@@ -376,7 +376,7 @@ describe("definition across files", () => {
 
 });
 
-describe.skip("definition chain complex", () => {
+describe("definition chain complex", () => {
 
     const uriMessage = "Game/Classes/Message.uc";
     const uriHUD = "Game/Classes/HUD.uc";
@@ -405,13 +405,15 @@ describe.skip("definition chain complex", () => {
         ]);
     });
 
-    const classDefMessage = { token: { text: 'Message', line: 0 }, uri: uriMessage };
-    const renderComplexDef = { token: { text: 'RenderComplexMessage', line: 2}, uri: uriMessage };
+    const defMessage = { token: { text: 'Message', line: 0 }, uri: uriMessage };
+    const defMember = { token: { text: 'Message', line: 3 }, uri: uriHUD };
+    const defFunction = { token: { text: 'RenderComplexMessage', line: 2}, uri: uriMessage };
 
     // find definition
     test.each([
-        ['find generic class', 3, 17, classDefMessage],
-        ['find static function of generic struct member', 9, 52, renderComplexDef],
+        ['find generic class', 3, 17, defMessage],
+        ['find struct member', 3, 26, defMember],
+        ['find static function of generic struct member', 9, 52, defFunction],
     ] as [string, number, number, TokenInformation][]
     )("findCrossFileDefinition finds %p at %p:%p", (_, line, column, expected) => {
         const token = db.findToken(uriHUD, line, column);

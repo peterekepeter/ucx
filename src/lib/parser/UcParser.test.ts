@@ -1241,7 +1241,7 @@ test("parse var with inline struct declaration", () => { parsing(`
         var float       Time;
         var string      Text;
     } Beacons[32];`)
-    .hasStruct(0, { name: 'BeaconInfo' })
+    .hasStruct(0, { name: 'BeaconInfo', members: [{ name: 'Addr' }, { name: 'Time'}, { name: 'Text' }] })
     .hasVariable(0, 'BeaconInfo', 'Beacons', { array: 32 })
     .hasNoErrors();
 ;});

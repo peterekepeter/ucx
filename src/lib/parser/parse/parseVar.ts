@@ -1,4 +1,4 @@
-import { ParserToken as Token } from "../";
+import { ParserToken, ParserToken as Token } from "../";
 import { createEmptyUnrealClassVariable, createEmptyUnrealClassVariableDeclarationScope, UnrealClassVariable } from "../ast/UnrealClassVariable";
 import { SemanticClass as C } from "../token/SemanticClass";
 import { UcParser } from "../UcParser";
@@ -18,15 +18,24 @@ export function parseVarBegin(parser: UcParser, token: Token)
         scope.firstToken = token;
         variable.lastToken = token;
         scope.lastToken = token;
+
+        if (parser.currentStruct) 
+        {
+            parser.currentStruct.members.push(variable);
+        }
+        else {
+            parser.result.variables.push(variable);
+            parser.result.variableScopes.push(scope);
+        }
+        parser.currentVar = variable;
+        parser.currentVarScope = scope;
+
         parser.rootFn = parseVarDeclaration;
-        parser.result.variables.push(variable);
-        parser.result.variableScopes.push(scope);
         token.type = C.Keyword;
         clearModifiers(parser);
     }
     else {
-        parser.result.errors.push({ message: 'Not variable declaration', token });
-        parser.rootFn = parseNoneState;
+        exitParseVarWithError(parser, token, 'Not variable declaration');
     }
 }
 
@@ -106,15 +115,11 @@ function parseVarName(parser: UcParser, token: Token) {
         token.type = C.GenericArgBegin;
         break;
     case ';':
-        const message = 'Expected variable name varname of ";"';
-        parser.result.errors.push({ token, message });
-        parser.rootFn = parseNoneState;
-        variable.lastToken = token;
-        parser.lastVarScope.lastToken = token;
+        exitParseVarWithError(parser, token, 'Expected variable name varname of ";"');
         break;
     default:
         if (parseVarCheckSuddenTerminationAndRecover(parser, token)) return;
-        token.type = C.ClassVariable;
+        token.type = parser.currentStruct ? C.StructMemberDeclaration : C.ClassVariable;
         variable.name = token;
         parser.rootFn = parseVarNext;
         break;
@@ -125,11 +130,7 @@ function parseTemplateName(parser: UcParser, token: Token) {
     const variable = parser.lastVar;
     switch (token.text) {
     case ';':
-        const message = 'Expected variable name isntead of ";"';
-        parser.result.errors.push({ token, message });
-        parser.rootFn = parseNoneState;
-        variable.lastToken = token;
-        parser.lastVarScope.lastToken = token;
+        exitParseVarWithError(parser, token, 'Expected variable name isntead of ";"');
         break;
     case '>':
         parser.rootFn = parseVarName;
@@ -148,11 +149,7 @@ function parseAfterTemplateName(parser: UcParser, token: Token) {
     const variable = parser.lastVar;
     switch (token.text) {
     case ';':
-        const message = 'Expected ">"';
-        parser.result.errors.push({ token, message });
-        parser.rootFn = parseNoneState;
-        variable.lastToken = token;
-        parser.lastVarScope.lastToken = token;
+        exitParseVarWithError(parser, token, 'Expected ">"');
         break;
     case '>':
         parser.rootFn = parseVarName;
@@ -178,9 +175,7 @@ function parseVarNext(parser: UcParser, token: Token) {
         parser.rootFn = parseExtraVariable;
         break;
     case ';':
-        variable.lastToken = token;
-        parser.lastVarScope.lastToken = token;
-        parser.rootFn = parseNoneState;
+        exitParseVar(parser, token);
         break;
     default:
         parseVarCheckSuddenTerminationAndRecover(parser, token, true);
@@ -194,9 +189,8 @@ function parseVarCheckSuddenTerminationAndRecover(parser: UcParser, token: Token
     case 'event':
         if (isErrorForSure || parser.lastVar.firstToken?.line !== token.line) 
         {
-            // assume not part of same decl
-            parser.result.errors.push({ token, message: 'Expecting ";" after variable declaration.' });
-            parseNoneState(parser, token);
+            exitParseVarWithError(parser, token, 'Expecting ";" after variable declaration.');
+            parser.rootFn(parser, token);
             return true;
         }
     }
@@ -224,17 +218,17 @@ function parseArrayCount(parser: UcParser, token:Token){
     switch (token.text){
     case 'function':
     case 'event':
-        parser.result.errors.push({ token, message: 'Expecting ";" after variable declaration.' });
-        parseNoneState(parser, token);
+        exitParseVarWithError(parser, token, 'Expecting ";" after variable declaration.');
+        parser.rootFn(parser, token);
         break;
     case ';':
     case ']':
         variable.arrayCountExpression = resolveExpression(parser.expressionTokens);
         if ('text' in variable.arrayCountExpression)
         {
-            const token = variable.arrayCountExpression;
-            variable.arrayCountToken = token;
-            variable.arrayCount = parseInt(token.text);
+            const tok = variable.arrayCountExpression;
+            variable.arrayCountToken = tok;
+            variable.arrayCount = parseInt(tok.text);
         }
         parser.expressionTokens.length = 0;
         parseAfterArrayCount(parser, token);
@@ -253,14 +247,10 @@ function parseAfterArrayCount(parser: UcParser, token:Token){
         parser.rootFn = parseVarNext;
         break;
     case ';':
-        variable.lastToken = token;
-        parser.lastVarScope.lastToken = token;
-        parser.rootFn = parseNoneState;
-        parser.result.errors.push({ token, message: "Expected ']' before ';'"});
+        exitParseVarWithError(parser, token, "Expected ']' before ';'");
         break;
     default:
-        parser.rootFn = parseVarNext;
-        parser.result.errors.push({ token, message: "Expected ']'"});
+        exitParseVarWithError(parser, token, "Expected ']'");
         break;
     }
 }
@@ -293,6 +283,18 @@ function consumeAndProcessVariableModifiers(parser: UcParser, variable: UnrealCl
     clearModifiers(parser);
 }
 
+function exitParseVarWithError(parser: UcParser, token: ParserToken, message: string) {
+    parser.result.errors.push({ message, token });
+    exitParseVar(parser, token);
+}
+
+function exitParseVar(parser: UcParser, token: ParserToken) {
+    parser.lastVar.lastToken = token;
+    parser.lastVarScope.lastToken = token;
+    parser.currentVar = null;
+    parser.currentVarScope = null;
+    parser.rootFn = parseNoneState;
+}
 
 export function hasIncompleteVarDeclaration(parser: UcParser)
 {

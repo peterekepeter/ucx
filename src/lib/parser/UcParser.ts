@@ -30,8 +30,13 @@ export class UcParser{
     modifiers: Token[] = [];
     fnArgTokens: Token[] = [];
     isMultilineComment = false;
+    currentStruct: UnrealClassStruct | null = null;
     currentClassState: UnrealClassState | null = null;
     currentlyInStateFunction: boolean = false;
+    currentVar: UnrealClassVariable | null = null;
+    currentVarScope: UnrealClassVariableDeclarationScope | null = null;
+    parentVar: UnrealClassVariable | null = null;
+    parentVarScope: UnrealClassVariableDeclarationScope | null = null;
 
     getAst() {
         return this.result;
@@ -120,12 +125,14 @@ export class UcParser{
         }
     }
 
-    get lastVar() : UnrealClassVariable {
-        return this.result.variables[this.result.variables.length - 1];
+    get lastVar(): UnrealClassVariable {
+        if (!this.currentVar) throw new Error("variable parse error");
+        return this.currentVar;
     }
 
     get lastVarScope(): UnrealClassVariableDeclarationScope {
-        return this.result.variableScopes[this.result.variableScopes.length - 1];
+        if (!this.currentVarScope) throw new Error("variable scope parse error");
+        return this.currentVarScope;
     }
 
     get lastEnum() : UnrealClassEnum {

@@ -223,6 +223,29 @@ test('generic type parsing', () => {
     );
 });
 
+test('struct type parsing', () => {
+    const ast = parsing(`
+        struct HUDMessageExtended { 
+            var float Duration;
+            var Class<Actor> Message;
+        }
+    `);
+    ast.hasTokens(
+        ['struct', C.Keyword],
+        ['HUDMessageExtended', C.StructDeclaration],
+        ['{', C.None],
+        ['var', C.Keyword],
+        ['float', C.TypeReference],
+        ['Duration', C.StructMemberDeclaration],
+        [';', C.None],
+        ['var', C.Keyword],
+        ['Class', C.TypeReference],
+        ['<', C.GenericArgBegin],
+        ['Actor', C.ClassReference],
+        ['>', C.GenericArgEnd],
+        ['Message', C.StructMemberDeclaration],
+    );
+});
 
 function parsing(input: string) {
     const parser = new UcParser();

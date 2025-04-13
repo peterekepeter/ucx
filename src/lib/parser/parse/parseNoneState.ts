@@ -11,11 +11,16 @@ import { parseState, parseStateBody } from "./parseState";
 import { clearModifiers, isModifier, parseModifier } from "./parseModifiers";
 import { parseReplicationBlockBegin } from "./parseReplication";
 import { parseVarBegin } from "./parseVar";
-import { parseStructKeyword } from "./parseStruct";
+import { parseStructBody, parseStructKeyword } from "./parseStruct";
 import { createDefaultUnrealClassState } from "../ast";
 
 
 export function parseNoneState(parser: UcParser, token: Token) {
+    if (parser.currentStruct) {
+        parser.rootFn = parseStructBody;
+        parseStructBody(parser, token);
+        return;
+    }
     if (parser.currentClassState){
         parser.rootFn = parseStateBody;
         parseStateBody(parser, token);

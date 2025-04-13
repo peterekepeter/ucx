@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.25.2
+- Fix lookup of static functions inside generic class reference
+
 ### v0.25.1
 - Fix lookup of first var inside if statement
 

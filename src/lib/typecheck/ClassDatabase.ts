@@ -697,7 +697,7 @@ export class ClassDatabase
         }
         if (!result && this.isTypeQuery(query)) {
             // struct may be in same file
-            result = this.findClassScopedSymbol(query.token.textLower, query.ast);
+            result = this.findClassScopedSymbol(query.token, query.ast);
             if (!result?.structDefinition) {
                 // looking for a type in this file
                 return { found: false }; // HACK assume types are always across files
@@ -713,7 +713,7 @@ export class ClassDatabase
                 result = this.findStateScopedSymbol(query);
             }
             if (!result) {
-                result = this.findClassScopedSymbol(query.token.textLower, query.ast);
+                result = this.findClassScopedSymbol(query.token, query.ast);
             }
         }
         else {
@@ -870,11 +870,11 @@ export class ClassDatabase
     private findInheritedSybol(query: TokenInformation) {
         let location: TokenInformation | undefined = query;
         let symbolName = query.token?.textLower;
-        if (!symbolName) return;
+        if (!symbolName || !query.token) return;
         while (location?.ast?.parentName) {
             location = this.findClassDefinitionStr(location.ast.parentName.textLower);
             if (!location.found || !location.ast) break;
-            const symbol = this.findClassScopedSymbol(symbolName, location.ast);
+            const symbol = this.findClassScopedSymbol(query.token, location.ast);
             if (symbol?.token) {
                 symbol.found = true;
                 symbol.uri = location.uri;
@@ -1050,7 +1050,6 @@ export class ClassDatabase
         const tokens = query.ast.tokens;
         let index = tokens.indexOf(query.token);
         const chain = this.getMemberChain(tokens, index);
-
         let type: TokenInformation|null = null;
         let member: TokenInformation|null = null;
         for (const item of chain) {
@@ -1082,9 +1081,7 @@ export class ClassDatabase
                     continue;
                 }
             }
-            
-            if (item.type === SemanticClass.Keyword && 
-                (item.textLower === 'static' || item.textLower === 'default')) {
+            if (item.textLower === 'static' || item.textLower === 'default') {
                 if (!type) {
                     // standalone keyword references current type
                     type = {
@@ -1106,7 +1103,7 @@ export class ClassDatabase
                 // look inside class of member
                 if (member.classDefinition) {
                     // member already a class
-                    type = member;
+                    type = member; // redundant branch
                 }
                 else {
                     type = this.findTypeOfDefinition(member);
@@ -1261,8 +1258,9 @@ export class ClassDatabase
             });
         }
         if (d.varDefinition && d.varDefinition.type) {
+            const lookfor = d.varDefinition.template ?? d.varDefinition.type;
             return this.findDefinition({
-                token: d.varDefinition.type,
+                token: lookfor,
                 ast: d.ast, 
                 uri: d.uri, 
             });
@@ -1348,14 +1346,20 @@ export class ClassDatabase
         }
     }
 
-    private findClassScopedSymbol(name: string, ast: UnrealClass): TokenInformation|undefined {
+    private findClassScopedSymbol(tok: ParserToken, ast: UnrealClass): TokenInformation|undefined {
+        if (tok.type === SemanticClass.ClassReference) {
+            if (ast.name?.textLower === tok.textLower) {
+                return { token: ast.name, classDefinition: ast };
+            }
+            else {
+                return;
+            }
+        }
+        const name = tok.textLower;
+        // assumes nameLower has been lowercased already
         for (const variable of ast.variables) 
             if (variable.name?.textLower === name) 
-                return {
-                    found: true,
-                    token: variable.name,
-                    varDefinition: variable,
-                };
+                return { token: variable.name, varDefinition: variable };
         for (const fn of ast.functions)
             if (fn.name?.textLower === name)
                 return { token: fn.name, fnDefinition: fn };
@@ -1366,6 +1370,11 @@ export class ClassDatabase
         for (const s of ast.structs) {
             if (s.name?.textLower === name) 
                 return { token: s.name, structDefinition: s };
+            for (const member of s.members) {
+                if (member.name?.textLower === name) {
+                    return { token: member.name, structDefinition: s, varDefinition: member };
+                }
+            }
         }
     }
 
