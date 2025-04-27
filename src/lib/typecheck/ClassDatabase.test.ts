@@ -466,12 +466,25 @@ describe("completion", () => {
             ast("MyOther.uc", 1, [
                 'class MyOther;',
                 '',
+                'struct ExtendedConfigItem extends ConfigItem {', 
+                '   var string Default;',
+                '};',
+                '',
+                'struct ConfigItem {', 
+                '   var string Key;',
+                '   var string Value;',
+                '};',
+                '',
+                'var config ConfigItem single;',
+                'var config ConfigItem multi[1024];',
+                'var config ExtendedConfigItem ext;',
+                '',
                 'function Update(){}',
             ]);
             ast("MyClass.uc", 1, [
                 'class MyClass extends MyOther;',
                 '',
-                'var MyOther VObj;',
+                'var MyOther VObj, Many[1024];',
                 '',
                 'function Test(MyOther PObj) {', // line 4
                 '    local MyOther LObj; LObj = PObj;',
@@ -483,6 +496,10 @@ describe("completion", () => {
                 '    super.;', // line 11 char 10
                 '    default.;', // line 12 char 12
                 '    4.;',  // line 13 char 6
+                '    Many[0].;', // line 14 char 12
+                '    Many[0].single.;', // line 15 char 19
+                '    Many[0].multi[0].;', // line 16 char 21
+                '    VObj.ext.', // line 17 char 13
                 '}',
             ]);
         });
@@ -513,6 +530,22 @@ describe("completion", () => {
 
         test('no completions for dot in floating point numbers', () => {
             expectCompletions("MyClass.uc", 13, 6, { count: 0 });
+        });
+
+        test('completions after array subscript', () => {
+            expectCompletion("MyClass.uc", 14, 2, "Update");
+        });
+
+        test('struct member completion', () => {
+            expectCompletions("MyClass.uc", 15, 19, { include: ["Key", "Value"], exclude: ["Update", "single", "cfg"] });
+        });
+
+        test('struct array member completion', () => {
+            expectCompletions("MyClass.uc", 16, 21, { include: ["Key", "Value"], exclude: ["Update", "single", "cfg"] });
+        });
+
+        test('struct inherited member completion', () => {
+            expectCompletions("MyClass.uc", 17, 13, { include: ["Key", "Value", "Default"], exclude: ["Update", "single", "cfg"] });
         });
         
     });

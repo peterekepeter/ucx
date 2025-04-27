@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.25.3
+- Fix missing completion for struct member fields
+
 ### v0.25.2
 - Fix lookup of static functions inside generic class reference
 

@@ -45,6 +45,8 @@ export class CompletionProvider implements vscode.CompletionItemProvider {
             return CompletionItemKind.Function;
         case SemanticClass.ClassConstant:
             return CompletionItemKind.Constant;
+        case SemanticClass.StructMember:
+            return CompletionItemKind.Field;
         default: 
             return CompletionItemKind.Text;
         }

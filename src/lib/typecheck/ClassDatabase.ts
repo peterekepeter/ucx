@@ -177,12 +177,37 @@ export class ClassDatabase
             }
             else if (before.token.type === SemanticClass.None && before.token.text === ".")
             {
-                const beforeDot = ast.tokens[before.token.index - 1];
+                let index = before.token.index - 1;
+                let beforeDot = ast.tokens[index];
+                let count = 0;
+                while (beforeDot && (beforeDot.text === ']' || count > 0)) {
+                    const txt = ast.tokens[index].text;
+                    if (txt === ']') count += 1;
+                    else if (txt === '[') count -= 1;
+                    index -= 1;
+                    beforeDot = ast.tokens[index];
+                }
                 if (beforeDot) {
                     const token = this.findToken(uri, beforeDot.line, beforeDot.position);
                     const symboldef = this.findDefinition(token);
                     let typedef = this.findTypeOfDefinition(symboldef);
                     let results: CompletionInformation[][] = [];
+                    while (typedef.structDefinition) {
+                        results.push(typedef.structDefinition.members.map(m => ({
+                            label: m.name?.text ?? '',
+                            kind: SemanticClass.StructMember,
+                        })));
+                        const parentStructName = typedef.structDefinition.parentName;
+                        if (!parentStructName) {
+                            typedef = { found: false };
+                            break;
+                        }
+                        typedef = this.findInheritedTypeSynmbol({ 
+                            token: parentStructName,
+                            ast: before.ast, 
+                            structDefinition: before.structDefinition, 
+                        });
+                    }
                     while (typedef.ast) {
                         results.push(
                             typedef.ast.functions.map(f => ({
@@ -1356,7 +1381,6 @@ export class ClassDatabase
             }
         }
         const name = tok.textLower;
-        // assumes nameLower has been lowercased already
         for (const variable of ast.variables) 
             if (variable.name?.textLower === name) 
                 return { token: variable.name, varDefinition: variable };
