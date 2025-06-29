@@ -191,6 +191,18 @@ test('lint indent if with function call in condition', () => {
     ]).isAlreadyWellFormatted();
 });
 
+test.skip('lint indent nested if else without brackets', () => {
+    lintingStatements(
+    	'if ( a )',
+        '    if ( b )',
+        '        Log("a+b");',
+        '    else',
+        '        Log("a+!b");',
+        'else',
+        '    Log("!a");',
+    ).isAlreadyWellFormatted();
+});
+
 test("lint keyword casing", () => {
     linting([
         'Class Test ExPands Actor;',
