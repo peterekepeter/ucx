@@ -25,12 +25,13 @@ export class OperatorSpacing implements AstBasedLinter
             const isStringConcat = token.text === '$' || token.text === '@';
             const isIncrementDecrement = token.text === '++' || token.text === '--';
             const prevIsParen = prev?.text === '(';
+            const isPreceededByOperator = prev.type === C.Operator;
             if (prev && prev.line === token.line && !prevIsParen)
             {
                 // handle space before operator
                 const prevEnd = prev.position + prev.text.length;
                 const distance = token.position - prevEnd;
-                const expectedDistance = isInDefaultProperties || isStringConcat || isIncrementDecrement ? 0 : 1;
+                const expectedDistance = isInDefaultProperties || isStringConcat || (isIncrementDecrement && !isPreceededByOperator) ? 0 : 1;
                 if (distance !== expectedDistance){
                     const message = expectedDistance === 0 
                         ? 'Expected no space before operator' 

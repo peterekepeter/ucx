@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.25.4
+- Fix spacing conflict between assignment and preincrement operators
+
 ### v0.25.3
 - Fix missing completion for struct member fields
 

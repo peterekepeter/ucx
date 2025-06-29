@@ -5,3 +5,4 @@ node_modules
 *.vsix
 src/lib/coverage
 README.md
+testdata

@@ -516,6 +516,10 @@ test('lint operator space just right', () => { lintingStatements(
     'count = 0;'
 ).hasNoLintResults();});
 
+test('lint operator space just right preincrement after assign', () => { lintingStatements(
+    'count = ++count;'
+).hasNoLintResults();});
+
 test('lint operator space is not removed after subtracting from paren', () => { lintingStatements(
     'x = (a >> 1) - c;',
 ).hasFormattedResult(statementWrapper(
