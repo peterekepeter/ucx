@@ -191,7 +191,7 @@ test('lint indent if with function call in condition', () => {
     ]).isAlreadyWellFormatted();
 });
 
-test('lint indent nested if else without brackets', () => {
+test('lint indent nested if else without braces', () => {
     lintingStatements(
         'if ( a )',
         '    if ( b )',
@@ -202,6 +202,32 @@ test('lint indent nested if else without brackets', () => {
         '    Log("!a");',
     ).isAlreadyWellFormatted();
 });
+
+test('lint indent nested else without braces', () => {
+    lintingStatements(
+        'if ( a )',
+        '    if ( b )',
+        '        return 0;',
+        '    else',
+        '        return 1;',
+        'else',
+        '    if ( c )',
+        '        return 2;',
+        '    else',
+        '        return 3;',
+    ).isAlreadyWellFormatted();
+})
+
+test('lint indent chained if else without braces', () => {
+    lintingStatements(
+        'if ( a )',
+        '    return 0;',
+        'else if ( c )',
+        '    return 2;',
+        'else',
+        '    return 3;',
+    ).isAlreadyWellFormatted();
+})
 
 test("lint keyword casing", () => {
     linting([

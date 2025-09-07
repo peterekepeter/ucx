@@ -637,7 +637,7 @@ test("parse if statement without brackets", () => { parsing(`
 });
 
 
-test("parse if else without brackets", () => { parsing(`
+test("parse if else without braces", () => { parsing(`
     function PreBeginPlay(){
         if (bFirstRun)
             Init();
@@ -664,7 +664,7 @@ test("parse if else without brackets", () => { parsing(`
 });
 
 
-test("parse nested if else without brackets", () => { parsing([
+test("parse nested if else without braces", () => { parsing([
     'function Test(){',
     '   if ( a )',
     '       if ( b )',
@@ -691,6 +691,45 @@ test("parse nested if else without brackets", () => { parsing([
         }, {
             op: "else",
             body: [{ op: "Log", args: ['"!a"']}]
+        }]
+    })
+})
+
+
+test("parse nested else branch without braces", () => { parsing(`
+    event Test()
+    {
+        if ( a ) 
+            if ( b )
+                return 0;
+            else 
+                return 1;
+        else
+            if (c)
+                return 2;
+            else
+                return 3;
+    }`)
+    .hasNoErrors()
+    .hasFunction(0, {
+        body: [{
+            op: "if", args: ["a"],
+            body: [{
+                op: "if", args: ["b"],
+                body: [{ op: "return", args: ['0']}]
+            }, {
+                op: "else",
+                body: [{ op: "return", args: ['1']}]
+            }]
+        }, {
+            op: "else",
+            body: [{
+                op: "if", args: ["c"],
+                body: [{ op: "return", args: ['2']}]
+            }, {
+                op: "else",
+                body: [{ op: "return", args: ['3']}]
+            }]
         }]
     })
 })
@@ -1717,7 +1756,7 @@ function Test() {
     });
 });
 
-test('parse for inside if without brackets', () => {parsing(`
+test('parse for inside if without braces', () => {parsing(`
     function Test(){
         position="before";
         if(bActive)

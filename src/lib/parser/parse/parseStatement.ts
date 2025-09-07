@@ -5,17 +5,6 @@ import { parseNoneState } from "./parseNoneState";
 import { resolveExpression, resolveStatementExpression } from "./resolveExpression";
 
 
-function debugfmt(sts: UnrealClassStatement[], depth=0): string {
-    const out = [];
-    for (const st of sts) {
-        out.push(`${'          '.slice(0,depth*3)}${st.op?.text} ${st.args.map(a=>'text' in a ? a.text : '[sub]').join(',')}\n`)
-        if (st.body && st.body.length) {
-            out.push(debugfmt(st.body, depth+1));
-        }
-    }
-    return out.join('');
-}
-
 export function parseStatement(parser: UcParser, token: Token)
 {
     switch(token.textLower)
@@ -274,9 +263,10 @@ function parseControlStatement(parser: UcParser, token: Token)
         endStatementBlockOrFunctionBlock(parser, token);
         break;
     case "if":
-        if (parser.lastStatement.op?.textLower === 'else')
+        if (parser.lastStatement.op?.textLower === 'else' 
+            && token.line === parser.lastStatement.op?.line)
         {
-            // this is an else if
+            // treat this as a chained elif instead of tree
             token.type = C.Keyword;
             break;
         }
