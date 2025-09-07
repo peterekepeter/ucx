@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.25.5
+- Fix nested if else parsing when not using braces
+
 ### v0.25.4
 - Fix spacing conflict between assignment and preincrement operators
 

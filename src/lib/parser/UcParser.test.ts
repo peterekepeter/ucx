@@ -664,6 +664,38 @@ test("parse if else without brackets", () => { parsing(`
 });
 
 
+test("parse nested if else without brackets", () => { parsing([
+    'function Test(){',
+    '   if ( a )',
+    '       if ( b )',
+    '           Log("a+b");',
+    '       else',
+    '           Log("a+!b");',
+    '   else',
+    '       Log("!a");',
+    '}',
+    ].join('\n'))
+    .hasNoErrors()
+    .hasFunction(0, {
+        body: [{
+            op: "if",
+            args: ["a"],
+            body: [{
+                op: "if",
+                args: ["b"],
+                body: [{ op: "Log", args: ['"a+b"']}]
+            }, {
+                op: "else",
+                body: [{ op: "Log", args: ['"a+!b"']}]
+            }]
+        }, {
+            op: "else",
+            body: [{ op: "Log", args: ['"!a"']}]
+        }]
+    })
+})
+
+
 test("parse if statement with function call in condition", () => { parsing(`
     function Init(){
         if (CheckSomething()){

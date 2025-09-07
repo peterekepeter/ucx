@@ -191,9 +191,9 @@ test('lint indent if with function call in condition', () => {
     ]).isAlreadyWellFormatted();
 });
 
-test.skip('lint indent nested if else without brackets', () => {
+test('lint indent nested if else without brackets', () => {
     lintingStatements(
-    	'if ( a )',
+        'if ( a )',
         '    if ( b )',
         '        Log("a+b");',
         '    else',

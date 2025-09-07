@@ -37,6 +37,7 @@ export class UcParser{
     currentVarScope: UnrealClassVariableDeclarationScope | null = null;
     parentVar: UnrealClassVariable | null = null;
     parentVarScope: UnrealClassVariableDeclarationScope | null = null;
+    statementEndToken: Token | null = null;
 
     getAst() {
         return this.result;

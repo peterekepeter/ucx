@@ -1,9 +1,20 @@
 import { SemanticClass as C, SemanticClass, UcParser } from "..";
-import { UnrealClassFunctionArgument, UnrealClassStatement } from "../ast/UnrealClassFunction";
+import { UnrealClassStatement } from "../ast/UnrealClassFunction";
 import { Token } from "../types";
 import { parseNoneState } from "./parseNoneState";
 import { resolveExpression, resolveStatementExpression } from "./resolveExpression";
 
+
+function debugfmt(sts: UnrealClassStatement[], depth=0): string {
+    const out = [];
+    for (const st of sts) {
+        out.push(`${'          '.slice(0,depth*3)}${st.op?.text} ${st.args.map(a=>'text' in a ? a.text : '[sub]').join(',')}\n`)
+        if (st.body && st.body.length) {
+            out.push(debugfmt(st.body, depth+1));
+        }
+    }
+    return out.join('');
+}
 
 export function parseStatement(parser: UcParser, token: Token)
 {
@@ -20,8 +31,9 @@ export function parseStatement(parser: UcParser, token: Token)
     case "while":
     case "if":
     case "switch": {
-        parser.rootFn = parseControlStatement;
         token.type = C.Keyword;
+        finalizeSingleStatementBlocksBeforeToken(parser, token)
+        parser.rootFn = parseControlStatement;
         const statement: UnrealClassStatement = {
             op: token,
             args: [],
@@ -37,9 +49,10 @@ export function parseStatement(parser: UcParser, token: Token)
         break;
     }
     case "foreach": {
+        token.type = C.Keyword;
+        finalizeSingleStatementBlocksBeforeToken(parser, token)
         parser.rootFn = parseForeachStatement;
         parser.expressionSplitter.clear();
-        token.type = C.Keyword;
         const foreach: UnrealClassStatement = {
             op: token,
             args: [],
@@ -56,6 +69,7 @@ export function parseStatement(parser: UcParser, token: Token)
     }
     case "{": {
         // codeblock
+        finalizeSingleStatementBlocksBeforeToken(parser, token)
         const body = parser.lastCodeBlock;
         const codeBlock: UnrealClassStatement = {
             op: token,
@@ -72,7 +86,7 @@ export function parseStatement(parser: UcParser, token: Token)
         break;
     }
     case "}":
-        endCurrentStatementOrFunctionBlock(parser, token);
+        endStatementBlockOrFunctionBlock(parser, token);
         break;
     case "goto":
     case "continue":
@@ -83,13 +97,13 @@ export function parseStatement(parser: UcParser, token: Token)
         token.type = SemanticClass.Keyword;
     default:
         // default to expression
+        finalizeSingleStatementBlocksBeforeToken(parser, token);
         parser.expressionTokens = [];
         parser.rootFn = parseExpression;
         parser.parseToken(token);
         break;
     }
 }
-
 
 function parseFnLocalDeclaration(parser: UcParser, token: Token)
 {
@@ -204,7 +218,7 @@ function parseExpression(parser: UcParser, token: Token)
     {
     case "}":
         parser.lastCodeBlock.push(resolveStatementExpressionAndApplyLabel(parser));
-        popSingleStatementCodeBlocks(parser, token);
+        parser.statementEndToken = token;
         parser.rootFn = parseStatement;
         parser.parseToken(token);
         break;
@@ -214,7 +228,7 @@ function parseExpression(parser: UcParser, token: Token)
         const statement = resolveStatementExpressionAndApplyLabel(parser);
         statement.argsLastToken = token;
         parser.lastCodeBlock.push(statement);
-        popSingleStatementCodeBlocks(parser, token);
+        parser.statementEndToken = token;
         parser.rootFn = parseStatement;
         break;
     default:
@@ -225,7 +239,7 @@ function parseExpression(parser: UcParser, token: Token)
         else {
             const st = resolveStatementExpressionAndApplyLabel(parser);
             parser.lastCodeBlock.push(st);
-            popSingleStatementCodeBlocks(parser, token);
+            parser.statementEndToken = token;
             parser.rootFn = parseStatement;
             parseStatement(parser, token);
         }
@@ -257,7 +271,7 @@ function parseControlStatement(parser: UcParser, token: Token)
         // end current control statement
         endCurrentStatementBlock(parser, token);
         // } will also close enclosing scope
-        endCurrentStatementOrFunctionBlock(parser, token);
+        endStatementBlockOrFunctionBlock(parser, token);
         break;
     case "if":
         if (parser.lastStatement.op?.textLower === 'else')
@@ -299,7 +313,7 @@ function parseControlCondition(parser: UcParser, token: Token)
         // end current control statement
         endCurrentStatementBlock(parser, token);
         // } will also close enclosing scope
-        endCurrentStatementOrFunctionBlock(parser, token);
+        endStatementBlockOrFunctionBlock(parser, token);
         break;
     case "(":
         parser.parenOpenCount++;
@@ -321,7 +335,7 @@ function parseAfterControlCondition(parser: UcParser, token: Token)
         // end current control statement
         endCurrentStatementBlock(parser, token);
         // } will also close enclosing scope
-        endCurrentStatementOrFunctionBlock(parser, token);
+        endStatementBlockOrFunctionBlock(parser, token);
         break;
     case "{":
         parser.rootFn = parseStatement;
@@ -342,21 +356,35 @@ function parseSingleStatementBody(parser: UcParser, token: Token)
     parseStatement(parser, token);
 }
 
-function popSingleStatementCodeBlocks(parser: UcParser, token: Token){
+function finalizeSingleStatementBlocksBeforeToken(parser: UcParser, token: Token){
     while (parser.codeBlockStack.length > 0)
     {
         const lastBlock = parser.codeBlockStack[parser.codeBlockStack.length - 1];
         if (!lastBlock.singleStatementBody){
             return; 
         }
+        if (token.type === C.Keyword && token.textLower === "else")
+        {
+            if (lastBlock.body.length === 1)
+            {
+                const op = lastBlock.body[0].op;
+                if (op?.type === C.Keyword && op.textLower === "if")
+                {
+                    return; // place matching else here
+                }
+            }
+        }
         if (lastBlock.body.length > 1){
-            parser.result.errors.push({
-                message: 'Single statement block did not parse correctly',
-                token: lastBlock.bodyLastToken ?? lastBlock.bodyFirstToken ?? token
-            });
+            if (lastBlock.body.length !== 2 || lastBlock.body[0].op?.textLower !== "if" || lastBlock.body[1].op?.textLower !== "else")
+            {
+                parser.result.errors.push({
+                    message: 'Single statement block did not parse correctly',
+                    token: parser.statementEndToken ?? lastBlock.bodyLastToken ?? lastBlock.bodyFirstToken ?? token
+                });
+            }
         }
         if (lastBlock.body.length >= 1){
-            lastBlock.bodyLastToken = token;
+            lastBlock.bodyLastToken = parser.statementEndToken;
             parser.codeBlockStack.pop();
         }
         else {
@@ -379,11 +407,12 @@ function resolveStatementExpressionAndApplyLabel(parser: UcParser): UnrealClassS
     return result;
 }
 
-function endCurrentStatementOrFunctionBlock(parser: UcParser, endingToken: Token)
+function endStatementBlockOrFunctionBlock(parser: UcParser, endingToken: Token)
 {   
+    finalizeSingleStatementBlocksBeforeToken(parser, endingToken);
+
     if (parser.codeBlockStack.length > 0) {
         endCurrentStatementBlock(parser, endingToken);
-        popSingleStatementCodeBlocks(parser, endingToken);
         parser.rootFn = parseStatement;
     }
     else if (parser.currentClassState && !parser.currentlyInStateFunction){
