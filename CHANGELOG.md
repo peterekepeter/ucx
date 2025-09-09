@@ -4,6 +4,7 @@
 - Parse Self/Super/Default/Static as language variables
 - Enforce language variable formatting
 - Separate styling for language variables
+- Detect class reference inside Super(ClassName) cast
 
 ### v0.25.5
 - Fix nested if else parsing when not using braces

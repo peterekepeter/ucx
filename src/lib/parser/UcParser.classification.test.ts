@@ -208,6 +208,19 @@ test('new operator', () => parsing(`
 ));
 
 
+test('class reference inside super cast', () => parsing(`
+    function PostRender( Canvas C )
+    {
+        Super(HUD).PostRender(C);
+    }
+`).hasTokens(
+    ["Super", C.LanguageVariable],
+    ["(", C.None],
+    ["HUD", C.ClassReference],
+    [")", C.None],
+))
+
+
 test('exec', () => parsing(`
     #exec Texture Import File=Textures\NuRaRulesBG.pcx Name=NuRaRulesBG Group=Windows Mips=On Flags=2
     class XClass;

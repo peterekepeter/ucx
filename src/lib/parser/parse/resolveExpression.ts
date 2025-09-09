@@ -209,6 +209,14 @@ function resolveSubExpression(
         };
     }
     for (let i=begin; i<end; i++){
+        if (tokens[i].type === SemanticClass.LanguageVariable)
+        {
+            if (i+3<end && tokens[i+1].text === '(' && tokens[i+3].text==')'
+                &&tokens[i+2].type === SemanticClass.VariableReference) 
+            {
+                tokens[i+2].type = SemanticClass.ClassReference;
+            }
+        }
         if (tokens[i].type === SemanticClass.Identifier){
             if (i+1<end && tokens[i+1].text === '(')
             {
