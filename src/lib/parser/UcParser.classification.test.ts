@@ -303,6 +303,21 @@ test('struct type parsing', () => {
     );
 });
 
+test('enum parsing', () => parsing(`
+    enum ENetRole
+    {
+        ROLE_None,
+        ROLE_Authority,
+    };
+`).hasTokens(
+    ['enum', C.Keyword],
+    ['ENetRole', C.EnumDeclaration],
+    ['{', C.None],
+    ['ROLE_None', C.EnumMember],
+    [',', C.None],
+    ['ROLE_Authority', C.EnumMember],
+))
+
 function parsing(input: string) {
     const parser = new UcParser();
     const lines = input.split(/\r?\n/);
