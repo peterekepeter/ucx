@@ -748,7 +748,7 @@ test('lint does not add semicolon in middle of the new class statement', () => {
 ));});
 
 test('lint does not add semicolon in middle of the new(self) class statement', () => { lintingStatements(
-    "A = new(self) class'TestClass';",
+    "A = new(Self) class'TestClass';",
 ).hasFormattedResult(statementWrapper(
     "A = new(Self) class'TestClass';",
 ));});
@@ -762,8 +762,8 @@ test('lint autocompletes semicolon function call statemetns', () => { lintingSta
 ));});
 
 test('lint does not add semicolon when accessing default values', () => { lintingStatements(
-    'Canvas.DrawColor = Canvas.default.DrawColor;',
-    'BaseEyeHeight = default.BaseEyeHeight;',
+    'Canvas.DrawColor = Canvas.Default.DrawColor;',
+    'BaseEyeHeight = Default.BaseEyeHeight;',
 ).isAlreadyWellFormatted();});
 
 test('lint warning string tab escape does not work', () => { lintingStatements(
@@ -882,9 +882,9 @@ test('format no change on well formatted negation of function return', () => { l
 ));});
 
 test('format no change on well formatted negation of static function return', () => { lintingStatements(
-    "x = !class'Util'.static.TestSomething(Level);"
+    "x = !class'Util'.Static.TestSomething(Level);"
 ).hasFormattedResult(statementWrapper(
-    "x = !class'Util'.static.TestSomething(Level);"
+    "x = !class'Util'.Static.TestSomething(Level);"
 ));});
 
 test('format no change on well formatted new class instantiation', () => { lintingStatements(
@@ -905,10 +905,30 @@ test('self keywords are capitalized', () => { lintingStatements(
     "Log(Self.Class);"  
 ));});
 
-test.skip('default keyords in expressions are capitalized', () => { lintingStatements(
+test('static member accessors are capitalized', () => { lintingStatements(
+    "EndStatsClass.static.StaticSaveConfig();"
+).hasFormattedResult(statementWrapper(
+    "EndStatsClass.Static.StaticSaveConfig();" 
+));});
+
+test('default property accessors are capitalized', () => { lintingStatements(
     "W.EntryActor = WaterZoneType.default.EntryActor;"
 ).hasFormattedResult(statementWrapper(
     "W.EntryActor = WaterZoneType.Default.EntryActor;"  
+));});
+
+test('default keywords in switch case are lowercased', () => { lintingStatements(
+    'switch (A)',
+    '{',
+    '    case 0: return False;',
+    '    Default: return True;',
+    '}',
+).hasFormattedResult(statementWrapper(
+    'switch (A)',
+    '{',
+    '    case 0: return False;',
+    '    default: return True;',
+    '}',
 ));});
 
 test('format removes useless default int properties', () => { linting([

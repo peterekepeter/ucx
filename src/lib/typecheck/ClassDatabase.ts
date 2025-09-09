@@ -702,7 +702,7 @@ export class ClassDatabase
                 }
             }
         }
-        if (query.token.type === SemanticClass.Keyword) {
+        if (query.token.type === SemanticClass.LanguageVariable) {
             if (query.token.textLower === 'self' && query.ast.name) {
                 result = {
                     token: query.ast.name,
@@ -805,7 +805,7 @@ export class ClassDatabase
 
     findCrossFileDefinition(query: TokenInformation): TokenInformation {
         if (query.token && query.ast) {
-            if (query.token.type === SemanticClass.Keyword) {
+            if (query.token.type === SemanticClass.LanguageVariable) {
                 if (query.token.textLower === 'super' && query.ast.parentName) {
                     return this.findClassDefinitionStr(query.ast.parentName.textLower);
                 }

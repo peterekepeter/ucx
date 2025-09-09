@@ -2,7 +2,7 @@
 	"name": "ucx",
 	"displayName": "ucx",
 	"description": "Dedicated language support for Unreal Engine 1 UnrealScript",
-	"version": "0.25.5",
+	"version": "0.26.0",
 	"icon": "assets/ucx.png",
 	"repository": "https://github.com/peterekepeter/ucx",
 	"publisher": "peterekepeter",

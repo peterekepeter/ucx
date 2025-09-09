@@ -548,6 +548,22 @@
 					]
 				},
 				{
+					"name": "variable.language.self.unrealscript",
+					"match": "(?i)\\b(Self)\\b"
+				},
+				{
+					"name": "variable.language.default.unrealscript",
+					"match": "(?i)\\b(Default)(?!\\s*:)\\b"
+				},
+				{
+					"name": "variable.language.static.unrealscript",
+					"match": "(?i)\\b(Static)\\b"
+				},
+				{
+					"name": "variable.language.super.unrealscript",
+					"match": "(?i)\\b(Super)\\b"
+				},
+				{
 					"name": "keyword.unrealscript",
 					"match": "(?i)\\b(native|static|final|out|local|new|if|else|for|while|goto|break|continue|return|super|self|function|event|ignores|exec|switch|case|assert|default)\\b\\s*(\\(([0-9]*)\\))?",
 					"captures": {

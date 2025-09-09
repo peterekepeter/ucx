@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.26.0
+- Parse Self/Super/Default/Static as language variables
+- Enforce language variable formatting
+- Separate styling for language variables
+
 ### v0.25.5
 - Fix nested if else parsing when not using braces
 

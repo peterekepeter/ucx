@@ -3,6 +3,7 @@ export enum SemanticClass {
     None,
     Keyword,
     ModifierKeyword,
+    LanguageVariable,
     Comment,
     ClassDeclaration,
     EnumDeclaration,

@@ -71,6 +71,49 @@ test('tokens else if recognized as keyowrds', () => parsing(`
     ["bAnotherFeature", C.VariableReference]
 ));
 
+test('switch case keywords', () => parsing(`
+    function Init(){
+    	switch (MsgType)
+        {
+            case 'Say': break;
+            default: break;
+        }
+    }
+`).hasTokens(
+    ["switch", C.Keyword],
+    ["(", C.None],
+    ["MsgType", C.VariableReference],
+    [")", C.None],
+    ["{", C.None],
+    ["case", C.Keyword],
+    ["'Say'", C.LiteralName],
+    [":", C.None],
+    ["break", C.Keyword],
+    [";", C.None],
+    ["default", C.Keyword],
+    [":", C.None],
+    ["break", C.Keyword],
+));
+
+test('language vars', () => parsing(`
+    function ResetGame()
+    {
+	    Super.ResetGame();
+        Default.bDefenseSet = False;
+	    GameClass.Static.StaticSaveConfig();
+    }
+`).hasTokens(
+    ["Super", C.LanguageVariable],
+    [".", C.None],
+    ["ResetGame", C.FunctionReference],
+    ["(", C.None],
+    [")", C.None],
+    [";", C.None],
+    ["Default", C.LanguageVariable],
+    [".", C.None],
+    ["bDefenseSet", C.VariableReference],
+))
+
 test('tokens static function', () => parsing(`
     static function Init() {}
 `).hasTokens(

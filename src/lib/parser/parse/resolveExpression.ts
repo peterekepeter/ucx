@@ -84,13 +84,15 @@ export function resolveExpression(
         prev = tokens[i - 1] as ParserToken | undefined;
         curr = tokens[i];
         next = tokens[i + 1] as ParserToken | undefined;
-        switch (curr.textLower){           
+        switch (curr.textLower){       
+        case "new":    
+            curr.type = SemanticClass.Keyword;
+            break;
         case "super":
         case "self":
-        case "new":
         case "static":
         case "default":
-            curr.type = SemanticClass.Keyword;
+            curr.type = SemanticClass.LanguageVariable;
             break;
         }
         if (curr.type === SemanticClass.LiteralName && prev && prev.type === SemanticClass.Identifier){

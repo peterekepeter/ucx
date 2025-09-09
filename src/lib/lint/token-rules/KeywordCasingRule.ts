@@ -5,22 +5,33 @@ import { TokenBasedLinterV2 } from "../TokenBasedLinter";
 
 export class KeywordCasingRule implements TokenBasedLinterV2
 {
-    mapping: { [key:string]: string };
-
-    constructor()
-    {
-        const words = ['True', 'False', 'None', 'Self', 'Super'];
-        this.mapping = {};
-        for (const word of words) {
-            this.mapping[word.toLowerCase()] = word;
-        }
-    }
-
     nextToken(token: ParserToken): LintResult[] | null {
-        if (!this.isKeywordlike(token)){
-            return null;
+        var expected: string;
+        switch (token.type) {
+            case SemanticClass.Keyword:
+            case SemanticClass.ModifierKeyword:
+                expected = token.textLower;
+                break;
+            case SemanticClass.LanguageConstant:
+                switch (token.textLower) {
+                    case 'none': expected = 'None'; break;
+                    case 'true': expected = 'True'; break;
+                    case 'false': expected = 'False'; break;
+                    default: return null;
+                }
+                break;
+            case SemanticClass.LanguageVariable:
+                switch (token.textLower) {
+                    case 'self': expected = 'Self'; break;
+                    case 'super': expected = 'Super'; break;
+                    case 'default': expected = 'Default'; break;
+                    case 'static': expected = 'Static'; break;
+                    default: return null;
+                }
+                break;
+            default: 
+                return null;
         }
-        const expected = this.mapping[token.textLower] ?? token.textLower;
         if (token.text === expected){
             return null;
         }
@@ -33,17 +44,5 @@ export class KeywordCasingRule implements TokenBasedLinterV2
             originalText: token.text
         }];
     }
-
-    isKeywordlike(token: ParserToken): boolean {
-        switch(token.type) {
-        case SemanticClass.Keyword:
-        case SemanticClass.ModifierKeyword:
-        case SemanticClass.LanguageConstant: 
-            return true;
-        default:
-            return false;
-        }
-    }
-    
     
 }

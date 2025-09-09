@@ -312,7 +312,7 @@ test("parse static function call", () => { parsing(`
         ['class', C.ClassReference], 
         ["'Util'", C.ObjectReferenceName], 
         ['.', C.None],
-        ['static', C.Keyword],
+        ['static', C.LanguageVariable],
         ['.', C.None],
         ['Log', C.FunctionReference],   
     );
@@ -348,7 +348,7 @@ test("parse default variable access", () => { parsing(`
         ['class', C.ClassReference], 
         ["'Util'", C.ObjectReferenceName], 
         ['.', C.None],
-        ['default', C.Keyword],
+        ['default', C.LanguageVariable],
         ['.', C.None],
         ['Value', C.VariableReference],
     );
@@ -1501,7 +1501,7 @@ test("parse super call", () => { parsing(`
         super.F();
     }`)
     .hasNoErrors()
-    .hasTokens(['super', C.Keyword], ['.', C.None], ['F', C.FunctionReference]);
+    .hasTokens(['super', C.LanguageVariable], ['.', C.None], ['F', C.FunctionReference]);
 });
 
 
@@ -1510,7 +1510,7 @@ test("parse self call", () => { parsing(`
         self.G();
     }`)
     .hasNoErrors()
-    .hasTokens(['self', C.Keyword], ['.', C.None], ['G', C.FunctionReference]);
+    .hasTokens(['self', C.LanguageVariable], ['.', C.None], ['G', C.FunctionReference]);
 });
 
 
