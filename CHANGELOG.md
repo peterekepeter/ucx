@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.26.1
+- Fix configuration causing unwanted sections in minimap
+
 ### v0.26.0
 - Parse Self/Super/Default/Static as language variables
 - Enforce language variable formatting
