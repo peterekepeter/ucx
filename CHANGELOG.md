@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.27.0
+- Add render enum information
+- Add completon for enum members
+- Add definition lookup for enum members
+
 ### v0.26.1
 - Fix configuration causing unwanted sections in minimap
 
