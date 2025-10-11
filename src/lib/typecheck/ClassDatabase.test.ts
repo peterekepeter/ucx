@@ -172,7 +172,8 @@ describe(renderDefinitionMarkdownLines, () => {
                 'native(129) static final preoperator  bool  !  ( bool A );',
                 'native(165) static final postoperator int  ++ ( out int A );',
                 'native(163) static final preoperator  int  ++ ( out int A );',
-                'native(127) static final function string Mid( coerce string S, int i, optional int j)'
+                'native(127) static final function string Mid( coerce string S, int i, optional int j);',
+                'var enum ENetMode { NM_Standalone, NM_Client } NetMode;'
             ]);   
         });
 
@@ -190,6 +191,8 @@ describe(renderDefinitionMarkdownLines, () => {
                 '\tnative(163) static final preoperator int Object.++(out byte A);', // even from parent
             ]],
             [9, 43, ['\tnative(127) static final function string MyClass.Mid(coerce string S, int i, optional int j);']],
+            [10, 40, ['\tenum MyClass.ENetMode.NM_Client;']],
+            [10, 13, ['\tenum MyClass.ENetMode;']],
         ] as [number, number, string[]][]
         )("at %p:%p is %p", (line, column, expected) => {
             const info = db.findDefinition(db.findToken(uri, line, column));
@@ -310,10 +313,10 @@ describe("definition across files", () => {
             '',
             'var enum ENetMode',
             '{',
-            '    NM_Standalone,        // Standalone game.',
-            '    NM_DedicatedServer,   // Dedicated server, no local client.',
-            '    NM_ListenServer,      // Listen server.',
-            '    NM_Client             // Client only, no local server.', // line 7
+            '    NM_Standalone,',
+            '    NM_DedicatedServer,',
+            '    NM_ListenServer,',
+            '    NM_Client', // line 7
             '} NetMode;',
         ])
     });

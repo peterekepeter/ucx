@@ -893,6 +893,15 @@ export class ClassDatabase
                     }
                 }
             }
+            if (ast?.enums) {
+                for (const e of ast?.enums) {
+                    if (e.name?.textLower === nameLower) {
+                        return {
+                            uri, ast, token: e.name ?? undefined, enumDefinition: e, found: true,
+                        }
+                    }
+                }
+            }
             if (ast.name) {
                 const parent = this.findParentClassOf(ast.name.textLower);
                 uri = parent.uri;

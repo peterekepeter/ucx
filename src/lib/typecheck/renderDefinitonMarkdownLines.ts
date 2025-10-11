@@ -41,6 +41,9 @@ export function renderDefinitionMarkdownLines(info: TokenInformation): string[] 
             if (info.structDefinition) {
                 return renderStructDef(info.structDefinition);
             }
+            if (info.enumDefinition) {
+                return renderEnumDef(info);
+            }
         }
     }
     return [ '???' ];
@@ -236,3 +239,14 @@ function renderStructDef(structDefinition: UnrealClassStruct): string[] {
     return result;
 }
 
+function renderEnumDef(info: TokenInformation): string[] {
+    const classname = info.ast?.name?.text;
+    const enumname = info.enumDefinition?.name?.text;
+    const membername = info.token?.text;
+    if (enumname === membername) {
+        return [`\tenum ${classname}.${enumname};`];
+    }
+    else {
+        return [`\tenum ${classname}.${enumname}.${membername};`];
+    }
+}
