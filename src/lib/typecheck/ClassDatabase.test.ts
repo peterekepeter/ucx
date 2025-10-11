@@ -252,6 +252,7 @@ describe("definition across files", () => {
     const uriA = "PackageName/Classes/ClassA.uc";
     const uriB = "PackageName/Classes/ClassB.uc";
     const uriCanvas = "Engine/Classes/Canvas.uc";
+    const uriLevel = "Engine/Classes/LevelInfo.uc";
 
     beforeAll(() => {
         db = new ClassDatabase();
@@ -271,7 +272,7 @@ describe("definition across files", () => {
             'class ClassB extends ClassA;', // line 0
             'var Item myitem;',
             'var ClassA other;', // line 2
-            '',
+            'var LevelInfo Level;',
             'function Timer(){',
             '   Count += 1;', // line 5
             '}',
@@ -301,8 +302,20 @@ describe("definition across files", () => {
             '   goto END;',
             'END:', // line 31
             '   Log(myitem.GameName);',
+            '   if ( Level.NetMode == NM_Client ) Log("Client");', // line 33
             '}',
         ]);
+        ast(uriLevel, 2, [
+            'class LevelInfo;',
+            '',
+            'var enum ENetMode',
+            '{',
+            '    NM_Standalone,        // Standalone game.',
+            '    NM_DedicatedServer,   // Dedicated server, no local client.',
+            '    NM_ListenServer,      // Listen server.',
+            '    NM_Client             // Client only, no local server.', // line 7
+            '} NetMode;',
+        ])
     });
 
     const classDefA = { token: { text: 'ClassA' }, uri: uriA };
@@ -316,6 +329,7 @@ describe("definition across files", () => {
     const canvasNothingConstDef = { uri:uriCanvas, token: { text: 'NOTHING', line: 1 }};
     const gotoLabelDef = { uri:uriB, token: { text: 'END', line: 31 }, functionScope: { name: { text: 'Reset' }}};
     const nameStructMember = { uri:uriA, token: { text: 'GameName', line: 1 }, varDefinition: { name: { text: 'GameName' }}, structDefinition: { name: { text: 'Item' }} };
+    const enumMemberNM_Client = { uri:uriLevel, token: { text: 'NM_Client', line:7 }}
 
     // find definition
     test.each([
@@ -344,6 +358,7 @@ describe("definition across files", () => {
         ['const member', 29, 18, canvasNothingConstDef],
         ['goto label', 30, 10, gotoLabelDef],
         ['inherited struct member', 32, 18, nameStructMember],
+        ['enum member', 33, 30, enumMemberNM_Client],
     ] as [string, number, number, TokenInformation][]
     )("findCrossFileDefinition finds %p at %p:%p", (_, line, column, expected) => {
         const token = db.findToken(uriB, line, column);

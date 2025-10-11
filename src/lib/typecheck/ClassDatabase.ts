@@ -10,7 +10,8 @@ import {
     UnrealClassVariable, 
     getStatementsRecursively, 
     getAllClassFunctions, 
-    getExpressionTokensRecursively
+    getExpressionTokensRecursively,
+    UnrealClassEnum
 } from "../parser/ast";
 import { renderDefinitionMarkdownLines, renderFnDocumentationPrototypeToString, renderFnImplementationStubToString } from "./renderDefinitonMarkdownLines";
 
@@ -30,6 +31,7 @@ export type TokenInformation = {
     constDefinition?: UnrealClassConstant,
     structDefinition?: UnrealClassStruct,
     overload?: TokenInformation,
+    enumDefinition?: UnrealClassEnum,
 };
 
 export type CompletionInformation = {
@@ -832,8 +834,44 @@ export class ClassDatabase
             if (classdef.found) {
                 return classdef;
             }
+            // maybe its an enum
+            const enumMember = this.findEnumMemberDefinitionForQueryToken(query)
+            if (enumMember?.found) {
+                return enumMember;
+            }
         }
         return { found: false };
+    }
+    
+    private findEnumMemberDefinitionForQueryToken(query: TokenInformation): TokenInformation|undefined {
+        const nameLower = query.token?.textLower;
+        if (!nameLower) return undefined;
+        // TODO match package
+        for (const uri in this.store) {
+            const entry = this.store[uri];
+            const ast = entry.ast;
+            const result = this.findEnumMemberDefinitionInClass(nameLower, uri, ast);
+            if (result) {
+                return result;
+            }
+        }
+        return undefined;
+    }
+
+    findEnumMemberDefinitionInClass(nameLower: string | undefined, uri: string, ast: UnrealClass): TokenInformation|undefined {
+        for (const e of ast.enums) {
+            for (const em of e.enumeration) {
+                if (em.textLower == nameLower)
+                return {
+                    uri: uri,
+                    token: em ?? undefined,
+                    ast: ast,
+                    enumDefinition: e,
+                    found: true,
+                }
+            }
+        }
+        return undefined;
     }
 
     // goes up the inheritance tree to look for struct type matches
