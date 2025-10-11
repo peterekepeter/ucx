@@ -744,6 +744,32 @@ describe("completion", () => {
 
     });
 
+    describe("enum completion", () => {
+
+        beforeAll(() => {
+            reset();
+            ast("MyOther.uc", 1, [
+                'class LevelInfo extends Actor;',
+                'var enum ENetMode { NM_Standalone, NM_Client } NetMode;',
+            ]);
+            ast("MyClass.uc", 1, [
+                'class MyClass extends MyOther;',
+                'var LevelInfo Level;', // 1
+                '', // 2
+                'function Tick() {', // 3
+                '   if ( Level.NetMode ==  ) Log("Client");', // 4
+                '   if ( Level.NetMode == ', // 5
+                '}',
+            ]);
+        });
+
+        test('suggest class const in expression', () => {
+            expectCompletions("MyClass.uc", 4, 25, { include: ['NM_Standalone', 'NM_Client']});
+            expectCompletions("MyClass.uc", 5, 25, { include: ['NM_Standalone', 'NM_Client']});
+        });
+
+    })
+
     const expectCompletions = (uri: string, line: number, pos: number, options: { 
         include?: Array<string|CompletionInformation>, 
         exclude?: Array<string|CompletionInformation>, 

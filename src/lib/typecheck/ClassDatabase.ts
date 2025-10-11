@@ -279,6 +279,10 @@ export class ClassDatabase
                             })),
                         );
                     }
+                    const enumCompletions = this.getAllEnumMembers().map(s => ({
+                        label: s, kind: SemanticClass.EnumMember,
+                    }));
+                    results.push(...enumCompletions);
                     return results;
                 }
             }
@@ -300,6 +304,20 @@ export class ClassDatabase
             return results;
         }
         return [];
+    }
+
+    getAllEnumMembers(): string[] {
+        const results = [];
+        for (const uri in this.store) {
+            const entry = this.store[uri];
+            const ast = entry.ast;
+            for (const e of ast.enums){
+                for (const m of e.enumeration) {
+                    results.push(m.text);
+                }
+            }
+        }
+        return results;
     }
 
     findOverriableFunctions(ast: UnrealClass): TokenInformation[] {
