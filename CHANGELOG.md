@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.27.1
+- Revert line comment configuration for better back compatibility
+
 ### v0.27.0
 - Add render enum information
 - Add completon for enum members
