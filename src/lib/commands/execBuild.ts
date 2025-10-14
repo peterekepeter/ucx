@@ -1,12 +1,12 @@
 import { UcxCommand } from "../cli";
-import { promises as fs, constants } from "fs";
+import * as fs from "./filesystem/fsWrappers";
 import { SourceEditor, standardTranspiler } from "../transformer";
 import { UcParser, UnrealClass } from "../parser";
 import { ucTokenizeLine } from "../tokenizer";
 import { InvalidUccPath } from "./InvalidUccPath";
 
 import path = require("path");
-import { green, bold, gray, yellow } from "./terminal";
+import { green, bold, gray } from "./terminal";
 import { detectPathSeparator, getFilename, pathUpOneLevel } from "./filesystem";
 import { Subprocess } from "./subprocess/Subprocess";
 
@@ -16,15 +16,10 @@ export async function execBuild(cmd: UcxCommand){
     for (const project of projectFolders){
         try {
             context = await getBuildContext(project, cmd);
-            console.log(
-                green('building'), 
-                bold(context.projectName), 
-                context.buildName !== context.projectName ? gray(context.buildName) : ''
-            );
             await buildProject(context);
         }
         finally {
-            if (context && context.performCleanup) {
+            if (context?.performCleanup) {
                 await deleteTemporaryFiles(context);
             }
             context = undefined;
@@ -33,6 +28,23 @@ export async function execBuild(cmd: UcxCommand){
 }
 
 async function buildProject(context: BuildContext) {
+    const [projectStamp, outputStamp] = await Promise.all([
+        getFolderStamp(context.projectDir),
+        getFileStamp(context.requiredOutput),
+    ]);
+    if (outputStamp > projectStamp) {
+        console.log(
+            green('skip build'), 
+            bold(context.projectName),
+            gray('(cached)')
+        )
+        return; // use cached version
+    }
+    console.log(
+        green('building'), 
+        bold(context.projectName), 
+        context.buildName === context.projectName ? '' : gray(context.buildName)
+    );
     await visitSourceFolder(context, context.projectDir);
     await generateBuildIniIfNotExists(context);
     await deletePreviousOutput(context);
@@ -51,6 +63,7 @@ async function getBuildContext(projectDir: string, cmd: UcxCommand): Promise<Bui
     const systemDir = resolvedPaths.systemDir;
     const buildNameResult = await buildNameResultPromise;
     const context: BuildContext = {
+        inputFiles: [],
         tempToCleanup: [],
         projectName,
         projectDir,
@@ -134,8 +147,26 @@ interface BuildContext
     verbose: boolean,
     quiet: boolean,
     tempToCleanup: { fullPath: string, isDir: boolean }[];
+    inputFiles: string[],
 }
 
+async function getFolderStamp(dirPath: string) {
+    const items = await fs.readdir(dirPath, { recursive: true });
+    const stats = await Promise.all(
+        items.map(str => getFileStamp(dirPath + "/" + str))
+    );
+    return stats.reduce((a,b) => Math.max(a, b), 0);
+}
+
+async function getFileStamp(path: string) {
+    try {
+        return (await fs.stat(path)).mtimeMs;
+    }
+    catch (_) {
+        // assume not exists
+        return 0;
+    }
+}
 
 async function visitSourceFolder(context: BuildContext, dirPath: string) {
     const outName = getBuildPath(context, dirPath);
@@ -307,7 +338,7 @@ async function fileExists(path: string) {
 }
 
 async function tempCopy(context: BuildContext, src: string, dest: string) {
-    await fs.copyFile(src, dest, constants.COPYFILE_EXCL);
+    await fs.copyFile(src, dest, fs.COPYFILE_EXCL);
     context.tempToCleanup.push({ fullPath: dest, isDir: false });
 }
 
