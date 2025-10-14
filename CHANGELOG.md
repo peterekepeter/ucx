@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.27.2
+- Skip build if output is newer than input project
+
 ### v0.27.1
 - Revert line comment configuration for better back compatibility
 
