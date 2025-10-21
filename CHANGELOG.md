@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.27.3
+- Fix parsing parent class name when package is specified
+
 ### v0.27.2
 - Skip build if output is newer than input project
 

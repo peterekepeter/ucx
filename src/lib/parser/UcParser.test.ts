@@ -67,6 +67,15 @@ test("parse class declaration with intrinsic", () => { parsing(`
     .hasClassName('Line')
 ;});
 
+test("parse class extends class from package", () => { parsing(`
+        class LowGrav expands Botpack.Mutator;
+    `)
+    .hasNoErrors()
+    .hasClassName('LowGrav')
+    .hasParentClassName('Mutator')
+    .hasParentClassPackage('Botpack')
+;});
+
 test("parse variable declaration", () => { parsing(`
     var bool bDynamicLight;
     `)
@@ -1997,6 +2006,7 @@ interface ParserTestChecks
 {
     hasClassName(name: string): ParserTestChecks
     hasParentClassName(name: string | null): ParserTestChecks
+    hasParentClassPackage(name: string): ParserTestChecks
     hasClassConfig(name: string): ParserTestChecks
     hasNoErrors(): ParserTestChecks
     isAbstract(flag: boolean): ParserTestChecks
@@ -2087,6 +2097,7 @@ function parsing(input: string): ParserTestChecks {
     const checks = {
         hasClassName: (name: string) => checkEquals(name, ast.name?.text),
         hasParentClassName: (name: string) => checkEquals(name, ast.parentName?.text ?? null),
+        hasParentClassPackage: (name: string) => checkEquals(name, ast.parentPackageName?.text ?? null),
         hasClassConfig: (name: string) => checkEquals(name, ast.configName?.text),
         hasNoErrors: () => checkEmpty(ast.errors),
         isAbstract: (flag: boolean) => checkEquals(flag, ast.isAbstract, "isAbstract should be " + flag),

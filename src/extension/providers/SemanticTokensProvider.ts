@@ -23,6 +23,7 @@ export class SemanticTokensProvider implements vscode.DocumentSemanticTokensProv
     labelToken: number;
     modifierDeclarationToken: number;
     readonlyToken: number;
+    namespaceToken: number;
     types: string[];
     modifiers: string[];
 
@@ -83,6 +84,7 @@ export class SemanticTokensProvider implements vscode.DocumentSemanticTokensProv
         this.functionToken = this.types.indexOf('method');
         this.macroToken = this.types.indexOf('macro');
         this.labelToken = this.types.indexOf('label');
+        this.namespaceToken = this.types.indexOf('namespace');
         this.modifierDeclarationToken = this.modifiers.indexOf('declaration');
         this.readonlyToken = this.modifiers.indexOf('readonly');
 
@@ -176,6 +178,8 @@ export class SemanticTokensProvider implements vscode.DocumentSemanticTokensProv
             case SemanticClass.StatementLabel:
                 type = this.labelToken;
                 break;
+            case SemanticClass.PackageReference:
+                type = this.namespaceToken;
             }
             if (type !== undefined) {
                 tokensBuilder.push(

@@ -101,8 +101,25 @@ function parseClassDecorators(parser: UcParser, token: Token) {
 
 function parseClassParent(parser: UcParser, token: Token) {
     parser.result.parentName = token;
-    parser.rootFn = parseClassDecorators;
+    parser.rootFn = parseAfterClassParent;
     token.type = SemanticClass.ClassReference;
+}
+
+function parseAfterClassParent(parser: UcParser, token: Token) {
+    if (token.text === ".")
+    {
+        const r = parser.result;
+        if (r.parentName) {
+            r.parentPackageName = r.parentName;
+            r.parentPackageName.type = SemanticClass.PackageReference;
+            r.parentName = null;
+        }
+        parser.rootFn = parseClassParent
+    }
+    else 
+    {
+        parseClassDecorators(parser, token);
+    }
 }
 
 

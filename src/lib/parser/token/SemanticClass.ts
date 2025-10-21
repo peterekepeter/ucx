@@ -33,4 +33,5 @@ export enum SemanticClass {
     StructMemberDeclaration,
     GenericArgBegin,
     GenericArgEnd,
+    PackageReference,
 }

@@ -19,6 +19,7 @@ export interface UnrealClass {
     classDeclarationLastToken?: Token;
     name: Token | null;
     parentName: Token | null;
+    parentPackageName: Token | null;
     isAbstract: boolean;
     isNative: boolean;
     isNoExport: boolean;
