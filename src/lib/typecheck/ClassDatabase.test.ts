@@ -497,6 +497,8 @@ describe("completion", () => {
                 'var config ConfigItem multi[1024];',
                 'var config ExtendedConfigItem ext;',
                 '',
+                'native(242) static final operator(24) bool == ( bool A, bool B );',
+                '',
                 'function Update(){}',
             ]);
             ast("MyClass.uc", 1, [
@@ -565,7 +567,11 @@ describe("completion", () => {
         test('struct inherited member completion', () => {
             expectCompletions("MyClass.uc", 17, 13, { include: ["Key", "Value", "Default"], exclude: ["Update", "single", "cfg"] });
         });
-        
+
+        test('operators are not suggested as members', () => {
+            expectCompletions("MyClass.uc", 7, 9, { exclude: ["=="] });
+        })
+
     });
 
     describe("expression completion", () => {

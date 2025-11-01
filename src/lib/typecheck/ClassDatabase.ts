@@ -179,6 +179,7 @@ export class ClassDatabase
             }
             else if (before.token.type === SemanticClass.None && before.token.text === ".")
             {
+                // member completion
                 let index = before.token.index - 1;
                 let beforeDot = ast.tokens[index];
                 let count = 0;
@@ -212,7 +213,7 @@ export class ClassDatabase
                     }
                     while (typedef.ast) {
                         results.push(
-                            typedef.ast.functions.map(f => ({
+                            typedef.ast.functions.filter(f => !f.isOperator).map(f => ({
                                 label: f.name?.text ?? '',
                                 kind: SemanticClass.FunctionReference,
                             })),
