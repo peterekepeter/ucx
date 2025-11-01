@@ -246,52 +246,48 @@ export class ClassDatabase
             {
                 // expression completion
                 if (ast) {
+                    let sortIndex = 0;
+                    let sortText = '0';
                     let results = [
                         ...before.functionScope.fnArgs.map(v => ({
                             label: v.name?.text ?? '',
+                            sortText,
                             kind: SemanticClass.VariableReference,
                         })),
                         ...before.functionScope.locals.map(v => ({
                             label: v.name?.text ?? '',
+                            sortText,
                             kind: SemanticClass.VariableReference,
-                        })),
-                        ...ast.functions.map(f => ({
-                            label: f.name?.text ?? '',
-                            kind: SemanticClass.FunctionReference,
-                        })),
-                        ...ast.variables.map(v => ({
-                            label: v.name?.text ?? '',
-                            kind: SemanticClass.VariableReference,
-                        })),
-                        ...ast.constants.map(v => ({
-                            label: v.name?.text ?? '',
-                            kind: SemanticClass.ClassConstant,
                         })),
                     ];
-                    let parent = ast.parentName;
-                    while (parent) {
-                        const def = this.findClassDefinitionStr(parent.textLower);
-                        if (!def.found || !def.classDefinition) {
-                            break;
-                        }
-                        parent = def.classDefinition.parentName;
+                    let cls = ast;
+                    while (cls) {
+                        sortIndex += 1;
+                        sortText = getSortString(sortIndex);
                         results = results.concat(
-                            def.classDefinition.functions.map(f => ({
+                            cls.functions.map(f => ({
                                 label: f.name?.text ?? '',
+                                sortText,
                                 kind: SemanticClass.FunctionReference,
                             })),
-                            def.classDefinition.variables.map(v => ({
+                            cls.variables.map(v => ({
                                 label: v.name?.text ?? '',
+                                sortText,
                                 kind: SemanticClass.VariableReference,
                             })),
-                            def.classDefinition.constants.map(v => ({
+                            cls.constants.map(v => ({
                                 label: v.name?.text ?? '',
+                                sortText,
                                 kind: SemanticClass.ClassConstant,
                             })),
                         );
+                        if (!cls.parentName) break;
+                        const def = this.findClassDefinitionStr(cls.parentName.textLower);
+                        if (!def.found || !def.classDefinition) break;
+                        cls = def.classDefinition;
                     }
                     const enumCompletions = this.getAllEnumMembers().map(s => ({
-                        label: s, kind: SemanticClass.EnumMember,
+                        label: s, kind: SemanticClass.EnumMember, sortText,
                     }));
                     results.push(...enumCompletions);
                     return results;

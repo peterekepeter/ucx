@@ -613,7 +613,40 @@ describe("completion", () => {
             expectCompletion("MyObject.uc", 3, 4, "Log");
         });
 
+        test('sorts class sybols before inherited symbols', () => {
+            expectCompletionOrder("MyObject.uc", 3, 4, ["Test", "Log"]);
+        })
+
     });
+
+    describe("function local completion", () => {
+        beforeAll(() => {
+            reset();
+            ast("MyObject.uc", 1, [
+                'class MyObject;', // 0
+                'var int a;',
+                'function WriteCodeRange(int from, int to)',
+                '{',
+                '    local int i;',
+                '    for (i = ; i <= to; i+=1) ', // line 5
+                '    {',
+                '        WriteCode(i);',
+                '    }',
+                '}',
+            ])
+        })
+
+        test('suggests local symbols', () => {
+            expectCompletions("MyObject.uc", 5, 13, { include: [
+                'from', 'to', 'i',
+            ] })
+        });
+
+        test('sorts local symbols before class symbols', () => {
+            expectCompletionOrder("MyObject.uc", 5, 13, ['from', 'a']);
+        })
+
+    })
 
     describe("name completion", () => {
 
@@ -726,7 +759,7 @@ describe("completion", () => {
             ]);
             ast("MyClass.uc", 1, [
                 'class MyClass extends MyOther;',
-                'const MYVALUE=4 ;', // 1
+                'const VALUE=4 ;', // 1
                 'var int X;', //2
                 '', // 3
                 'function Tick() {', // 4
@@ -737,7 +770,7 @@ describe("completion", () => {
         });
 
         test('suggest class const in expression', () => {
-            expectCompletion("MyClass.uc", 5, 7, "MYVALUE");
+            expectCompletion("MyClass.uc", 5, 7, "VALUE");
         });
 
         test('suggest inherited const in expression', () => {
@@ -745,12 +778,16 @@ describe("completion", () => {
         });
 
         test('suggest const through self', () => {
-            expectCompletion("MyClass.uc", 6, 12, "MYVALUE");
+            expectCompletion("MyClass.uc", 6, 12, "VALUE");
         });
 
         test('suggest inhertied const through self', () => {
             expectCompletion("MyClass.uc", 6, 12, "PI");
         });
+
+        test('sorts class constants before inherited constants', () => {
+            expectCompletionOrder("MyClass.uc", 5, 7, ["VALUE", "PI"]);
+        })
 
     });
 
@@ -830,10 +867,12 @@ describe("completion", () => {
     };
 
     const expectCompletionOrder = (uri: string, line: number, pos: number, symbols: string[]) => {
-        const compl = db.findCompletions(uri, line, pos);
-        compl.sort((a,b) => (a.sortText ?? a.label).localeCompare(a.sortText ?? b.label));
-        const result = compl.filter(item => symbols.includes(item.label)).map(i => i.label);
-        expect(result).toEqual(symbols);
+        expect(db.findCompletions(uri, line, pos)
+            .filter(item => symbols.includes(item.label))
+            .sort((a,b) => (a.sortText ?? '').localeCompare(b.sortText ?? '', 'en', { sensitivity: "base" })
+                || (a.label).localeCompare(b.label, 'en', { sensitivity: "base" }))
+            .map(i => i.label)
+        ).toEqual(symbols);
     }
 
 });
