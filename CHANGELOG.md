@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.27.4
+- Fix completions not working after line comment
+- Sort completion symbols by closeness to current scope
+- Do not suggest operators during member completion
+
 ### v0.27.3
 - Fix parsing parent class name when package is specified
 
