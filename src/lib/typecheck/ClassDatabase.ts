@@ -242,7 +242,7 @@ export class ClassDatabase
                 }
             }
             else if (before.token.type === SemanticClass.None && (before.token.text === ";" || before.token.text === '{' || before.token.text === '(' || before.token.text === ',') 
-                || before.token.type === SemanticClass.Operator)
+                || before.token.type === SemanticClass.Operator || before.token.type === SemanticClass.Comment)
             {
                 // expression completion
                 if (ast) {

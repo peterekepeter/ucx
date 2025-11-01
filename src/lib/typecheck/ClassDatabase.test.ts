@@ -597,6 +597,8 @@ describe("completion", () => {
                 '    A = ;',
                 '    Log();',
                 '    Log(A,);',
+                '    // this is a line comment',
+                '    ', // line 8
                 '}',
             ]);
         });
@@ -615,6 +617,10 @@ describe("completion", () => {
 
         test('sorts class sybols before inherited symbols', () => {
             expectCompletionOrder("MyObject.uc", 3, 4, ["Test", "Log"]);
+        })
+
+        test('suggests work right after line comment', () => {
+            expectCompletion("MyObject.uc", 8, 4, "Other"); // after line comment
         })
 
     });
