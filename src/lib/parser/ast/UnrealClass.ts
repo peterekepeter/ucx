@@ -51,6 +51,7 @@ export function createDefaultUnrealClass(): UnrealClass {
     return {
         name: null,
         parentName: null, 
+        parentPackageName: null,
         isAbstract: false,
         isNoExport: false,
         isSafeReplace: false,

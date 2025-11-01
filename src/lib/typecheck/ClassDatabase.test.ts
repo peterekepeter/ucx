@@ -1,5 +1,5 @@
 import { ucParseLines } from "../parser/ucParse";
-import { ClassDatabase, CompletionInformation, TokenInformation } from "./ClassDatabase";
+import { ClassDatabase, CompletionInformation, getSortString, TokenInformation } from "./ClassDatabase";
 import { renderDefinitionMarkdownLines } from "./renderDefinitonMarkdownLines";
 
 let db: ClassDatabase;
@@ -572,6 +572,10 @@ describe("completion", () => {
             expectCompletions("MyClass.uc", 7, 9, { exclude: ["=="] });
         })
 
+        test('completion symbols from current class should be closer than those inherited', () => {
+            expectCompletionOrder("MyClass.uc", 10, 9, ["Test", "ext"]);
+        })
+
     });
 
     describe("expression completion", () => {
@@ -825,7 +829,12 @@ describe("completion", () => {
         expectCompletions(uri, line, pos, { count });
     };
 
-
+    const expectCompletionOrder = (uri: string, line: number, pos: number, symbols: string[]) => {
+        const compl = db.findCompletions(uri, line, pos);
+        compl.sort((a,b) => (a.sortText ?? a.label).localeCompare(a.sortText ?? b.label));
+        const result = compl.filter(item => symbols.includes(item.label)).map(i => i.label);
+        expect(result).toEqual(symbols);
+    }
 
 });
 
@@ -1103,3 +1112,30 @@ function expectVersion(uri: string, expected: number) {
 // if ( P.PlayerReplicationInfo.bIsSpectator ){ << here
 		
 // }
+
+describe(getSortString.name, () => {
+
+    const count = 100;
+    const result = new Array(count);
+
+    beforeAll(() => {
+        for (let i=0; i<count; i+=1) {
+            result[i] = getSortString(i);
+        }
+    })
+    
+    it('returns string in sort order', () => {
+        const sorted = result.slice().sort();
+        expect(result).toEqual(sorted);
+    })
+
+    it('are all truthy', () => {
+        expect(result.filter(i=>i)).toEqual(result);
+    })
+
+    it('are all unique', () => {
+      
+        expect([...new Set(result)]).toEqual(result);
+    })
+
+});

@@ -39,6 +39,7 @@ export type CompletionInformation = {
     kind?: SemanticClass,
     retrigger?: boolean,
     text?: string,
+    sortText?: string,
 };
 
 export type ClassFileEntry = {
@@ -195,6 +196,8 @@ export class ClassDatabase
                     const symboldef = this.findDefinition(token);
                     let typedef = this.findTypeOfDefinition(symboldef);
                     let results: CompletionInformation[][] = [];
+                    let sortIndex = 0;
+                    let sortText = '0';
                     while (typedef.structDefinition) {
                         results.push(typedef.structDefinition.members.map(m => ({
                             label: m.name?.text ?? '',
@@ -210,23 +213,30 @@ export class ClassDatabase
                             ast: before.ast, 
                             structDefinition: before.structDefinition, 
                         });
+                        sortIndex += 1;
+                        sortText = getSortString(sortIndex);
                     }
                     while (typedef.ast) {
                         results.push(
                             typedef.ast.functions.filter(f => !f.isOperator).map(f => ({
                                 label: f.name?.text ?? '',
+                                sortText,
                                 kind: SemanticClass.FunctionReference,
                             })),
                             typedef.ast.variables.map(v => ({
                                 label: v.name?.text ?? '',
+                                sortText,
                                 kind: SemanticClass.VariableReference,
                             })),
                             typedef.ast.constants.map(v => ({
                                 label: v.name?.text ?? '',
+                                sortText,
                                 kind: SemanticClass.ClassConstant,
                             })),
                         );
                         typedef = this.findClassDefinitionStr(typedef.classDefinition?.parentName?.textLower ?? '');
+                        sortIndex += 1;
+                        sortText = getSortString(sortIndex);
                     }
                     return results.flat();
                 }
@@ -1546,4 +1556,16 @@ export class ClassDatabase
         }
         return false;
     }
+}
+
+export function getSortString(i: number): string {
+    if (i<10) return i.toString(); // 0..9
+    if (i<20) return String.fromCodePoint(87+i) // a..j
+    let r=[];
+    while (i > 0) {
+        r.push(String.fromCodePoint(107+(i&15)));
+        i=i>>4;
+    }
+    r.reverse();
+    return r.join('');
 }

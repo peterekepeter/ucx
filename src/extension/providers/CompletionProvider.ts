@@ -20,6 +20,7 @@ export class CompletionProvider implements vscode.CompletionItemProvider {
         for (const r of items) {
             const obj: vscode.CompletionItem = { label: r.label };
             if (r.kind) obj.kind = this.kindFromTokenType(r.kind);
+            if (r.sortText) obj.sortText = r.sortText;
             if (r.retrigger) {
                 obj.command = {
                     command: 'editor.action.triggerSuggest',
