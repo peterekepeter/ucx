@@ -442,17 +442,19 @@ describe("definition chain complex", () => {
     
 });
 
-describe("definition chain complex with typecast and inherited members", () => {
+describe("member chain with typecast and inherited members", () => {
 
     const uri = 'Usage.uc';
 
     beforeAll(() => {
         db = new ClassDatabase();
         ast(uri, 1, [
+            'class Usage extends Actor;',
             'simulated function Timer ()',
             '{',
             '    local string PlayerName;',
             '    PlayerName = PlayerPawn(Owner).PlayerReplicationInfo.PlayerName;',
+            '    Log(PlayerPawn(Owner).);', // line 5
             '}',
         ])
         ast('PlayerPawn.uc', 1, [
@@ -473,15 +475,21 @@ describe("definition chain complex with typecast and inherited members", () => {
     const defName = { uri: 'PlayerReplicationInfo.uc', token: { text: 'PlayerName', line: 1, position: 11 }} as TokenInformation;
     
     test.each([
-        ['find class name', 3, 23, defPlayerPawn],
-        ['find PRI', 3, 46, defPRI],
-        ['find name', 3, 61, defName],
+        ['find class name', 4, 23, defPlayerPawn],
+        ['find PRI', 4, 46, defPRI],
+        ['find name', 4, 61, defName],
     ] as [string, number, number, TokenInformation][]
     )("%p at %p:%p", (_, line, column, expected) => {
         const token = db.findToken(uri, line, column);
         let definition = db.findLocalFileDefinition(token);
         if (!definition.found) definition = db.findCrossFileDefinition(token);
         expect(definition).toMatchObject({...expected, found: true }); 
+    });
+
+    test('has completion after typecast', () => {
+        const completions = db.findCompletions(uri, 5, 26);
+        expect(completions).not.toHaveLength(0);
+        expect(completions.find(c => c.label === 'PlayerReplicationInfo')).toBeTruthy();
     });
 
 })

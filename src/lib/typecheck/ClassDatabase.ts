@@ -1144,6 +1144,21 @@ export class ClassDatabase
         }
     }
 
+    private findMatchingOpeningParen(toks: ParserToken[], item: ParserToken): ParserToken|null {
+        let count = 1;
+        for (let i = 1; i<item.index; i+=1) {
+            const prev = toks[item.index-i];
+            if (prev.text === ')') count += 1;
+            if (prev.text === '(') {
+                count -= 1;
+                if (count === 0) {
+                    return toks[item.index - i];
+                }
+            }
+        }
+        return null;
+    }
+    
     private findMemberDefinitionForQueryToken(query: TokenInformation): TokenInformation {
         if (!query.token || !query.ast) return { found: false };
         const tokens = query.ast.tokens;
@@ -1157,26 +1172,14 @@ export class ClassDatabase
                 // is using result of function call or typecast
                 // find matching paren
                 const toks = query.ast.tokens;
-                let count = 1;
-                let found = false;
-                for (let i = 1; i<item.index; i+=1) {
-                    const prev = toks[item.index-i];
-                    if (prev.text === ')') count += 1;
-                    if (prev.text === '(') {
-                        count -= 1;
-                        if (count === 0) {
-                            const fn = toks[item.index - i - 1];
-                            const subquery = { ...query, token: fn };
-                            member = this.findDefinition(subquery);
-                            if (!member.found) {
-                                member = this.findClassDefinitionStr(fn.textLower);
-                            }
-                            found = true;
-                            break;
-                        }
+                const openingParen = this.findMatchingOpeningParen(toks, item);
+                if (openingParen) {
+                    const fn = toks[openingParen.index - 1];
+                    const subquery = { ...query, token: fn };
+                    member = this.findDefinition(subquery);
+                    if (!member.found) {
+                        member = this.findClassDefinitionStr(fn.textLower);
                     }
-                }
-                if (found) {
                     continue;
                 }
             }
@@ -1222,6 +1225,21 @@ export class ClassDatabase
     }
 
     findDefinition(itemQuery: TokenInformation): TokenInformation {
+        if (itemQuery.token?.text === ')')
+        {
+            // find the definition of the symbol which produces the resulting value
+            if (itemQuery.ast)
+            {
+                const toks = itemQuery.ast.tokens;
+                const open = this.findMatchingOpeningParen(itemQuery.ast.tokens, itemQuery.token);
+                if (open) {
+                    const beforeOpen = toks[open.index - 1];
+                    if (beforeOpen && beforeOpen.type === SemanticClass.FunctionReference) {
+                        itemQuery = { ...itemQuery, token: beforeOpen };
+                    }
+                }
+            }
+        }
         let result = this.findLocalFileDefinition(itemQuery);
         if (!result.found) {
             result = this.findCrossFileDefinition(itemQuery);
