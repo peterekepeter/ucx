@@ -1237,6 +1237,7 @@ export class ClassDatabase
         const tofind = memberReference.token?.textLower;
         if (typeDefinition.structDefinition) {
             // handle struct type
+            // TODO walk up the struct inheritance
             for (const member of typeDefinition.structDefinition.members) {
                 if (member.name?.textLower === tofind) {
                     return {
@@ -1250,38 +1251,40 @@ export class ClassDatabase
                 }
             }
         }
-        for (const c of typeDefinition.ast.constants) {
-            if (c.name && c.name?.textLower === tofind)
-            {
-                return {
-                    token: c.name,
-                    ast: typeDefinition.ast,
-                    uri: typeDefinition.uri,
-                    constDefinition: c,
-                    found: true,
-                };
+        for (let type = typeDefinition; type?.ast != null; type = type.ast.name ? this.findParentClassOf(type.ast.name.text) : {}) {
+            for (const c of type.ast.constants) {
+                if (c.name && c.name?.textLower === tofind)
+                {
+                    return {
+                        token: c.name,
+                        ast: type.ast,
+                        uri: type.uri,
+                        constDefinition: c,
+                        found: true,
+                    };
+                }
             }
-        }
-        for (const fn of typeDefinition.ast.functions) {
-            if (fn.name && fn.name?.textLower === tofind) {
-                return {
-                    token: fn.name,
-                    ast: typeDefinition.ast,
-                    uri: typeDefinition.uri,
-                    fnDefinition: fn,
-                    found: true,
-                };
+            for (const fn of type.ast.functions) {
+                if (fn.name && fn.name?.textLower === tofind) {
+                    return {
+                        token: fn.name,
+                        ast: type.ast,
+                        uri: type.uri,
+                        fnDefinition: fn,
+                        found: true,
+                    };
+                }
             }
-        }
-        for (const v of typeDefinition.ast.variables) {
-            if (v.name && v.name.textLower === tofind) {
-                return {
-                    token: v.name,
-                    ast: typeDefinition.ast,
-                    uri: typeDefinition.uri,
-                    varDefinition: v,
-                    found: true,
-                };
+            for (const v of type.ast.variables) {
+                if (v.name && v.name.textLower === tofind) {
+                    return {
+                        token: v.name,
+                        ast: type.ast,
+                        uri: type.uri,
+                        varDefinition: v,
+                        found: true,
+                    };
+                }
             }
         }
         return { found: false };

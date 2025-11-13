@@ -442,6 +442,50 @@ describe("definition chain complex", () => {
     
 });
 
+describe("definition chain complex with typecast and inherited members", () => {
+
+    const uri = 'Usage.uc';
+
+    beforeAll(() => {
+        db = new ClassDatabase();
+        ast(uri, 1, [
+            'simulated function Timer ()',
+            '{',
+            '    local string PlayerName;',
+            '    PlayerName = PlayerPawn(Owner).PlayerReplicationInfo.PlayerName;',
+            '}',
+        ])
+        ast('PlayerPawn.uc', 1, [
+            'class PlayerPawn expands Pawn;',
+        ]);
+        ast('Pawn.uc', 1, [
+            'class Pawn expands Actor;',
+            'var PlayerReplicationInfo PlayerReplicationInfo;',
+        ]);
+        ast('PlayerReplicationInfo.uc', 1, [
+            'class PlayerReplicationInfo expands ReplicationInfo',
+            'var string PlayerName;',
+        ])
+    })
+    
+    const defPlayerPawn = { uri: 'PlayerPawn.uc', token: { line: 0, position: 6 }} as TokenInformation;
+    const defPRI = { uri: 'Pawn.uc', token: { text: 'PlayerReplicationInfo', line: 1, position: 26 }} as TokenInformation;
+    const defName = { uri: 'PlayerReplicationInfo.uc', token: { text: 'PlayerName', line: 1, position: 11 }} as TokenInformation;
+    
+    test.each([
+        ['find class name', 3, 23, defPlayerPawn],
+        ['find PRI', 3, 46, defPRI],
+        ['find name', 3, 61, defName],
+    ] as [string, number, number, TokenInformation][]
+    )("%p at %p:%p", (_, line, column, expected) => {
+        const token = db.findToken(uri, line, column);
+        let definition = db.findLocalFileDefinition(token);
+        if (!definition.found) definition = db.findCrossFileDefinition(token);
+        expect(definition).toMatchObject({...expected, found: true }); 
+    });
+
+})
+
 describe("completion", () => {
 
     describe("class name completion", () => {
