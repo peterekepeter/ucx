@@ -130,11 +130,13 @@ export class ClassDatabase
         let regexp: RegExp|undefined;
         if (before.token.line === line 
             && before.token.position + before.token.text.length === character 
-            && before.token.type !== SemanticClass.None) {
+            && before.token.type !== SemanticClass.None
+            && before.token.type !== SemanticClass.Operator
+            && before.token.type !== SemanticClass.AssignmentOperator) {
             if (before.token.type === SemanticClass.LiteralNumber) {
                 return []; // do not continue numbers
             }
-            // token continuation reuqest
+            // partially typed token continuation reuqest
             let text = before.token.text;
             if (text.startsWith("'")) text=text.substring(1);
             if (text) {

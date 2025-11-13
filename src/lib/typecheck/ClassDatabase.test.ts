@@ -580,6 +580,8 @@ describe("completion", () => {
 
     describe("expression completion", () => {
 
+        let url = "MyObject.uc";
+
         beforeAll(() => {
             db = new ClassDatabase();
             ast("Object.uc", 1, [
@@ -589,7 +591,7 @@ describe("completion", () => {
                 '',
                 'function Log(coerce string str, optional string tag){}',
             ]);
-            ast("MyObject.uc", 1, [
+            ast(url, 1, [
                 'class MyObject extends Object;',
                 '',
                 'function Test(Object Other) {', // line 2
@@ -599,28 +601,34 @@ describe("completion", () => {
                 '    Log(A,);',
                 '    // this is a line comment',
                 '    ', // line 8
+                '    // anther line comment',
+                '    Log("Something"$);', // line 10
                 '}',
             ]);
         });
 
         test('suggests locally avaiable functions and variables', () => {
-            expectCompletion("MyObject.uc", 3, 4, "Other"); // start of statement
-            expectCompletion("MyObject.uc", 3, 4, "Test"); // start of statement
-            expectCompletion("MyObject.uc", 4, 8, "B"); // after assign operator
-            expectCompletion("MyObject.uc", 5, 8, "A"); // after open parenthesis
-            expectCompletion("MyObject.uc", 6, 10, "A"); // after comma
+            expectCompletion(url, 3, 4, "Other"); // start of statement
+            expectCompletion(url, 3, 4, "Test"); // start of statement
+            expectCompletion(url, 4, 8, "B"); // after assign operator
+            expectCompletion(url, 5, 8, "A"); // after open parenthesis
+            expectCompletion(url, 6, 10, "A"); // after comma
         });
 
         test('suggests inherited avaiable functions and variables', () => {
-            expectCompletion("MyObject.uc", 3, 4, "Log");
+            expectCompletion(url, 3, 4, "Log");
         });
 
         test('sorts class sybols before inherited symbols', () => {
-            expectCompletionOrder("MyObject.uc", 3, 4, ["Test", "Log"]);
+            expectCompletionOrder(url, 3, 4, ["Test", "Log"]);
         })
 
         test('suggests work right after line comment', () => {
-            expectCompletion("MyObject.uc", 8, 4, "Other"); // after line comment
+            expectCompletion(url, 8, 4, "Other"); // after line comment
+        })
+
+        test('has suggestsions after $ operator', () => {
+            expectCompletions(url, 10, 20, { include: ['A', 'B']});
         })
 
     });
