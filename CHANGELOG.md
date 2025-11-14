@@ -1,5 +1,11 @@
 # Change Log
 
+### v0.27.5
+- Fix missing member completion suggestions after typecast
+- Fix find definition for inherited member
+- Fix missing completion suggestions right after operator
+- Fix word pattern config does not include $ operator
+
 ### v0.27.4
 - Fix completions not working after line comment
 - Sort completion symbols by closeness to current scope
