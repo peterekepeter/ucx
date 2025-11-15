@@ -1356,7 +1356,7 @@ export class ClassDatabase
         }
         if (d.fnDefinition) {
             return this.findDefinition({
-                token: d.fnDefinition.name ?? undefined,
+                token: d.fnDefinition.returnType ?? undefined,
                 ast: d.ast,
                 uri: d.uri,
             });

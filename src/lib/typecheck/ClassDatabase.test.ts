@@ -494,6 +494,48 @@ describe("member chain with typecast and inherited members", () => {
 
 })
 
+describe("using function call expression result", () => {
+
+    const uri = 'Usage.uc';
+
+    beforeAll(() => {
+        db = new ClassDatabase();
+        ast(uri, 1, [
+            'class Usage extends UWindowWindow;',
+            'simulated function Notify ()',
+            '{',
+            '    GetPlayerOwner().ConsoleCommand("SOMETHING");',
+            '}',
+        ])
+        ast('PlayerPawn.uc', 1, [
+            'class PlayerPawn expands Pawn;',
+            'native function string ConsoleCommand( string Command );',
+        ]);
+        ast('UWindowWindow.uc', 1, [
+            'class UWindowWindow extends UWindowBase;',
+            'final function PlayerPawn GetPlayerOwner()',
+            '{',
+            '    return Root.Console.ViewPort.Actor;',
+            '}',
+        ])
+    })
+
+    const defGetPlayerOwner = { uri:'UWindowWindow.uc', token: { line:1, position:26 }} as TokenInformation;
+    const defConsoleCommand = { uri:'PlayerPawn.uc', token: { line:1, position:23 }} as TokenInformation;
+
+    test.each([
+        ['GetPlayerOwner', 3, 9, defGetPlayerOwner],
+        ['ConsoleCommand', 3, 28, defConsoleCommand],
+    ] as [string, number, number, TokenInformation][]
+    )("find definition of %p at %p:%p", (_, line, column, expected) => {
+        const token = db.findToken(uri, line, column);
+        let definition = db.findLocalFileDefinition(token);
+        if (!definition.found) definition = db.findCrossFileDefinition(token);
+        expect(definition).toMatchObject({...expected, found: true }); 
+    });
+
+})
+
 describe("completion", () => {
 
     describe("class name completion", () => {
