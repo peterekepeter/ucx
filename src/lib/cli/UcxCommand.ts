@@ -11,6 +11,8 @@ export const DEFAULT_UCX_COMMAND = {
     verbose: false,
     noPackageMangle: true,
     help: false,
+    benchmark: false,
+    runcount: 1,
 };
 
 export type UcxCommand = typeof DEFAULT_UCX_COMMAND;

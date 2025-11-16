@@ -15,6 +15,9 @@ type LintContext = {
     warningCount: number,
     filesParsed: number,
     ignoreWarnings: boolean,
+    ignoreErrors: boolean,
+    perfParse: number,
+    perfLint: number,
 };
 
 export async function execLint(cmd: UcxCommand): Promise<void> {
@@ -23,15 +26,43 @@ export async function execLint(cmd: UcxCommand): Promise<void> {
     }
     const context: LintContext = {
         fileSeparator: detectPathSeparator(cmd.ucxScript),
-        ignoreWarnings: cmd.quiet,
+        ignoreWarnings: cmd.quiet || cmd.benchmark,
+        ignoreErrors: cmd.benchmark,
         errorCount: 0,
         filesParsed: 0,
         warningCount: 0,
         successful: true,
+        perfParse: 0,
+        perfLint: 0,
     };
-    for (const file of cmd.files)
+    const runs = cmd.runcount;
+    let timeStart = 0;
+    if (cmd.benchmark)
     {
-        await lintVisitPath(file, context);
+        console.log('Note: output may be modified because benchmarking is enabled')
+        timeStart = performance.now();
+    }
+    for (let i=0; i<runs; i+=1) 
+    {
+        context.filesParsed = 0;
+        context.errorCount = 0;
+        context. warningCount = 0;
+        for (const file of cmd.files)
+        {
+            await lintVisitPath(file, context);
+        }
+    }
+    if (cmd.benchmark)
+    {
+        const timeTaken = (performance.now() - timeStart)/runs;
+        const timeParse = context.perfParse / runs;
+        const timeLint = context.perfLint / runs;
+        console.log([
+            `Benchmark total ${timeTaken}ms:`,
+            `\tparse:\t${timeParse}ms`,
+            `\tlint:\t${timeLint}ms`,
+            `\tother:\t${timeTaken-timeParse-timeLint}ms`,
+        ].join('\n'))
     }
     evalLintResult(context);
     console.log(getStatusMessage(context));
@@ -62,6 +93,7 @@ async function lintVisitFile(file: string, context: LintContext) {
     }
     const ignoreWarnings = context.ignoreWarnings;
     let ast: UnrealClass;
+    const timeStart = performance.now();
     try 
     {
         context.filesParsed += 1;
@@ -72,6 +104,7 @@ async function lintVisitFile(file: string, context: LintContext) {
         context.errorCount += 1;
         return;
     }
+    const timeAfterParse = performance.now();
     try 
     {
         let localErrorCount = 0;
@@ -83,11 +116,14 @@ async function lintVisitFile(file: string, context: LintContext) {
             if (problem.severity === 'error') {
                 context.errorCount += 1;
                 localErrorCount += 1;
-                if (localErrorCount < maxPrint) {
-                    printProblem(ast, problem);
-                } else if (!reachedErrorLimit) {
-                    reachedErrorLimit = true;
-                    console.log(`${file} ${red(bold("reached error limit"))}`);
+                if (!context.ignoreErrors)
+                {
+                    if (localErrorCount < maxPrint) {
+                        printProblem(ast, problem);
+                    } else if (!reachedErrorLimit) {
+                        reachedErrorLimit = true;
+                        console.log(`${file} ${red(bold("reached error limit"))}`);
+                    }
                 }
             } else {
                 context.warningCount += 1;
@@ -109,6 +145,9 @@ async function lintVisitFile(file: string, context: LintContext) {
         context.errorCount += 1;
         return;
     }
+    const timeAfterLint = performance.now();
+    context.perfParse += timeAfterParse - timeStart;
+    context.perfLint += timeAfterLint - timeAfterParse;
 }
 
 function printProblem(ast: UnrealClass, problem: LintResult) {

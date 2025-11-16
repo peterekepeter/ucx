@@ -40,8 +40,26 @@ export function parseCliArgs(argv: string[]): Partial<UcxCommand>{
             case '--help':
                 result.help = true;
                 break;
+            case '--bench':
+                result.benchmark = true;
+                break;
+            case '--benchmark':
+                result.benchmark = true;
+                break;
+            case '--bench10':
+                result.benchmark = true;
+                result.runcount = 10;
+                break;
+            case '--bench20':
+                result.benchmark = true;
+                result.runcount = 20;
+                break;
+            case '--bench30':
+                result.benchmark = true;
+                result.runcount = 30;
+                break;
             default:    
-                errors.push(`Uknown argument "${arg}"`);
+                errors.push(`Unknown argument "${arg}"`);
             }
         }
         else if (arg.startsWith('-')) {

@@ -33,7 +33,7 @@ test('parsed ucc path', () => {
 
 test('unsupported args reported as errors', () => {
     expect(parse(['','','','--unknown'])).toMatchObject({
-        errors: ['Uknown argument "--unknown"']
+        errors: ['Unknown argument "--unknown"']
     } as Partial<UcxCommand>);
 });
 
