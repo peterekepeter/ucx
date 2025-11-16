@@ -142,33 +142,34 @@ export class VsCodeClassDatabase {
     }
 
     private async updateFiles(files: vscode.Uri[], cancellation: vscode.CancellationToken, source: 'library'|'workspace') {
+        let before = 0;
+        let after = 0;
+        let cancelled = 0;
+        let finished = 0;
+        let time = Date.now();
         await Promise.all(files.map(async file => { 
-            const cacheKey = file.toString();
-            const dbVersion = this.libdb.tagSourceAndGetVersion(cacheKey, source);
-            
-            if (cancellation.isCancellationRequested) { return; };
+            const filename = file.toString();
+            if (this.libdb.tagSourceAndGetVersion(filename, source) >= 0) { before+=1; return; };
 
-            const stats = await vscode.workspace.fs.stat(file);
-
-            if (cancellation.isCancellationRequested) { return; };
-
-            const fileVersion = this.versionFromFileStat(stats);
-            if (fileVersion === dbVersion) { return; };
-
+            // TODO the way this is currently written promise all will launch all file read operations
+            // may want to limit file read concurrency so that it's possible to cancel some of tem
             const array = await vscode.workspace.fs.readFile(file);
+
+            // parsing in javascript is slower than fs read
+            // do not parse if operation is cancelled
+            // even if we already paid for the file read
+            if (cancellation.isCancellationRequested) { cancelled+=1; return; }
+            if (this.libdb.tagSourceAndGetVersion(filename, source) >= 0) { after+=1; return; };
+
             const str = Buffer.from(array).toString('utf8');
             const ast = ucParseText(str);
-            this.libdb.updateAst(file.toString(), ast, fileVersion, source);
+            this.libdb.updateAst(filename, ast, 0, source);
 
+            finished+=1;
             return;
         }));
-    }
-
-    private versionFromFileStat(stat: vscode.FileStat): number {
-        // assumes vscode closes once every 2 years or so
-        const msPerHour = 1000 * 60 * 60;
-        const msPerYear = msPerHour * 24 * 365.25;
-        return stat.mtime - activatedAt - msPerYear * 2;
+        // uncomment for stats log
+        // console.log({before, after, cancelled, finished, files: files.length, perf: Date.now()-time })
     }
 
     private async getCrossFileDefinition(token: TokenInformation, cancellation: vscode.CancellationToken): Promise<TokenInformation> {
@@ -210,6 +211,7 @@ export class VsCodeClassDatabase {
         }
         const ast = getAstFromDocument(document, cancellation);
         this.libdb.updateAst(uri, ast, document.version);
+        console.log(uri, document.version);
         return ast;
     }
 
