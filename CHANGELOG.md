@@ -1,5 +1,11 @@
 # Change Log
 
+### v0.27.6
+- Optimize filesystem calls when indexing workspace or library
+- Optimize vscode task cancellation
+- Optimize concurrency with vscode when accessing files
+- Fix find typedef for functions
+
 ### v0.27.5
 - Fix missing member completion suggestions after typecast
 - Fix find definition for inherited member
