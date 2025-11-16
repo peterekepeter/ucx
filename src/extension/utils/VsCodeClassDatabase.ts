@@ -13,79 +13,77 @@ export class VsCodeClassDatabase {
     private workspaceLoaded = false;
     private libraryLoaded = false;
 
-    async findSignature(vscodeuri: vscode.Uri, position: vscode.Position, token: vscode.CancellationToken) {
+    async findSignature(vscodeuri: vscode.Uri, position: vscode.Position, cancelation: vscode.CancellationToken) {
         const uri = vscodeuri.toString();
         const result = this.libdb.findSignature(uri, position.line, position.character);
         if (result.found) return result;
 
-        await this.requiresWorkspaceAndLibraryLoaded(token);
-        if (token.isCancellationRequested) return { found: false };
+        await this.requiresWorkspaceAndLibraryLoaded(cancelation);
+        if (cancelation.isCancellationRequested) return { found: false };
 
         return this.libdb.findSignature(uri, position.line, position.character);
     }
 
-    async findTypeDefinition(vscodeuri: vscode.Uri, position: vscode.Position, token: vscode.CancellationToken) {
-        const defintion = await this.findDefinition(vscodeuri, position, token);
-        if (token.isCancellationRequested) return { found: false };
+    async findTypeDefinition(vscodeuri: vscode.Uri, position: vscode.Position, cancellation: vscode.CancellationToken) {
+        const defintion = await this.findDefinition(vscodeuri, position, cancellation);
+        if (cancellation.isCancellationRequested) return { found: false };
         return this.libdb.findTypeOfDefinition(defintion);
     }
 
-    async findChildClassesOf(name: string, token: vscode.CancellationToken) {
-        await this.requiresWorkspaceAndLibraryLoaded(token);
-        if (token.isCancellationRequested) return [];
+    async findChildClassesOf(name: string, cancellation: vscode.CancellationToken) {
+        await this.requiresWorkspaceAndLibraryLoaded(cancellation);
+        if (cancellation.isCancellationRequested) return [];
         return this.libdb.findChildClassesOf(name);
     }
     
-    async findParentClassOf(name: string, token: vscode.CancellationToken) {
-        await this.requiresWorkspaceAndLibraryLoaded(token);
-        if (token.isCancellationRequested) return { found: false };
+    async findParentClassOf(name: string, cancellation: vscode.CancellationToken) {
+        await this.requiresWorkspaceAndLibraryLoaded(cancellation);
+        if (cancellation.isCancellationRequested) return { found: false };
         return this.libdb.findParentClassOf(name);
     }
 
-    async findDefinition(vscodeuri: vscode.Uri, position: vscode.Position, token: vscode.CancellationToken) {
+    async findDefinition(vscodeuri: vscode.Uri, position: vscode.Position, cancellation: vscode.CancellationToken) {
         const uri = vscodeuri.toString();
-        const codeToken = this.libdb.findSymbolToken(uri, position.line, position.character);
+        const token = this.libdb.findSymbolToken(uri, position.line, position.character);
 
         // quickly resolve references to the given file (assumes given URI is never out of date)
-        let result = this.libdb.findLocalFileDefinition(codeToken);
-        if (result.found || token.isCancellationRequested) return result;
+        let result = this.libdb.findLocalFileDefinition(token);
+        if (result.found || cancellation.isCancellationRequested) return result;
 
         // resolves reference from cache, updates referenced file if needed
-        result = await this.getCrossFileDefinition(codeToken);
-        if (result.found || token.isCancellationRequested) return result;
+        result = await this.getCrossFileDefinition(token, cancellation);
+        if (result.found || cancellation.isCancellationRequested) return result;
 
-        await this.requiresWorkspaceLoaded(token);
-        if (token.isCancellationRequested) return result;
+        await this.requiresWorkspaceLoaded(cancellation);
+        if (cancellation.isCancellationRequested) return result;
 
-        result = await this.getCrossFileDefinition(codeToken);
-        if (result.found || token.isCancellationRequested) return result;
+        result = await this.getCrossFileDefinition(token, cancellation);
+        if (result.found || cancellation.isCancellationRequested) return result;
 
-        await this.requiresLibraryLoaded(token);
-        if (token.isCancellationRequested) return result;
+        await this.requiresLibraryLoaded(cancellation);
+        if (cancellation.isCancellationRequested) return result;
 
-        result = await this.getCrossFileDefinition(codeToken);
-        if (result.found || token.isCancellationRequested) return result;
+        result = await this.getCrossFileDefinition(token, cancellation);
+        if (result.found || cancellation.isCancellationRequested) return result;
 
         return result;
     }
 
-    async findCompletion(vscodeuri: vscode.Uri, position: vscode.Position, token: vscode.CancellationToken) {
+    async findCompletion(vscodeuri: vscode.Uri, position: vscode.Position, cancellation: vscode.CancellationToken) {
         const uri = vscodeuri.toString();
-        await this.requiresWorkspaceAndLibraryLoaded(token);
-        if (token.isCancellationRequested) {
-            return [];
-        }
+        await this.requiresWorkspaceAndLibraryLoaded(cancellation);
+        if (cancellation.isCancellationRequested) return [];
         return this.libdb.findCompletions(uri, position.line, position.character);
     }
 
-    async getAllFileEntries(token: vscode.CancellationToken, options?: { fromWorkspace: boolean, fromLibrary: boolean }): Promise<Iterable<ClassFileEntry>> {
+    async getAllFileEntries(cancellation: vscode.CancellationToken, options?: { fromWorkspace: boolean, fromLibrary: boolean }): Promise<Iterable<ClassFileEntry>> {
         if (options?.fromWorkspace) {
-            await this.requiresWorkspaceLoaded(token);
-            if (token.isCancellationRequested) return [];
+            await this.requiresWorkspaceLoaded(cancellation);
+            if (cancellation.isCancellationRequested) return [];
         }
         if (options?.fromLibrary) {
-            await this.requiresLibraryLoaded(token);
-            if (token.isCancellationRequested) return [];
+            await this.requiresLibraryLoaded(cancellation);
+            if (cancellation.isCancellationRequested) return [];
         }
         return this.libdb.getAllFileEntries({ 
             includeWorkspace: options?.fromWorkspace, 
@@ -93,34 +91,34 @@ export class VsCodeClassDatabase {
         });
     }
     
-    async getAllExtendableClassNames(token: vscode.CancellationToken) {
-        await this.requiresLibraryLoaded(token);
-        if (token.isCancellationRequested) return [];
+    async getAllExtendableClassNames(cancellation: vscode.CancellationToken) {
+        await this.requiresLibraryLoaded(cancellation);
+        if (cancellation.isCancellationRequested) return [];
         return this.libdb.findAllExtendableClassNames();
     }
 
-    private async requiresWorkspaceAndLibraryLoaded(token: vscode.CancellationToken) {
-        await this.requiresWorkspaceLoaded(token);
-        if (token.isCancellationRequested) return;
-        await this.requiresLibraryLoaded(token);
+    private async requiresWorkspaceAndLibraryLoaded(cancellation: vscode.CancellationToken) {
+        await this.requiresWorkspaceLoaded(cancellation);
+        if (cancellation.isCancellationRequested) return;
+        await this.requiresLibraryLoaded(cancellation);
     }
 
-    private async requiresWorkspaceLoaded(token: vscode.CancellationToken) {
+    private async requiresWorkspaceLoaded(cancellation: vscode.CancellationToken) {
         if (!this.workspaceLoaded) {
             // load workspace classses and try again
-            await this.ensureWorkspaceIsNotOutdated(token);
-            if (token.isCancellationRequested) return;
+            await this.ensureWorkspaceIsNotOutdated(cancellation);
+            if (cancellation.isCancellationRequested) return;
 
             // if this line is reached then workspace was fully scanned
             this.workspaceLoaded = true;
         }
     }
 
-    private async requiresLibraryLoaded(token: vscode.CancellationToken) {
+    private async requiresLibraryLoaded(cancellation: vscode.CancellationToken) {
         if (!this.libraryLoaded) {
             // load library classes and try again
-            await this.ensureLibraryIsNotOutdated(token);
-            if (token.isCancellationRequested) return;
+            await this.ensureLibraryIsNotOutdated(cancellation);
+            if (cancellation.isCancellationRequested) return;
 
             // if this line is reached then library was fully scanned
             this.libraryLoaded = true;
@@ -128,35 +126,42 @@ export class VsCodeClassDatabase {
     }
 
     private async ensureWorkspaceIsNotOutdated(cancellation: vscode.CancellationToken) {
-        const files = await vscode.workspace.findFiles("**/*.uc");
+        const files = await vscode.workspace.findFiles("**/*.uc", undefined, undefined, cancellation);
+        if (cancellation.isCancellationRequested) return;
         await this.updateFiles(files, cancellation, "workspace");
     }
 
     private async ensureLibraryIsNotOutdated(cancellation: vscode.CancellationToken) {
         const vscodeConfig = vscode.workspace.getConfiguration("ucx");
         const config = parseConfiguration(vscodeConfig);
-        if (config.libraryPath) {
-            const searchPattern = new vscode.RelativePattern(config.libraryPath, '**/*.uc');
-            const files = await vscode.workspace.findFiles(searchPattern);
-            await this.updateFiles(files, cancellation, "library");
-        }
+        if (!config.libraryPath) return;
+        const searchPattern = new vscode.RelativePattern(config.libraryPath, '**/*.uc');
+        const files = await vscode.workspace.findFiles(searchPattern, undefined, undefined, cancellation);
+        if (cancellation.isCancellationRequested) return;
+        await this.updateFiles(files, cancellation, "library");
     }
 
     private async updateFiles(files: vscode.Uri[], cancellation: vscode.CancellationToken, source: 'library'|'workspace') {
-        for (const file of files) {
-            const stats = await vscode.workspace.fs.stat(file);
-            const fileVersion = this.versionFromFileStat(stats);
+        await Promise.all(files.map(async file => { 
             const cacheKey = file.toString();
             const dbVersion = this.libdb.tagSourceAndGetVersion(cacheKey, source);
-            if (fileVersion < dbVersion) continue;
+            
+            if (cancellation.isCancellationRequested) { return; };
 
-            if (cancellation.isCancellationRequested) return;
+            const stats = await vscode.workspace.fs.stat(file);
+
+            if (cancellation.isCancellationRequested) { return; };
+
+            const fileVersion = this.versionFromFileStat(stats);
+            if (fileVersion === dbVersion) { return; };
 
             const array = await vscode.workspace.fs.readFile(file);
             const str = Buffer.from(array).toString('utf8');
             const ast = ucParseText(str);
             this.libdb.updateAst(file.toString(), ast, fileVersion, source);
-        }
+
+            return;
+        }));
     }
 
     private versionFromFileStat(stat: vscode.FileStat): number {
@@ -166,25 +171,27 @@ export class VsCodeClassDatabase {
         return stat.mtime - activatedAt - msPerYear * 2;
     }
 
-    private async getCrossFileDefinition(codeToken: TokenInformation): Promise<TokenInformation> {
-        const localResult = this.libdb.findLocalFileDefinition(codeToken);
+    private async getCrossFileDefinition(token: TokenInformation, cancellation: vscode.CancellationToken): Promise<TokenInformation> {
+        const localResult = this.libdb.findLocalFileDefinition(token);
         if (localResult.found) {
             return localResult;
         }
-        const cachedResult = this.libdb.findCrossFileDefinition(codeToken);
-        if (cachedResult.found) {
-            if (this.isFileOutdated(cachedResult)) {
-                await this.updateFile(cachedResult);
-                const refreshedResult = this.libdb.findCrossFileDefinition(codeToken);
-                if (refreshedResult.found) {
-                    return refreshedResult;
+        const result = this.libdb.findCrossFileDefinition(token);
+        if (result.found) {
+            if (this.isFileOutdated(result)) {
+                await this.updateFile(result);
+                if (cancellation.isCancellationRequested)
+                    return {};
+                const updatedResult = this.libdb.findCrossFileDefinition(token);
+                if (updatedResult.found) {
+                    return updatedResult;
                 }
             }
             else {
-                return cachedResult;
+                return result;
             }
         }
-        return cachedResult;
+        return result;
     }
 
     updateFile(cachedResult: TokenInformation) {
@@ -196,22 +203,22 @@ export class VsCodeClassDatabase {
         return false;
     }
 
-    updateDocumentAndGetAst(document: vscode.TextDocument, token: vscode.CancellationToken): UnrealClass {
+    updateDocumentAndGetAst(document: vscode.TextDocument, cancellation: vscode.CancellationToken): UnrealClass {
         const uri = document.uri.toString();
         if (this.libdb.getVersion(uri) >= document.version) {
-            return this.libdb.getAst(uri) ?? getAstFromDocument(document, token);
+            return this.libdb.getAst(uri) ?? getAstFromDocument(document, cancellation);
         }
-        const ast = getAstFromDocument(document, token);
+        const ast = getAstFromDocument(document, cancellation);
         this.libdb.updateAst(uri, ast, document.version);
         return ast;
     }
 
-    async findReferences(document: vscode.TextDocument, position: vscode.Position, cancellationToken: vscode.CancellationToken) {
+    async findReferences(document: vscode.TextDocument, position: vscode.Position, cancellation: vscode.CancellationToken) {
         const uri = document.uri.toString();
         const line = position.line;
         const character = position.character;
 
-        this.updateDocumentAndGetAst(document, cancellationToken);
+        this.updateDocumentAndGetAst(document, cancellation);
 
         const codeToken = this.libdb.findSymbolToken(uri, position.line, position.character);
         let result = this.libdb.findLocalFileDefinition(codeToken);
@@ -220,8 +227,8 @@ export class VsCodeClassDatabase {
             return this.libdb.findReferences(uri, line, character);
         }
 
-        await this.requiresWorkspaceAndLibraryLoaded(cancellationToken);
-        if (cancellationToken.isCancellationRequested) return [];
+        await this.requiresWorkspaceAndLibraryLoaded(cancellation);
+        if (cancellation.isCancellationRequested) return [];
         
         // find references for cross file symbols
         return this.libdb.findReferences(uri, line, character);
