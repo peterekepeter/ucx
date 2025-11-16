@@ -11,6 +11,7 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 **/*.vsix
+*.cpuprofile
 scripts/**
 syntaxes/
 .github/
