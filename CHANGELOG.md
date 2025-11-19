@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.27.7
+- Better task scheduling when parsing workspace
+
 ### v0.27.6
 - Optimize filesystem calls when indexing workspace or library
 - Optimize vscode task cancellation
