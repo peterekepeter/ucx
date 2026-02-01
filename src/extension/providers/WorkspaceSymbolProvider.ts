@@ -30,9 +30,6 @@ export class WorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvider {
             }
             for (const symbol of symbols) {
                 if (regex.test(symbol.name)) {
-                    if (symbol.name === 'Actor') {
-                        console.log('found');
-                    }
                     if (query.length === symbol.name.length) {
                         exact.push(symbol);
                     }

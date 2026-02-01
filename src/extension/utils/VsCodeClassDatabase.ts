@@ -4,7 +4,6 @@ import { ClassFileEntry, TokenInformation } from '../../lib/typecheck/ClassDatab
 import { ucParseText } from '../../lib/parser/ucParse';
 import { activatedAt } from '../state';
 import { vscode } from '../vscode';
-import { parseConfiguration } from '../config';
 import { getAstFromDocument } from './getAst';
 import { delay } from '../../lib/utils';
 import { concurrentMap } from '../../lib/utils/concurrentMap';
@@ -13,6 +12,7 @@ export class VsCodeClassDatabase {
 
     private libdb = new ClassDatabase();
     private workspaceLoaded = false;
+    private loadedPath = '';
     private libraryLoaded = false;
 
     async findSignature(vscodeuri: vscode.Uri, position: vscode.Position, cancelation: vscode.CancellationToken) {
@@ -94,7 +94,7 @@ export class VsCodeClassDatabase {
     }
     
     async getAllExtendableClassNames(cancellation: vscode.CancellationToken) {
-        await this.requiresLibraryLoaded(cancellation);
+        await this.requiresWorkspaceAndLibraryLoaded(cancellation);
         if (cancellation.isCancellationRequested) return [];
         return this.libdb.findAllExtendableClassNames();
     }
@@ -108,7 +108,10 @@ export class VsCodeClassDatabase {
     private async requiresWorkspaceLoaded(cancellation: vscode.CancellationToken) {
         if (!this.workspaceLoaded) {
             // load workspace classses and try again
-            await this.ensureWorkspaceIsNotOutdated(cancellation);
+            const files = await vscode.workspace.findFiles("**/*.uc", undefined, undefined, cancellation);
+            if (cancellation.isCancellationRequested) return;
+
+            await this.updateFiles(files, cancellation, "workspace");
             if (cancellation.isCancellationRequested) return;
 
             // if this line is reached then workspace was fully scanned
@@ -117,9 +120,20 @@ export class VsCodeClassDatabase {
     }
 
     private async requiresLibraryLoaded(cancellation: vscode.CancellationToken) {
+        const ucxConfig = vscode.workspace.getConfiguration("ucx");
+        const ignore = !ucxConfig.get<boolean>('language.searchLibrarySymbols');
+        if (ignore) {
+            return;
+        }
+        const path = ucxConfig.get<string>('libraryPath') ?? '';
+        if (this.loadedPath !== path)
+        {
+            this.libraryLoaded = false;
+            this.libdb = new ClassDatabase();
+        }
         if (!this.libraryLoaded) {
             // load library classes and try again
-            await this.ensureLibraryIsNotOutdated(cancellation);
+            await this.ensureLibraryIsNotOutdated(path, cancellation);
             if (cancellation.isCancellationRequested) return;
 
             // if this line is reached then library was fully scanned
@@ -127,20 +141,42 @@ export class VsCodeClassDatabase {
         }
     }
 
-    private async ensureWorkspaceIsNotOutdated(cancellation: vscode.CancellationToken) {
-        const files = await vscode.workspace.findFiles("**/*.uc", undefined, undefined, cancellation);
-        if (cancellation.isCancellationRequested) return;
-        await this.updateFiles(files, cancellation, "workspace");
-    }
+    private async ensureLibraryIsNotOutdated(path: string, cancellation: vscode.CancellationToken) {
+        if (!path) {
+            this.warnLibraryPath(path);
+            return;
+        }
+        const searchPattern = new vscode.RelativePattern(path, '**/*.uc');
 
-    private async ensureLibraryIsNotOutdated(cancellation: vscode.CancellationToken) {
-        const vscodeConfig = vscode.workspace.getConfiguration("ucx");
-        const config = parseConfiguration(vscodeConfig);
-        if (!config.libraryPath) return;
-        const searchPattern = new vscode.RelativePattern(config.libraryPath, '**/*.uc');
         const files = await vscode.workspace.findFiles(searchPattern, undefined, undefined, cancellation);
         if (cancellation.isCancellationRequested) return;
+
+        if (files.length === 0)
+        {
+            this.warnLibraryPath(path);
+        }
         await this.updateFiles(files, cancellation, "library");
+    }
+
+    private warnLibraryPath(path: string) {
+        let message = "Found 0 **/*.uc files at unreal script library path.";
+        if (path.startsWith('~')) 
+            message = "Unreal script library path starting with ~ may not work correctly, try using full path.";
+        if (!path)
+            message = "Unreal script library path not configured, without it will only be able to look up symbols within current workspace.";
+        vscode.window.showWarningMessage(
+            message,
+            "Configure", "Ignore"
+        ).then(item => {
+            switch (item){
+            case 'Configure': 
+                vscode.commands.executeCommand('workbench.action.openSettings', 'ucx.libraryPath');
+                break;
+            case 'Ignore':
+                vscode.workspace.getConfiguration('ucx').update("language.searchLibrarySymbols", false);
+                break;
+            }
+        });
     }
 
     private async updateFiles(files: vscode.Uri[], cancellation: vscode.CancellationToken, source: 'library'|'workspace') {
@@ -149,7 +185,7 @@ export class VsCodeClassDatabase {
         let time = Date.now();
         await concurrentMap(files, async file => { 
             const filename = file.toString();
-            if (this.libdb.tagSourceAndGetVersion(filename, source) >= 0) { before+=1; return; };
+            if (this.libdb.tagSourceAndGetVersion(filename, source) >= 0) { before+=1; return };
 
             const array = await vscode.workspace.fs.readFile(file);
 
@@ -161,7 +197,7 @@ export class VsCodeClassDatabase {
             return;
         }, 4, cancellation);
         // uncomment for stats log
-        console.log({before, finished, files: files.length, perf: Date.now()-time })
+        // console.log({before, finished, files: files.length, perf: Date.now()-time })
     }
 
     private async getCrossFileDefinition(token: TokenInformation, cancellation: vscode.CancellationToken): Promise<TokenInformation> {
