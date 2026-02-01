@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.27.8
+- Add warning for library path issues
+
 ### v0.27.7
 - Better task scheduling when parsing workspace
 
