@@ -1110,6 +1110,15 @@ test('unused local variable not reported when used as lvalue', () => { linting([
     "}",
 ]).hasNoLintResults();});
 
+test('unused local variable not reported when used object in lvalue', () => { linting([
+    "function Func()",
+    "{",
+    "    local SFClassFilter filter;",
+    "    filter = Spawn(class'SFClassFilter');",
+    "    filter.Tag = 'thing';",
+    "}",
+]).hasNoLintResults();});
+
 test('local var not used after modify ', () => { linting([
     "function DoSomething()",
     "{",

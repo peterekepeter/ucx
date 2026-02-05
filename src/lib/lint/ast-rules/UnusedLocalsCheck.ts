@@ -110,11 +110,12 @@ export class UnusedLocalsCheck implements AstBasedLinter
         var tokens = ast.tokens.length;
         var right: string;
         var i = index + 1;
-
+        var member = false;
         do {
             right = ast.tokens[i].text;
             if (right === '.') {
                 i += 2; // skip 2 items
+                member = true;
                 continue;
             }
             if (right === '[') {
@@ -145,7 +146,12 @@ export class UnusedLocalsCheck implements AstBasedLinter
         }
         
         if (right === '=' || right === '+=' || right === '-=' || right === '*=' || right === '/=') {
-            state.flags |= WRITE;
+            if (member) { 
+                state.flags |= READWRITE;
+            }
+            else {
+                state.flags |= WRITE;
+            }
             return;
         }
 
