@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.27.10
+- Fix unused variable false positive when writing to object member
+
 ### v0.27.9
 - Fix workspace symbols getting discarded when library is parsed
 
