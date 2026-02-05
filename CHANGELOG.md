@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.27.9
+- Fix workspace symbols getting discarded when library is parsed
+
 ### v0.27.8
 - Add warning for library path issues
 
