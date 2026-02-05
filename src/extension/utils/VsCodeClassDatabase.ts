@@ -12,7 +12,7 @@ export class VsCodeClassDatabase {
 
     private libdb = new ClassDatabase();
     private workspaceLoaded = false;
-    private loadedPath = '';
+    private loadedPath: string|null = null;
     private libraryLoaded = false;
 
     async findSignature(vscodeuri: vscode.Uri, position: vscode.Position, cancelation: vscode.CancellationToken) {
@@ -129,7 +129,13 @@ export class VsCodeClassDatabase {
         if (this.loadedPath !== path)
         {
             this.libraryLoaded = false;
-            this.libdb = new ClassDatabase();
+            if (this.loadedPath != null){
+                // loaded path has changed
+                // purge previously all loaded symbols and reload workspace symbols
+                this.libdb = new ClassDatabase();
+                this.workspaceLoaded = false;
+                this.requiresWorkspaceLoaded(cancellation);
+            }
         }
         if (!this.libraryLoaded) {
             // load library classes and try again
