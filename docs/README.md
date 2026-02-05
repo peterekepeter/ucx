@@ -2,6 +2,7 @@
 # UCX (Unreal Script Extensions)
 
 [![Node.js CD](https://github.com/peterekepeter/ucx/actions/workflows/node.js.yml/badge.svg)](https://github.com/peterekepeter/ucx/actions/workflows/node.js.yml)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=peterekepeter_ucx&metric=coverage)](https://sonarcloud.io/summary/new_code?id=peterekepeter_ucx)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=peterekepeter_ucx&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=peterekepeter_ucx)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=peterekepeter_ucx&metric=bugs)](https://sonarcloud.io/summary/new_code?id=peterekepeter_ucx)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=peterekepeter_ucx&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=peterekepeter_ucx)
@@ -9,7 +10,16 @@
 [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=peterekepeter_ucx&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=peterekepeter_ucx)
 [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=peterekepeter_ucx&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=peterekepeter_ucx)
 
-Dedicated language support and tooling UnrealScript, with primary focus on UT99.
+
+Dedicated language support and tooling for the UnrealScript language with 
+primary focus on UT99 (Unreal Engine 1). The primary goal is to be able to 
+work and maintain large UnrealScript projects by bringing modern IDE features
+to an old programming language.
+
+The language parser is architected to be robust and gracefully fall back when 
+dealing with unknown situations. This means the parser will not crash when it
+encounters unknown UnrealScript features but it will still report warnings and
+errors.
 
 ## VsCode Features
 
@@ -42,8 +52,7 @@ you to go to definition (`Ctrl-Click`), search through the symbols
 ### Completion
 
 The extension will scan the current workspace and an optional library path to
-provide code completion completion is supported and help with function 
-singatures.
+provide code completion completion is supported in most situations.
 
 ![User typing and expressions getting completed](./demo/completion.gif)
 
@@ -76,6 +85,27 @@ configuration if they are not needed.
 One of the goals is to early detect issues before compilation. Syntax errors,
 missing semicolons and some other checks are reported. Additional typechecking
 is work in progress.
+
+- unused local variable are detected and reported as warnings
+- function with missing return expression is also a warning
+- when trying to use invalid chars inside name you get an error
+- and more...
+
+### Other IDE features/limitations
+
+- rename symbols is supported but works well only for simple cases, for 
+local variable definitions for example it works perfectly
+
+- find definition works but can struggle on complex or rare use cases
+
+- variable completion works for the most part but it does not check for type
+
+- color picker is provided when defining color in default properties when
+the color struct is detected
+
+- find all references only works for simple cases but may have duplicates 
+or missed references for now so I still find myself using grep
+
 
 ## CLI Features
 
