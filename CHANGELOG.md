@@ -1,5 +1,8 @@
 # Change Log
 
+### v0.27.11
+- Fix completion suggesting variable names inside function args
+
 ### v0.27.10
 - Fix unused variable false positive when writing to object member
 
