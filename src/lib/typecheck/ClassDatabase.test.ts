@@ -925,6 +925,30 @@ describe("completion", () => {
 
     })
 
+    describe("fn definition completion", () => {
+
+        beforeAll(() => {
+            reset();
+            ast("Utils.uc", 1, [
+                'class Utils extends Object;',
+                'function F1() {}'
+            ])
+        });
+
+        test('does not suggest function as arg type', () => {
+            expectCompletions("Utils.uc", 1, 12, { exclude: ['F1'] });
+        });
+
+        test('does suggest known types',  () => {
+            expectCompletions("Utils.uc", 1, 12, { include: ['Utils', 'Object']});
+        });
+        
+        test('does suggest arg modifiers',  () => {
+            expectCompletions("Utils.uc", 1, 12, { include: ['out', 'optional', 'coerce', 'skip']});
+        });
+
+    })
+
     const expectCompletions = (uri: string, line: number, pos: number, options: { 
         include?: Array<string|CompletionInformation>, 
         exclude?: Array<string|CompletionInformation>, 

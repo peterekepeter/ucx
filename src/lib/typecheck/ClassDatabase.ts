@@ -166,6 +166,18 @@ export class ClassDatabase
             return results;
         }
         if (before.functionScope) {
+            const fn = before.functionScope;
+            const argsBegin = fn.fnArgsFirstToken;
+            const argsLastToken = fn.fnArgsLastToken;
+            if (argsBegin && argsLastToken && isTokenAtOrBetween(before.token, argsBegin, argsLastToken))
+            {
+                return this.findAllExtendableClassNames().map(label => ({
+                    label, kind: SemanticClass.ClassReference
+                })).concat(['out', 'optional', 'coerce', 'skip'].map(label => ({ 
+                    label, kind: SemanticClass.Keyword
+                })));
+            }
+            before.functionScope.fnArgsFirstToken
             const next = before.ast?.tokens[before.token.index + 1];
             if (before.token.type === SemanticClass.ObjectReferenceName && before.token.text.startsWith("'")) {
                 // is name completion        
