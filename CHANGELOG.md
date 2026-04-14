@@ -1,5 +1,9 @@
 # Change Log
 
+### v0.28.0
+
+- Add linter check for bool arrays
+
 ### v0.27.11
 - Fix completion suggesting variable names inside function args
 

@@ -17,6 +17,11 @@ export class TypeCheckRule implements AstBasedLinter
                 this.checkBoolVarLocal(result, item, ast);
             }
         }
+        for (const struct of ast.structs) {
+            for (const member of struct.members){
+                this.checkVarType(result, member);
+            }
+        }
         if (result && result.length > 0) return result;
         return null;
     }

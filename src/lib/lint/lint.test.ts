@@ -1238,11 +1238,24 @@ test('bool array var not allowed', () => { linting([
 
 test('bool array local not allowed', () => { lintingStatements(
     'local bool bActiveTeams[4];',
+    "bActiveTeams[0] = False;",
 ).hasResult({
     message: "Bool arrays are not allowed",
-    line: 0,
-    position: 11,
+    line: 2,
+    position: 15,
     length: 12,
+    severity: "error"
+});});
+
+test('bool array struct member not allowed', () => { linting([
+    "struct MYStruct{",
+    "    var bool flags[256];",
+    "}",
+]).hasResult({
+    message: "Bool arrays are not allowed",
+    line: 1,
+    position: 13,
+    length: 5,
     severity: "error"
 });});
 
