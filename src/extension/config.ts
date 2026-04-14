@@ -62,6 +62,8 @@ export function parseConfiguration(cfg: vscode.WorkspaceConfiguration): Extensio
                 cfg.get('linter.checkReturnTypes.enabled') ?? DEFAULT_A.checkReturnTypes,
             checkUnusedLocals:
                 cfg.get('linter.checkUnusedLocals.enabled') ?? DEFAULT_A.checkUnusedLocals,
+            typeCheckRule:
+                cfg.get('linter.checkVarTypes.enabled') ?? DEFAULT_A.typeCheckRule,
         }
     };
 }

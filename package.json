@@ -148,6 +148,11 @@
 					"type": "boolean",
 					"description": "Check and report unused local variables.",
 					"default": true
+				},
+				"ucx.linter.checkVarTypes.enabled": {
+					"type": "boolean",
+					"description": "Check variable type defintions (WIP).",
+					"default": true
 				}
 			}
 		},

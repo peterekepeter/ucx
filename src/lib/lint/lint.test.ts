@@ -1226,6 +1226,17 @@ test('spaces around generic types are well formatted', () => linting([
     '}',
 ]).isAlreadyWellFormatted());
 
+test('bool array not allowed', () => { linting([
+    'var bool bActiveTeams[4];',
+]).hasResult({
+    message: "Bool arrays are not allowed",
+    line: 0,
+    position: 9,
+    length: 12,
+    severity: "error"
+});});
+
+
 function linting(lines: string[], options?: Partial<FullLinterConfig>, fileName?: string) {
     const parser = new UcParser();
     for (let i = 0; i < lines.length; i++) {
