@@ -1226,12 +1226,22 @@ test('spaces around generic types are well formatted', () => linting([
     '}',
 ]).isAlreadyWellFormatted());
 
-test('bool array not allowed', () => { linting([
+test('bool array var not allowed', () => { linting([
     'var bool bActiveTeams[4];',
 ]).hasResult({
     message: "Bool arrays are not allowed",
     line: 0,
     position: 9,
+    length: 12,
+    severity: "error"
+});});
+
+test('bool array local not allowed', () => { lintingStatements(
+    'local bool bActiveTeams[4];',
+).hasResult({
+    message: "Bool arrays are not allowed",
+    line: 0,
+    position: 11,
     length: 12,
     severity: "error"
 });});
