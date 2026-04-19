@@ -942,7 +942,7 @@ export class ClassDatabase
         const call = this.detectGotoStateCall(query);
         if (!call) { return { found:false }}
         let classdef = query.ast;
-        let foundtype: TokenInformation|undefined;
+        let foundtype: TokenInformation|undefined = query;
         if (call.context) {
             const vardef = this.findDefinition({...query, token:call.context});
             foundtype = this.findTypeOfDefinition(vardef);
@@ -951,32 +951,22 @@ export class ClassDatabase
                 classdef = foundtype.ast;
             }
         }
-        const state = this.findStateByName(classdef, call.stateName);
-        if (!state) return { found:false };
+        const state = this.findInheritedStateByName(foundtype, call.stateName);
+        if (!state.found) return state;
         if (call.statementLabelName) {
-            const label = this.findStatementLabelByName(state.body, call.statementLabelName);
+            const label = this.findStatementLabelByName(state.stateScope?.body, call.statementLabelName);
             if (label) {
                 return { 
                     found: true,
                     token: label.token,
-                    uri: foundtype?.uri,
-                    stateScope: state,
+                    uri: state?.uri,
+                    stateScope: state.stateScope,
                     ast: classdef,
                 }
             }
-            return {
-                found: true,
-                token: label ?? undefined,
-            }
         }
         else {
-            return { 
-                found: true,
-                token: state.name ?? undefined,
-                uri: foundtype?.uri ?? query.uri,
-                ast: classdef,
-                stateScope: state,
-            }
+            return state;
         }
         return { found: false };
     }
@@ -1110,6 +1100,27 @@ export class ClassDatabase
                 }
             }
         }
+    }
+
+    private findInheritedStateByName(classdef: TokenInformation|undefined, token: ParserToken|undefined): TokenInformation {
+        while (classdef && classdef.ast) {
+            const state = this.findStateByName(classdef.ast, token);
+            if (state) return {
+                found: true,
+                stateScope: state,
+                token: state.name ?? undefined,
+                uri: classdef.uri,
+                ast: classdef.ast,
+            };
+            if (classdef.ast.name)
+            {
+                classdef = this.findParentClassOf(classdef.ast?.name?.textLower);
+            }
+            else {
+                break;
+            }
+        }
+        return { found:false };
     }
 
     private findInheritedOperatorOverloads(localResult: TokenInformation) {

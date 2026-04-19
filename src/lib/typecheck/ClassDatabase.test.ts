@@ -207,6 +207,7 @@ describe("definition in states", () => {
     
     const uri = "SomeClass.uc";
     const uriGoat = "Goat.uc";
+    const uriBabyCow = "BabyCow.uc";
     
     beforeAll(() => {
         db = new ClassDatabase();
@@ -242,6 +243,13 @@ describe("definition in states", () => {
             '   if ( bCondition ) goto(\'Start_Anim\');',
             `}`,
         ]);
+        ast(uriBabyCow, 1, [
+            'class BabyCow extends Cow;', // 0
+            '', //
+            'function InitBabyCow() {', // 2
+            `   GotoState('Grazing','Start_Anim')`, // 3
+            '}',
+        ])
     });
 
     describe('findToken', () => test.each([
@@ -275,12 +283,15 @@ describe("definition in states", () => {
         expect(definition).toMatchObject(expected);
     }));
 
+    // TODO find references for these
     describe('findCrossFileDefinition', () => test.each([
-        [14, 23, { uri: uriGoat, token: { text: 'Grazing', line: 2, position: 6 }}],
-        [14, 35, { uri: uriGoat, token: { text: 'Start_Anim', line: 8, position: 0 }}],
-    ] as [number, number, TokenInformation][]
-    )("at %p:%p results %p", (line, column, expected) => {
-        const token = db.findSymbolToken(uri, line, column);
+        [uri, 14, 23, { uri: uriGoat, token: { text: 'Grazing', line: 2, position: 6 }}],
+        [uri, 14, 35, { uri: uriGoat, token: { text: 'Start_Anim', line: 8, position: 0 }}],
+        [uriBabyCow, 3, 17, { uri: uri, token: { text: 'Grazing', line: 2, position: 6 }}],
+        // [uriBabyCow, 3, 30, { uri: uri, token: { text: 'Start_Anim', line: 8, position: 0 }}],
+    ] as [string, number, number, TokenInformation][]
+    )("at %p:%p results %p", (localUri, line, column, expected) => {
+        const token = db.findSymbolToken(localUri, line, column);
         const definition = db.findCrossFileDefinition(token);
         expect(definition).toMatchObject(expected);
     }));
