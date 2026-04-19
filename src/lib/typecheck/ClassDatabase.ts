@@ -780,40 +780,16 @@ export class ClassDatabase
         }
         if (query.token.type === SemanticClass.LiteralName)
         {
-            const before = query.ast.tokens[query.token.index - 1];   
-            if (before.text === "(")
+            const goto = this.detectGotoStateCall(query);
+            if (goto && (!goto?.context || goto?.context?.textLower === 'self'))
             {
-                const before2 = query.ast.tokens[query.token.index - 2];
-                const beforeFn = query.ast.tokens[query.token.index -3];
-                if (beforeFn.text != ".")
+                const state = this.findStateByName(query.ast, goto.stateName) ?? query.stateScope;
+                if (goto.statementLabelName)
                 {
-                    if (before2.textLower === "goto")
-                    {
-                        result = this.findStatementLabelByName(
-                            query?.stateScope?.body, query.token);
-                    }
-                    if (before2.textLower === "gotostate")
-                    {
-                        result = { token: 
-                            this.findStateByName(query.ast, query.token)?.name ?? undefined 
-                        }
-                    }
+                    result = this.findStatementLabelByName(state?.body, goto.statementLabelName);
                 }
-            }
-            else if (before.text === ",")
-            {
-                const argBefore = query.ast.tokens[query.token.index - 2]
-                const paren = query.ast.tokens[query.token.index - 3]
-                const fn = query.ast.tokens[query.token.index - 4]
-                const beforefn = query.ast.tokens[query.token.index - 5]
-                const label = query.token;
-                if (fn.textLower === 'gotostate' 
-                    && paren.text === '(' 
-                    && argBefore.type === SemanticClass.LiteralName 
-                    && beforefn.text !== ".")
-                {
-                    const foundState = this.findStateByName(query.ast, argBefore)
-                    result = this.findStatementLabelByName(foundState?.body, label);
+                else {
+                    result = { token: state?.name ?? undefined };
                 }
             }
         }
@@ -934,6 +910,10 @@ export class ClassDatabase
             if (this.isMemberQuery(query)) {
                 return this.findMemberDefinitionForQueryToken(query);
             }
+            if (query.token.type === SemanticClass.LiteralName)
+            {
+                return this.findNameReferenceTarget(query);
+            }
             // look for symbol in parent class
             const inheritedSymbol = this.findInheritedSybol(query);
             if (inheritedSymbol?.found) {
@@ -954,6 +934,82 @@ export class ClassDatabase
             }
         }
         return { found: false };
+    }
+
+    private findNameReferenceTarget(query: TokenInformation): TokenInformation
+    {
+        if (!query.ast||!query.token||!query.uri) { return { found: false }; }
+        const call = this.detectGotoStateCall(query);
+        if (!call) { return { found:false }}
+        let classdef = query.ast;
+        let foundtype: TokenInformation|undefined;
+        if (call.context) {
+            const vardef = this.findDefinition({...query, token:call.context});
+            foundtype = this.findTypeOfDefinition(vardef);
+            if (foundtype.found && foundtype.ast)
+            {
+                classdef = foundtype.ast;
+            }
+        }
+        const state = this.findStateByName(classdef, call.stateName);
+        if (!state) return { found:false };
+        if (call.statementLabelName) {
+            const label = this.findStatementLabelByName(state.body, call.statementLabelName);
+            if (label) {
+                return { 
+                    found: true,
+                    token: label.token,
+                    uri: foundtype?.uri,
+                    stateScope: state,
+                    ast: classdef,
+                }
+            }
+            return {
+                found: true,
+                token: label ?? undefined,
+            }
+        }
+        else {
+            return { 
+                found: true,
+                token: state.name ?? undefined,
+                uri: foundtype?.uri ?? query.uri,
+                ast: classdef,
+                stateScope: state,
+            }
+        }
+        return { found: false };
+    }
+
+    private detectGotoStateCall(query: TokenInformation) {
+        if (!query.ast || !query.token) return;
+        const tokens = query.ast.tokens;
+        let i = query.token.index;
+            if (tokens[i].type !== SemanticClass.LiteralName) return;
+        let statementLabelName: ParserToken|undefined;
+        if (tokens[i-1].text === ',')
+        {
+            statementLabelName = tokens[i];
+            i -= 2;
+            if (tokens[i].type !== SemanticClass.LiteralName) return;
+        }
+        let stateName: ParserToken|undefined = tokens[i];
+        if (tokens[i-1].text !== "(") return;
+        let text = tokens[i-2].textLower;
+        if (text === 'goto') {
+            statementLabelName = stateName;
+            stateName = undefined;
+        }
+        else if (text !== 'gotostate')
+        {
+            return;
+        }
+        i=i-2;
+        let context: ParserToken|undefined;
+        if (tokens[i-1].text === "."){
+            context = tokens[i-2]
+        }
+        return { stateName, statementLabelName, context };
     }
     
     private findEnumMemberDefinitionForQueryToken(query: TokenInformation): TokenInformation|undefined {
@@ -1041,8 +1097,8 @@ export class ClassDatabase
         }
     };
 
-    private findStateByName(ast: UnrealClass|undefined, token: ParserToken){
-        if (ast){
+    private findStateByName(ast: UnrealClass|undefined, token: ParserToken|undefined){
+        if (ast&&token){
             for (const state of ast.states)
             {
                 if (state.name 
