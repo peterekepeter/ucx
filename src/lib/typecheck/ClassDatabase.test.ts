@@ -218,6 +218,8 @@ describe("definition in states", () => {
             '   }',
             '   function TestDirection() {',
             '   }', 
+            '   Start_Anim:', // line 8
+            '   if ( bCondition ) goto(\'Start_Anim\');',
             `}`,
         ]);
     });
@@ -238,6 +240,7 @@ describe("definition in states", () => {
             fnDefinition: { name: { text: 'TestDirection' } },
             stateScope: { name: { text: 'Grazing'} },
         }],
+        [9, 32, { token: { text: 'Start_Anim', line: 8 }}]
     ] as [number, number, TokenInformation][]
     )("at %p:%p results %p", (line, column, expected) => {
         const token = db.findSymbolToken(uri, line, column);

@@ -743,6 +743,38 @@ export class ClassDatabase
                 }
             }
         }
+        if (query.token.type === SemanticClass.LiteralName)
+        {
+            const before = query.ast.tokens[query.token.index - 1];   
+            if (before.text === "(")
+            {
+                const before2 = query.ast.tokens[query.token.index - 2];
+                if (before2.textLower === "goto")
+                {
+                    const label = query.token;
+                    
+                    if (query.stateScope && query.stateScope.body)
+                    {
+                        for (const statement of query.stateScope.body)
+                        {
+                            if (statement.op?.text === ":"
+                                && statement.args[0]
+                                && 'text' in statement.args[0] 
+                                && statement.args[0].textLower.length + 2 === label.textLower.length
+                                && label.textLower.indexOf(statement.args[0].textLower) === 1)
+                            {
+                                result = {
+                                    token: statement.args[0],
+                                    classDefinition: query.ast,
+                                    stateScope: query.stateScope
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
         if (query.token.type === SemanticClass.LanguageVariable) {
             if (query.token.textLower === 'self' && query.ast.name) {
                 result = {
