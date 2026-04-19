@@ -1,5 +1,10 @@
 # Change Log
 
+### v0.28.1
+
+- Fix find definition for parameters of GotoState function
+- Fix find definition/references for local goto name inside statement
+
 ### v0.28.0
 
 - Add linter check for bool arrays
