@@ -221,6 +221,10 @@ describe("definition in states", () => {
             'Start_Anim:', // line 8
             '   if ( bCondition ) goto(\'Start_Anim\');',
             `}`,
+            '',
+            'function StartGrazing() {', // line 12
+            `   GotoState('Grazing','Start_Anim');`,
+            '}',
         ]);
     });
 
@@ -240,8 +244,10 @@ describe("definition in states", () => {
             fnDefinition: { name: { text: 'TestDirection' } },
             stateScope: { name: { text: 'Grazing'} },
         }],
-        [8, 1, { token: { text: 'Start_Anim', line: 8 }}],
-        [9, 32, { token: { text: 'Start_Anim', line: 8 }}],
+        [8, 1, { token: { text: 'Start_Anim', line: 8, position: 0 }}],
+        [9, 32, { token: { text: 'Start_Anim', line: 8, position: 0 }}],
+        [13, 17, { token: { text: 'Grazing', line: 2, position: 6 }}],
+        [13, 30, { token: { text: 'Start_Anim', line: 8, position: 0 }}],
     ] as [number, number, TokenInformation][]
     )("at %p:%p results %p", (line, column, expected) => {
         const token = db.findSymbolToken(uri, line, column);
@@ -253,7 +259,6 @@ describe("definition in states", () => {
         [8,1,[[9,26]]]
     ])("%p:%p ref by %p", (line, col, refs)=> {
         const result = db.findReferences(uri, line, col);
-        console.log("returned %d", result.length)
         for (const ref of refs) {
             const [refLine, refPosition] = ref;
             const found = result.find(item => item.token?.line === refLine 

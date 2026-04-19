@@ -11,7 +11,8 @@ import {
     getStatementsRecursively, 
     getAllClassFunctions, 
     getExpressionTokensRecursively,
-    UnrealClassEnum
+    UnrealClassEnum,
+    UnrealClassStatement
 } from "../parser/ast";
 import { renderDefinitionMarkdownLines, renderFnDocumentationPrototypeToString, renderFnImplementationStubToString } from "./renderDefinitonMarkdownLines";
 
@@ -783,29 +784,36 @@ export class ClassDatabase
             if (before.text === "(")
             {
                 const before2 = query.ast.tokens[query.token.index - 2];
-                if (before2.textLower === "goto")
+                const beforeFn = query.ast.tokens[query.token.index -3];
+                if (beforeFn.text != ".")
                 {
-                    const label = query.token;
-                    
-                    if (query.stateScope && query.stateScope.body)
+                    if (before2.textLower === "goto")
                     {
-                        for (const statement of query.stateScope.body)
-                        {
-                            if (statement.op?.text === ":"
-                                && statement.args[0]
-                                && 'text' in statement.args[0] 
-                                && statement.args[0].textLower.length + 2 === label.textLower.length
-                                && label.textLower.indexOf(statement.args[0].textLower) === 1)
-                            {
-                                result = {
-                                    token: statement.args[0],
-                                    classDefinition: query.ast,
-                                    stateScope: query.stateScope
-                                }
-                                break;
-                            }
+                        result = this.findStatementLabelByName(
+                            query?.stateScope?.body, query.token);
+                    }
+                    if (before2.textLower === "gotostate")
+                    {
+                        result = { token: 
+                            this.findStateByName(query.ast, query.token)?.name ?? undefined 
                         }
                     }
+                }
+            }
+            else if (before.text === ",")
+            {
+                const argBefore = query.ast.tokens[query.token.index - 2]
+                const paren = query.ast.tokens[query.token.index - 3]
+                const fn = query.ast.tokens[query.token.index - 4]
+                const beforefn = query.ast.tokens[query.token.index - 5]
+                const label = query.token;
+                if (fn.textLower === 'gotostate' 
+                    && paren.text === '(' 
+                    && argBefore.type === SemanticClass.LiteralName 
+                    && beforefn.text !== ".")
+                {
+                    const foundState = this.findStateByName(query.ast, argBefore)
+                    result = this.findStatementLabelByName(foundState?.body, label);
                 }
             }
         }
@@ -1014,6 +1022,38 @@ export class ClassDatabase
             }
         }
         return { found:false };
+    }
+
+    private findStatementLabelByName(body: UnrealClassStatement[]|undefined, label:ParserToken) {
+        if (body) 
+        {
+            for (const statement of body)
+            {
+                if (statement.op?.text === ":"
+                    && statement.args[0]
+                    && 'text' in statement.args[0] 
+                    && statement.args[0].textLower.length + 2 === label.textLower.length
+                    && label.textLower.indexOf(statement.args[0].textLower) === 1)
+                {
+                    return { token: statement.args[0] }
+                }
+            }
+        }
+    };
+
+    private findStateByName(ast: UnrealClass|undefined, token: ParserToken){
+        if (ast){
+            for (const state of ast.states)
+            {
+                if (state.name 
+                    && 'text' in state.name 
+                    && token.text.length === state.name.text.length + 2
+                    && token.textLower.indexOf(state.name.textLower, 1) === 1 )
+                {
+                    return state;
+                }
+            }
+        }
     }
 
     private findInheritedOperatorOverloads(localResult: TokenInformation) {
