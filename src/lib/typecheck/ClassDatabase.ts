@@ -383,6 +383,33 @@ export class ClassDatabase
             }
             return references;
         }
+
+        if (definition.token.type === SemanticClass.StatementLabel && definition.stateScope && !definition.functionScope) {
+            for (const st of getStatementsRecursively(definition.stateScope.body))
+            {
+                if (st.op?.type === SemanticClass.Keyword 
+                    && st.op.textLower === 'goto')
+                {
+                    for (const arg of st.args)
+                    {
+                        if ('text' in arg && arg.type === SemanticClass.LiteralName)
+                        {
+                            if (arg.text.length === definition.token.text.length + 2 
+                                && arg.textLower.indexOf(definition.token.textLower) === 1
+                            )
+                            {
+                                references.push({
+                                    ast: definition.ast,
+                                    token: arg,
+                                    stateScope: definition.stateScope,
+                                    uri: definition.uri,
+                                })
+                            }
+                        }
+                    }
+                }
+            }
+        }
         
         if (definition.localDefinition || definition.paramDefinition) {
             const ast = definition.ast;
@@ -741,6 +768,13 @@ export class ClassDatabase
                         break;
                     }
                 }
+            }
+        }
+        if (query.token.type === SemanticClass.StatementLabel && (query.stateScope || query.functionScope))
+        {
+            if (query.ast.tokens[query.token.index+1].text === ":")
+            {
+                result = query;
             }
         }
         if (query.token.type === SemanticClass.LiteralName)
